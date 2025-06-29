@@ -24,15 +24,53 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { getInitials } from '@/lib/utils';
+
+interface Profile {
+  name: string;
+  avatar: string;
+}
+
+const STORAGE_KEY = 'user-profile';
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isActive = (path: string) => pathname === path;
   const [isClient, setIsClient] = useState(false);
+  const [profile, setProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
+  
+  const loadProfile = () => {
+    try {
+       const storedProfile = localStorage.getItem(STORAGE_KEY);
+       if (storedProfile) {
+         setProfile(JSON.parse(storedProfile));
+       } else {
+         const defaultProfile = { name: 'Admin User', email: 'admin@lendeasy.ph', avatar: '' };
+         setProfile(defaultProfile);
+         localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultProfile));
+       }
+    } catch (error) {
+       console.error("Failed to parse user profile from localStorage", error);
+       setProfile({ name: 'Admin User', avatar: '' });
+    }
+ };
+
+  useEffect(() => {
+    if (!isClient) return;
+    
+    loadProfile();
+
+    window.addEventListener('profile-updated', loadProfile);
+    
+    return () => {
+      window.removeEventListener('profile-updated', loadProfile);
+    };
+  }, [isClient]);
 
   if (!isClient) {
     return null;
@@ -97,13 +135,20 @@ export function AppLayout({ children }: { children: ReactNode }) {
                 size="icon"
                 className="overflow-hidden rounded-full"
               >
-                <UserCircle className="h-6 w-6" />
+                <Avatar className="h-9 w-9">
+                  <AvatarImage src={profile?.avatar || `https://avatar.vercel.sh/${profile?.name}.png`} alt={profile?.name ?? 'User'} />
+                  <AvatarFallback>
+                    {profile ? getInitials(profile.name) : <UserCircle className="h-6 w-6" />}
+                  </AvatarFallback>
+                </Avatar>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuLabel>{profile?.name ?? 'My Account'}</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Settings</DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/settings">Settings</Link>
+              </DropdownMenuItem>
               <DropdownMenuItem>Support</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Logout</DropdownMenuItem>

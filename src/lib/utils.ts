@@ -1,3 +1,4 @@
+
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { addMonths, formatISO, isPast } from 'date-fns';
@@ -70,4 +71,9 @@ export function generatePaymentSchedule(principal: number, annualRate: number, t
   }
 
   return schedule;
+}
+
+export function getInitials(name: string | undefined) {
+    if (!name) return '';
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
 }
