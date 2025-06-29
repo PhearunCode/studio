@@ -6,26 +6,25 @@ import { type Loan, type Customer } from './types';
 
 // Initialize Firebase Admin SDK
 if (!getApps().length) {
-  try {
-    const serviceAccount = {
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-    };
+  const serviceAccount = {
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+  };
 
-    if (!serviceAccount.projectId || !serviceAccount.privateKey || !serviceAccount.clientEmail) {
-        console.warn('Firebase service account credentials are not fully set in environment variables. Firebase features will be disabled.');
-    } else {
-        admin.initializeApp({
-          credential: admin.credential.cert(serviceAccount),
-          storageBucket: `${serviceAccount.projectId}.appspot.com`,
-        });
+  if (!serviceAccount.projectId || !serviceAccount.privateKey || !serviceAccount.clientEmail) {
+    console.warn('Firebase credentials not found in environment variables. Firebase features will be disabled. Please add FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, and FIREBASE_CLIENT_EMAIL to your .env file.');
+  } else {
+    try {
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+        storageBucket: `${serviceAccount.projectId}.appspot.com`,
+      });
+    } catch (error) {
+      console.error('Firebase admin initialization error:', error);
     }
-  } catch (error) {
-    console.error('Firebase admin initialization error:', error);
   }
 }
-
 
 const db = getApps().length ? getFirestore() : null;
 const storage = getApps().length ? getStorage().bucket() : null;
