@@ -1,11 +1,12 @@
 'use client';
-import type { ReactNode } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import Link from "next/link";
 import { usePathname } from 'next/navigation';
 import {
   SidebarProvider,
   Sidebar,
   SidebarHeader,
+  SidebarFooter,
   SidebarContent,
   SidebarInset,
   SidebarMenu,
@@ -14,7 +15,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Landmark, LayoutDashboard, Users, UserCircle } from 'lucide-react';
+import { Landmark, LayoutDashboard, Users, UserCircle, PlusCircle } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,24 +24,34 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { LoanForm } from '@/components/dashboard/loan-form';
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-
   const isActive = (path: string) => pathname === path;
+  const [isClient, setIsClient] = useState(false);
+  const [isLoanFormOpen, setIsLoanFormOpen] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return null;
+  }
 
   return (
     <SidebarProvider>
       <Sidebar variant="floating" title="Main Menu">
-        <SidebarContent className="p-2">
-          <SidebarHeader>
-            <div className="flex items-center gap-2 py-2">
-              <div className="bg-primary text-primary-foreground p-2 rounded-lg">
-                <Landmark className="h-6 w-6" />
-              </div>
-              <h1 className="text-xl font-semibold font-headline">LendEasy PH</h1>
+        <SidebarHeader>
+          <div className="flex items-center gap-2 py-2">
+            <div className="bg-primary text-primary-foreground p-2 rounded-lg">
+              <Landmark className="h-6 w-6" />
             </div>
-          </SidebarHeader>
+            <h1 className="text-xl font-semibold font-headline group-data-[collapsible=icon]:hidden">LendEasy PH</h1>
+          </div>
+        </SidebarHeader>
+        <SidebarContent className="p-2">
           <SidebarMenu>
             <SidebarMenuItem>
                 <SidebarMenuButton tooltip="Dashboard" isActive={isActive('/')} asChild>
@@ -60,6 +71,14 @@ export function AppLayout({ children }: { children: ReactNode }) {
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarContent>
+        <SidebarFooter className="p-2">
+          <LoanForm open={isLoanFormOpen} onOpenChange={setIsLoanFormOpen}>
+            <Button variant="outline" className="w-full justify-start">
+              <PlusCircle />
+              <span className="group-data-[collapsible=icon]:hidden ml-2">New Loan</span>
+            </Button>
+          </LoanForm>
+        </SidebarFooter>
       </Sidebar>
       <SidebarInset>
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-md sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">

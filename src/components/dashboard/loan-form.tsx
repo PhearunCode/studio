@@ -17,9 +17,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { createLoanAction } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
-import { PlusCircle, Loader2, FileUp, X, FileIcon } from 'lucide-react';
+import { Loader2, FileUp, X, FileIcon } from 'lucide-react';
 import { VerificationResultDialog } from './verification-result-dialog';
-import type { Loan } from '@/lib/types';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -40,8 +39,13 @@ const readFileAsDataURL = (file: File): Promise<string> => {
     });
 };
 
-export function LoanForm({ loans }: { loans: Loan[] }) {
-  const [open, setOpen] = useState(false);
+interface LoanFormProps {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    children?: React.ReactNode;
+}
+
+export function LoanForm({ open, onOpenChange, children }: LoanFormProps) {
   const [files, setFiles] = useState<File[]>([]);
   const [documentsJson, setDocumentsJson] = useState('[]');
   const formRef = useRef<HTMLFormElement>(null);
@@ -50,8 +54,7 @@ export function LoanForm({ loans }: { loans: Loan[] }) {
   const [verificationResult, setVerificationResult] = useState<{flags: string[], summary: string} | null>(null);
   const [isVerificationDialogOpen, setVerificationDialogOpen] = useState(false);
 
-  const createLoanWithHistoricalData = createLoanAction.bind(null, loans);
-  const [state, formAction] = useActionState(createLoanWithHistoricalData, null);
+  const [state, formAction] = useActionState(createLoanAction, null);
 
   const updateDocumentsJson = async (updatedFiles: File[]) => {
     const fileData = await Promise.all(
@@ -83,7 +86,6 @@ export function LoanForm({ loans }: { loans: Loan[] }) {
     setDocumentsJson('[]');
   };
 
-
   useEffect(() => {
     if (!state) return;
 
@@ -103,24 +105,20 @@ export function LoanForm({ loans }: { loans: Loan[] }) {
           setVerificationResult(state.verificationResult);
           setVerificationDialogOpen(true);
       }
-      setOpen(false);
+      onOpenChange(false);
+    }
+  }, [state, toast, onOpenChange]);
+
+  useEffect(() => {
+    if (!open) {
       resetFormState();
     }
-  }, [state, toast]);
+  }, [open]);
 
   return (
     <>
-    <Dialog open={open} onOpenChange={(isOpen) => {
-        setOpen(isOpen);
-        if (!isOpen) {
-            resetFormState();
-        }
-    }}>
-      <DialogTrigger asChild>
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" /> New Loan
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      {children && <DialogTrigger asChild>{children}</DialogTrigger>}
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>New Loan</DialogTitle>

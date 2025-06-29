@@ -9,7 +9,6 @@ import { getLoans } from "@/lib/firebase";
 import { type Loan } from "@/lib/types";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { LoanTable } from "@/components/dashboard/loan-table";
-import { LoanForm } from "@/components/dashboard/loan-form";
 import { DollarSign, Users, Percent } from "lucide-react";
 
 export default async function DashboardPage() {
@@ -27,7 +26,6 @@ export default async function DashboardPage() {
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
         <div className="flex items-center space-x-2">
-          <LoanForm loans={loans}/>
         </div>
       </div>
 

@@ -1,13 +1,12 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { addLoan, addCustomer, updateCustomer, deleteCustomer } from './firebase';
+import { addLoan, addCustomer, updateCustomer, deleteCustomer, getLoans } from './firebase';
 import { verifyLoanApplication } from '@/ai/flows/verify-loan-application';
 import type { Loan } from './types';
 import { loanSchema, customerSchema, type FormState } from '@/lib/types';
 
 export async function createLoanAction(
-  historicalData: Loan[], 
   prevState: FormState, 
   formData: FormData
 ): Promise<FormState> {
@@ -35,6 +34,9 @@ export async function createLoanAction(
 
     const { name, amount, interestRate, loanDate, address } = validatedFields.data;
     
+    // Fetch historical data inside the action
+    const historicalData = await getLoans();
+
     // 1. Call AI verification flow
     const verificationInput = {
       name,
