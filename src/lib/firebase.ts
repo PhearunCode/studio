@@ -52,6 +52,11 @@ export const getLoans = async (): Promise<Loan[]> => {
         serializableLoanDate = String(loanDate || '');
       }
       
+      const verificationResult = data.verificationResult ? {
+          flags: data.verificationResult.flags || [],
+          summary: data.verificationResult.summary || ''
+      } : null;
+
       return {
         id: doc.id,
         name: data.name || '',
@@ -61,7 +66,7 @@ export const getLoans = async (): Promise<Loan[]> => {
         address: data.address || '',
         documents: data.documents || [],
         status: data.status || 'Pending',
-        verificationResult: data.verificationResult || null
+        verificationResult: verificationResult,
       };
     });
     return loans;
