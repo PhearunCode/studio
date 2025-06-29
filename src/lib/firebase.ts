@@ -1,8 +1,9 @@
 import admin from 'firebase-admin';
 import { getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
-import { type Loan, type Customer, type Payment, type Currency } from './types';
+import { type Loan, type Customer, type Payment, type Currency, customerSchema } from './types';
 import { generatePaymentSchedule } from './utils';
+import { z } from 'zod';
 
 // Initialize Firebase Admin SDK
 if (!getApps().length) {
@@ -92,6 +93,8 @@ export const getCustomers = async (): Promise<Customer[]> => {
             name: data.name,
             address: data.address,
             phone: data.phone || '',
+            avatar: data.avatar || '',
+            idCardUrl: data.idCardUrl || '',
             totalLoans: 0,
             totalLoanAmountKhr: 0,
             totalLoanAmountUsd: 0,
@@ -120,7 +123,7 @@ export const getCustomers = async (): Promise<Customer[]> => {
     return Array.from(customerMap.values());
 };
 
-export const updateCustomer = async (id: string, data: { name: string; phone: string; address: string; }) => {
+export const updateCustomer = async (id: string, data: z.infer<typeof customerSchema>) => {
     if (!db) {
         throw connectionError;
     }

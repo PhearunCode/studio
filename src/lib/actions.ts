@@ -136,6 +136,8 @@ export async function saveCustomerAction(
       name: formData.get('name'),
       address: formData.get('address'),
       phone: formData.get('phone'),
+      avatar: formData.get('avatar'),
+      idCardUrl: formData.get('idCardUrl'),
     });
 
     if (!validatedFields.success) {

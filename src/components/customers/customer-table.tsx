@@ -22,7 +22,7 @@ import { type Customer } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CustomerForm } from './customer-form';
 import { DeleteCustomerDialog } from './delete-customer-dialog';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, getInitials } from '@/lib/utils';
 
 interface CustomerTableProps {
   customers: Customer[];
@@ -85,8 +85,8 @@ export function CustomerTable({ customers }: CustomerTableProps) {
               <TableCell className="font-medium">
                 <div className="flex items-center gap-3">
                   <Avatar>
-                    <AvatarImage src={`https://avatar.vercel.sh/${customer.name}.png`} alt={customer.name} />
-                    <AvatarFallback>{customer.name.charAt(0).toUpperCase()}</AvatarFallback>
+                    <AvatarImage src={customer.avatar || `https://avatar.vercel.sh/${customer.name}.png`} alt={customer.name} />
+                    <AvatarFallback>{getInitials(customer.name)}</AvatarFallback>
                   </Avatar>
                   <div className="grid gap-0.5">
                     <span className="font-medium">{customer.name}</span>
