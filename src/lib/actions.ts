@@ -275,3 +275,20 @@ export async function markPaymentAsPaidAction(
         };
     }
 }
+
+export async function sendTestNotificationAction(
+  prevState: FormState, 
+  formData: FormData
+): Promise<FormState> {
+  try {
+    await sendTelegramNotification('Hello from LendEasy PH! 👋 Your Telegram notifications are set up correctly.');
+    return { message: 'Test notification sent successfully!' };
+  } catch (error) {
+    console.error('Error sending test notification:', error);
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred while sending the test notification.';
+    return {
+      message,
+      error: true
+    };
+  }
+}

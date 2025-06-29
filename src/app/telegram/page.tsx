@@ -1,19 +1,60 @@
+'use client';
 
+import { useEffect, useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Terminal } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { sendTestNotificationAction } from '@/lib/actions';
+import { useToast } from '@/hooks/use-toast';
+import { Terminal, Send, Loader2 } from "lucide-react";
+import type { FormState } from '@/lib/types';
+
+
+function SubmitButton() {
+    const { pending } = useFormStatus();
+    return (
+        <Button type="submit" disabled={pending}>
+            {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+            Send Test Notification
+        </Button>
+    );
+}
+
 
 export default function TelegramPage() {
+  const { toast } = useToast();
+  const [state, formAction] = useActionState(sendTestNotificationAction, null);
+
   const envExample = `
 TELEGRAM_BOT_TOKEN=YOUR_BOT_TOKEN_HERE
 TELEGRAM_CHAT_ID=YOUR_CHAT_ID_HERE
   `.trim();
+
+  useEffect(() => {
+    if (!state) return;
+
+    if (state.error) {
+      toast({
+        title: 'Error',
+        description: state.message,
+        variant: 'destructive',
+      });
+    } else {
+      toast({
+        title: 'Success',
+        description: state.message,
+        className: 'bg-accent text-accent-foreground',
+      });
+    }
+  }, [state, toast]);
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -67,10 +108,22 @@ TELEGRAM_CHAT_ID=YOUR_CHAT_ID_HERE
            <div className="space-y-2">
             <h3 className="font-semibold">4. Restart Your Server</h3>
             <p className="text-muted-foreground">
-              After updating the <code>.env</code> file, you must restart the application server for the changes to take effect. Notifications for new loan applications will now be sent to your specified Telegram chat.
+              After updating the <code>.env</code> file, you must restart the application server for the changes to take effect.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <h3 className="font-semibold">5. Test Your Connection</h3>
+            <p className="text-muted-foreground">
+                Once you have completed the steps above, click the button below to send a test message to your Telegram chat.
             </p>
           </div>
         </CardContent>
+        <CardFooter>
+            <form action={formAction}>
+                <SubmitButton />
+            </form>
+        </CardFooter>
       </Card>
     </div>
   );
