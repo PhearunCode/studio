@@ -13,7 +13,7 @@ if (!getApps().length) {
   };
 
   if (!serviceAccount.projectId || !serviceAccount.privateKey || !serviceAccount.clientEmail) {
-    throw new Error('Firebase credentials not found in environment variables. Firebase features will be disabled. Please add FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, and FIREBASE_CLIENT_EMAIL to your .env file.');
+    console.warn('Firebase credentials not found in environment variables. Firebase features will be disabled. Please add FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, and FIREBASE_CLIENT_EMAIL to your .env file.');
   } else {
     try {
       admin.initializeApp({
@@ -29,10 +29,11 @@ if (!getApps().length) {
 const db = getApps().length ? getFirestore() : null;
 const storage = getApps().length ? getStorage().bucket() : null;
 
+const connectionError = new Error("Failed to connect to Firebase. Please ensure your Firebase credentials are set correctly in your environment variables and that the connection is successful.");
+
 export const getLoans = async (): Promise<Loan[]> => {
   if (!db) {
-    console.log("Firestore is not initialized. Returning empty array.");
-    return [];
+    throw connectionError;
   }
   try {
     const loansSnapshot = await db.collection('loans').orderBy('loanDate', 'desc').get();
@@ -73,8 +74,7 @@ export const getLoans = async (): Promise<Loan[]> => {
 
 export const getCustomers = async (): Promise<Customer[]> => {
     if (!db) {
-        console.log("Firestore is not initialized. Returning empty array.");
-        return [];
+        throw connectionError;
     }
 
     const customersSnapshot = await db.collection('customers').orderBy('name').get();
@@ -110,7 +110,7 @@ export const getCustomers = async (): Promise<Customer[]> => {
 
 export const uploadFile = async (file: { name: string; data: string }, path: string): Promise<{ name: string; url: string }> => {
     if (!storage) {
-        throw new Error('Firebase Storage is not initialized.');
+        throw connectionError;
     }
     const mimeType = file.data.match(/data:(.*);base64,/)?.[1];
     if (!mimeType) {
@@ -134,7 +134,7 @@ export const uploadFile = async (file: { name: string; data: string }, path: str
 
 export const addCustomer = async (customer: Omit<Customer, 'id' | 'totalLoans' | 'totalLoanAmount'>) => {
     if (!db) {
-        throw new Error('Firestore is not initialized.');
+        throw connectionError;
     }
     const customerQuery = await db.collection('customers').where('name', '==', customer.name).limit(1).get();
     if (!customerQuery.empty) {
@@ -145,7 +145,7 @@ export const addCustomer = async (customer: Omit<Customer, 'id' | 'totalLoans' |
 
 export const addLoan = async (loan: Omit<Loan, 'id' | 'status' | 'documents'> & { documents: { name: string; data: string }[] }): Promise<Loan> => {
   if (!db) {
-    throw new Error('Firestore is not initialized.');
+    throw connectionError;
   }
 
   // Check if customer exists, if not create one

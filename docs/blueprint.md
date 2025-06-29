@@ -1,4 +1,4 @@
-# **App Name**: LendEasy PH
+# **App Name**: PH Loan
 
 ## Core Features:
 
