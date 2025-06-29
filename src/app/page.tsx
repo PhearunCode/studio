@@ -1,7 +1,8 @@
 import { getLoans, getCustomers } from "@/lib/firebase";
 import { type Loan, type Customer } from "@/lib/types";
 import { StatCard } from "@/components/dashboard/stat-card";
-import { DollarSign, Users, Percent } from "lucide-react";
+import { DollarSign, Users, Percent, Landmark } from "lucide-react";
+import { calculateMonthlyPayment } from "@/lib/utils";
 
 export default async function DashboardPage() {
   const loans: Loan[] = await getLoans();
@@ -14,13 +15,22 @@ export default async function DashboardPage() {
       ? loans.reduce((acc, loan) => acc + loan.interestRate, 0) / totalLoans
       : 0;
 
+  const totalInterestEarned = loans
+    .filter(loan => loan.status === 'Approved' || loan.status === 'Paid')
+    .reduce((acc, loan) => {
+        const monthlyPayment = calculateMonthlyPayment(loan.amount, loan.interestRate, loan.term);
+        const totalPaid = monthlyPayment * loan.term;
+        const totalInterest = totalPaid > loan.amount ? totalPaid - loan.amount : 0;
+        return acc + totalInterest;
+    }, 0);
+
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Total Loaned"
           value={`$${totalAmountLoaned.toLocaleString("en-US", {
@@ -41,6 +51,15 @@ export default async function DashboardPage() {
           value={`${averageInterestRate.toFixed(2)}%`}
           icon={<Percent className="h-4 w-4 text-muted-foreground" />}
           description="Average interest rate across all loans"
+        />
+        <StatCard
+          title="Potential Interest"
+          value={`$${totalInterestEarned.toLocaleString("en-US", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}`}
+          icon={<Landmark className="h-4 w-4 text-muted-foreground" />}
+          description="Total potential interest from active loans"
         />
       </div>
     </div>

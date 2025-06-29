@@ -39,10 +39,16 @@ export function PaymentsTable({ loans }: PaymentsTableProps) {
   const loansWithPayments = useMemo(() => {
     return loans
       .filter(loan => loan.status === 'Approved' || loan.status === 'Paid')
-      .map(loan => ({
-        ...loan,
-        monthlyPayment: calculateMonthlyPayment(loan.amount, loan.interestRate, loan.term),
-      }));
+      .map(loan => {
+        const monthlyPayment = calculateMonthlyPayment(loan.amount, loan.interestRate, loan.term);
+        const totalPaid = monthlyPayment * loan.term;
+        const totalInterest = totalPaid > loan.amount ? totalPaid - loan.amount : 0;
+        return {
+          ...loan,
+          monthlyPayment,
+          totalInterest,
+        };
+      });
   }, [loans]);
 
   return (
@@ -57,9 +63,10 @@ export function PaymentsTable({ loans }: PaymentsTableProps) {
           <TableRow>
             <TableHead>Borrower</TableHead>
             <TableHead className="text-right">Loan Amount</TableHead>
-            <TableHead className="text-right">Interest</TableHead>
+            <TableHead className="text-right">Interest Rate</TableHead>
             <TableHead className="text-right">Term</TableHead>
             <TableHead className="text-right">Monthly Payment</TableHead>
+            <TableHead className="text-right">Total Interest</TableHead>
             <TableHead className="text-center">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -74,6 +81,9 @@ export function PaymentsTable({ loans }: PaymentsTableProps) {
               <TableCell className="text-right">{loan.term} mo</TableCell>
               <TableCell className="text-right font-medium">
                 {formatCurrency(loan.monthlyPayment)}
+              </TableCell>
+              <TableCell className="text-right font-medium text-destructive">
+                {formatCurrency(loan.totalInterest)}
               </TableCell>
               <TableCell className="text-center">
                 <Button variant="ghost" size="icon" onClick={() => handleViewPayments(loan)}>
