@@ -1,86 +1,98 @@
-// This is a mock implementation of Firebase services.
-// In a real application, you would use the Firebase SDK.
+import admin from 'firebase-admin';
+import { getApps } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
+import { getStorage } from 'firebase-admin/storage';
 import { type Loan } from './types';
 
-let mockLoans: Loan[] = [
-  {
-    id: '1',
-    name: 'Juan dela Cruz',
-    amount: 50000,
-    interestRate: 5,
-    loanDate: '2024-01-15',
-    address: '123 Rizal Ave, Manila',
-    documents: [{ name: 'id_1.png', url: 'https://placehold.co/600x400.png' }],
-    status: 'Paid',
-    verificationResult: { flags: [], summary: "Initial mock data. No verification performed." }
-  },
-  {
-    id: '2',
-    name: 'Maria Clara',
-    amount: 120000,
-    interestRate: 4.5,
-    loanDate: '2024-02-20',
-    address: '456 Bonifacio St, Cebu City',
-    documents: [{ name: 'id_2.png', url: 'https://placehold.co/600x400.png' }],
-    status: 'Approved',
-    verificationResult: { flags: [], summary: "Initial mock data. No verification performed." }
-  },
-  {
-    id: '3',
-    name: 'Jose Rizal',
-    amount: 75000,
-    interestRate: 5.5,
-    loanDate: '2024-03-10',
-    address: '789 Mabini Blvd, Davao City',
-    documents: [{ name: 'id_3.png', url: 'https://placehold.co/600x400.png' }],
-    status: 'Pending',
-    verificationResult: { flags: ["Address mismatch with historical data."], summary: "Potential address inconsistency found." }
-  },
-  {
-    id: '4',
-    name: 'Gabriela Silang',
-    amount: 200000,
-    interestRate: 4,
-    loanDate: '2024-04-05',
-    address: '101 Aguinaldo Highway, Cavite',
-    documents: [{ name: 'id_4.png', url: 'https://placehold.co/600x400.png' }],
-    status: 'Approved',
-    verificationResult: { flags: [], summary: "Initial mock data. No verification performed." }
-  },
-];
+// Initialize Firebase Admin SDK
+if (!getApps().length) {
+  try {
+    const serviceAccount = {
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    };
+
+    if (!serviceAccount.projectId || !serviceAccount.privateKey || !serviceAccount.clientEmail) {
+        console.warn('Firebase service account credentials are not fully set in environment variables. Firebase features will be disabled.');
+    } else {
+        admin.initializeApp({
+          credential: admin.credential.cert(serviceAccount),
+          storageBucket: `${serviceAccount.projectId}.appspot.com`,
+        });
+    }
+  } catch (error) {
+    console.error('Firebase admin initialization error:', error);
+  }
+}
+
+
+const db = getApps().length ? getFirestore() : null;
+const storage = getApps().length ? getStorage().bucket() : null;
 
 export const getLoans = async (): Promise<Loan[]> => {
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-  return [...mockLoans].sort((a, b) => new Date(b.loanDate).getTime() - new Date(a.loanDate).getTime());
+  if (!db) {
+    console.log("Firestore is not initialized. Returning empty array.");
+    return [];
+  }
+  try {
+    const loansSnapshot = await db.collection('loans').orderBy('loanDate', 'desc').get();
+    if (loansSnapshot.empty) {
+      return [];
+    }
+    return loansSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    } as Loan));
+  } catch(error) {
+    console.error("Error fetching loans:", error);
+    // Return an empty array if there's an issue, e.g. permissions.
+    return [];
+  }
+};
+
+export const uploadFile = async (file: { name: string; data: string }, path: string): Promise<{ name: string; url: string }> => {
+    if (!storage) {
+        throw new Error('Firebase Storage is not initialized.');
+    }
+    const mimeType = file.data.match(/data:(.*);base64,/)?.[1];
+    if (!mimeType) {
+        throw new Error('Invalid data URI format for file upload.');
+    }
+
+    const base64Data = file.data.split(',')[1];
+    const buffer = Buffer.from(base64Data, 'base64');
+    const filePath = `${path}/${Date.now()}_${file.name}`; // Add timestamp to avoid overwrites
+    const fileUpload = storage.file(filePath);
+
+    await fileUpload.save(buffer, {
+        metadata: {
+            contentType: mimeType,
+        },
+    });
+
+    await fileUpload.makePublic();
+    return { name: file.name, url: fileUpload.publicUrl() };
 };
 
 export const addLoan = async (loan: Omit<Loan, 'id' | 'status' | 'documents'> & { documents: { name: string; data: string }[] }): Promise<Loan> => {
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  const newId = (mockLoans.length + 1).toString();
+  if (!db) {
+    throw new Error('Firestore is not initialized.');
+  }
+  const newDocRef = db.collection('loans').doc();
+  const newId = newDocRef.id;
 
-  const uploadedDocuments = loan.documents.map((doc, index) => ({
-      name: doc.name,
-      // In a real app, this would be a URL from Firebase Storage
-      url: 'https://placehold.co/600x400.png' 
-  }));
+  const uploadedDocuments = await Promise.all(
+      loan.documents.map(doc => uploadFile(doc, `loans/${newId}`))
+  );
 
-  const newLoan: Loan = {
+  const newLoan: Omit<Loan, 'id'> = {
     ...loan,
-    id: newId,
     status: 'Pending',
     documents: uploadedDocuments,
   };
 
-  mockLoans.unshift(newLoan);
-  return newLoan;
-};
+  await newDocRef.set(newLoan);
 
-// Mock Firebase Storage
-export const uploadFile = async (file: { name: string; data: string }, path: string): Promise<{ name: string; url: string }> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    console.log(`Mock uploading ${file.name} to ${path}`);
-    // In a real app, this would return the actual download URL from Firebase Storage.
-    return { name: file.name, url: 'https://placehold.co/600x400.png' };
+  return { ...newLoan, id: newId };
 };
