@@ -25,7 +25,7 @@ function SubmitButton({ isPending }: { isPending: boolean }) {
   return (
     <Button type="submit" disabled={isPending}>
       {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-      Submit Application
+      Save
     </Button>
   );
 }
@@ -114,9 +114,9 @@ export function LoanForm({ loans }: { loans: Loan[] }) {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>New Loan Application</DialogTitle>
+          <DialogTitle>New Loan</DialogTitle>
           <DialogDescription>
-            Fill in the details below to create a new loan application.
+            Fill in the details below to create a new loan.
           </DialogDescription>
         </DialogHeader>
         <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
