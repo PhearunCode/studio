@@ -177,11 +177,6 @@ export function LoanTable({ loans }: LoanTableProps) {
                         Reject
                       </DropdownMenuItem>
                     )}
-                    {loan.status === 'Approved' && (
-                      <DropdownMenuItem onSelect={() => handleStatusChange(loan.id, 'Paid')}>
-                        Mark as Paid
-                      </DropdownMenuItem>
-                    )}
                     {loan.status !== 'Pending' && (
                         <DropdownMenuItem onSelect={() => handleStatusChange(loan.id, 'Pending')}>
                             Set as Pending
