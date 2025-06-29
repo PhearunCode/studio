@@ -31,7 +31,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
 
   return (
     <SidebarProvider>
-      <Sidebar>
+      <Sidebar variant="floating">
         <SidebarContent className="p-2">
           <SidebarHeader>
             <div className="flex items-center gap-2 py-2">
