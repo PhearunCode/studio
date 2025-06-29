@@ -210,7 +210,22 @@ export const updateLoan = async (id: string, data: { amount: number; interestRat
         throw connectionError;
     }
     const loanRef = db.collection('loans').doc(id);
-    await loanRef.update(data);
+    const loanDoc = await loanRef.get();
+    if (!loanDoc.exists) {
+        throw new Error('Loan not found to update.');
+    }
+    const loanData = loanDoc.data();
+
+    const updates: any = { ...data };
+
+    // If the loan is approved, regenerate the payment schedule with the new terms.
+    // This will reset any existing payment progress.
+    if (loanData?.status === 'Approved') {
+        const schedule = generatePaymentSchedule(data.amount, data.interestRate, data.term, data.loanDate);
+        updates.payments = schedule;
+    }
+    
+    await loanRef.update(updates);
 };
 
 export const updateLoanStatus = async (id: string, status: Loan['status']) => {

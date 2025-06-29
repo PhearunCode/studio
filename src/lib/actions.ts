@@ -109,6 +109,7 @@ export async function updateLoanAction(
 
     revalidatePath('/loans');
     revalidatePath('/');
+    revalidatePath('/payments');
 
     return { message: 'Loan updated successfully.' };
   } catch (error) {
