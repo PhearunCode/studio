@@ -4,6 +4,8 @@ import { revalidatePath } from 'next/cache';
 import { addLoan, addCustomer, updateCustomer, deleteCustomer, getLoans, updateLoanStatus, deleteLoan, updateLoan, markPaymentAsPaid } from './firebase';
 import { verifyLoanApplication } from '@/ai/flows/verify-loan-application';
 import { loanSchema, customerSchema, updateLoanSchema, type FormState, type Loan, type Currency } from '@/lib/types';
+import { sendTelegramNotification } from './telegram';
+import { formatCurrency } from './utils';
 
 export async function createLoanAction(
   prevState: FormState, 
@@ -62,6 +64,22 @@ export async function createLoanAction(
       address,
       verificationResult,
     });
+
+    // 3. Send Telegram Notification
+    const notificationMessage = `
+*New Loan Application Submitted*
+-----------------------------------
+*Name:* ${name}
+*Amount:* ${formatCurrency(amount, currency)}
+*Term:* ${term} months
+*Interest Rate:* ${interestRate}%
+*Date:* ${loanDate}
+-----------------------------------
+*AI Verification Summary:*
+${verificationResult.summary}
+*Flags:* ${verificationResult.flags.length > 0 ? verificationResult.flags.join(', ') : 'None'}
+    `;
+    await sendTelegramNotification(notificationMessage.trim());
 
     revalidatePath('/loans');
     revalidatePath('/');
