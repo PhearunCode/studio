@@ -97,6 +97,10 @@ export function CustomerForm({ customer, open, onOpenChange, children }: Custome
                 <Input id="phone" name="phone" placeholder="09123456789" type="tel" required defaultValue={customer?.phone ?? ''} />
             </div>
             <div className="space-y-2">
+                <Label htmlFor="idCardNumber">ID Card Number</Label>
+                <Input id="idCardNumber" name="idCardNumber" placeholder="1234-5678-9012" defaultValue={customer?.idCardNumber ?? ''} />
+            </div>
+            <div className="space-y-2">
                 <Label htmlFor="address">Address</Label>
                 <Input id="address" name="address" placeholder="123 Rizal St, Manila" required defaultValue={customer?.address ?? ''} />
             </div>

@@ -1,4 +1,3 @@
-
 import admin from 'firebase-admin';
 import { getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
@@ -96,8 +95,8 @@ export const getCustomers = async (): Promise<Customer[]> => {
             name: data.name,
             address: data.address,
             phone: data.phone || '',
+            idCardNumber: data.idCardNumber || '',
             avatar: data.avatar || '',
-            idCardUrl: data.idCardUrl || '',
             totalLoans: 0,
             totalLoanAmountKhr: 0,
             totalLoanAmountUsd: 0,
