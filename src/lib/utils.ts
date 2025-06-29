@@ -1,18 +1,13 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { addMonths, formatISO, isPast } from 'date-fns';
+import type { Payment } from './types';
+
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-
-export interface AmortizationEntry {
-  month: number;
-  monthlyPayment: number;
-  principalPayment: number;
-  interestPayment: number;
-  remainingBalance: number;
-}
 
 export function calculateMonthlyPayment(principal: number, annualRate: number, termMonths: number): number {
   if (principal <= 0 || annualRate < 0 || termMonths <= 0) {
@@ -30,7 +25,7 @@ export function calculateMonthlyPayment(principal: number, annualRate: number, t
   return monthlyPayment;
 }
 
-export function calculateAmortizationSchedule(principal: number, annualRate: number, termMonths: number): AmortizationEntry[] {
+export function generatePaymentSchedule(principal: number, annualRate: number, termMonths: number, loanDateStr: string): Payment[] {
   if (principal <= 0 || annualRate < 0 || termMonths <= 0) {
     return [];
   }
@@ -38,8 +33,9 @@ export function calculateAmortizationSchedule(principal: number, annualRate: num
   const monthlyPayment = calculateMonthlyPayment(principal, annualRate, termMonths);
   const monthlyRate = annualRate / 100 / 12;
   
-  const schedule: AmortizationEntry[] = [];
+  const schedule: Payment[] = [];
   let remainingBalance = principal;
+  const startDate = new Date(loanDateStr + 'T00:00:00'); // Avoid timezone issues
 
   for (let i = 1; i <= termMonths; i++) {
     const interestPayment = remainingBalance * monthlyRate;
@@ -51,8 +47,13 @@ export function calculateAmortizationSchedule(principal: number, annualRate: num
         remainingBalance = 0;
     }
 
+    const dueDate = addMonths(startDate, i);
+    const status: 'Upcoming' | 'Overdue' = isPast(dueDate) ? 'Overdue' : 'Upcoming';
+
     schedule.push({
       month: i,
+      dueDate: formatISO(dueDate, { representation: 'date' }), // YYYY-MM-DD
+      status: status,
       monthlyPayment: monthlyPayment,
       principalPayment: principalPayment,
       interestPayment: interestPayment,

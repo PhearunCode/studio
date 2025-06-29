@@ -1,6 +1,16 @@
 import type { VerifyLoanApplicationOutput } from "@/ai/flows/verify-loan-application";
 import { z } from "zod";
 
+export interface Payment {
+  month: number;
+  dueDate: string;
+  status: 'Paid' | 'Upcoming' | 'Overdue';
+  monthlyPayment: number;
+  principalPayment: number;
+  interestPayment: number;
+  remainingBalance: number;
+}
+
 export interface Loan {
   id: string;
   name: string;
@@ -11,6 +21,7 @@ export interface Loan {
   address: string;
   status: 'Pending' | 'Approved' | 'Rejected' | 'Paid';
   verificationResult: VerifyLoanApplicationOutput | null;
+  payments?: Payment[];
 }
 
 export interface Customer {

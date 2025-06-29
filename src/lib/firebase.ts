@@ -1,7 +1,8 @@
 import admin from 'firebase-admin';
 import { getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
-import { type Loan, type Customer } from './types';
+import { type Loan, type Customer, type Payment } from './types';
+import { generatePaymentSchedule } from './utils';
 
 // Initialize Firebase Admin SDK
 if (!getApps().length) {
@@ -66,6 +67,7 @@ export const getLoans = async (): Promise<Omit<Loan, 'documents'>[]> => {
         address: data.address || '',
         status: data.status || 'Pending',
         verificationResult: verificationResult,
+        payments: data.payments || [],
       };
     });
     return loans;
@@ -178,7 +180,7 @@ export const addCustomer = async (customer: Omit<Customer, 'id' | 'totalLoans' |
     await db.collection('customers').add(customer);
 };
 
-export const addLoan = async (loan: Omit<Loan, 'id' | 'status'>): Promise<Omit<Loan, 'id'>> => {
+export const addLoan = async (loan: Omit<Loan, 'id' | 'status' | 'payments'>): Promise<Omit<Loan, 'id'>> => {
   if (!db) {
     throw connectionError;
   }
@@ -195,6 +197,7 @@ export const addLoan = async (loan: Omit<Loan, 'id' | 'status'>): Promise<Omit<L
   const newLoan: Omit<Loan, 'id'> = {
     ...loan,
     status: 'Pending',
+    payments: []
   };
 
   await newDocRef.set(newLoan);
@@ -215,7 +218,24 @@ export const updateLoanStatus = async (id: string, status: Loan['status']) => {
         throw connectionError;
     }
     const loanRef = db.collection('loans').doc(id);
-    await loanRef.update({ status });
+    const loanDoc = await loanRef.get();
+    if (!loanDoc.exists) {
+        throw new Error('Loan not found to update status.');
+    }
+    const loanData = loanDoc.data() as Loan;
+
+    const updates: { status: Loan['status'], payments?: Payment[] } = { status };
+
+    // If approving for the first time and no schedule exists
+    if (status === 'Approved' && (!loanData.payments || loanData.payments.length === 0)) {
+        const loanDate = typeof loanData.loanDate.toDate === 'function' 
+            ? loanData.loanDate.toDate().toISOString().split('T')[0]
+            : loanData.loanDate;
+        const schedule = generatePaymentSchedule(loanData.amount, loanData.interestRate, loanData.term, loanDate);
+        updates.payments = schedule;
+    }
+    
+    await loanRef.update(updates);
 };
 
 export const deleteLoan = async (id: string) => {
@@ -224,4 +244,34 @@ export const deleteLoan = async (id: string) => {
     }
     const loanRef = db.collection('loans').doc(id);
     await loanRef.delete();
+};
+
+
+export const markPaymentAsPaid = async (loanId: string, month: number) => {
+    if (!db) throw connectionError;
+
+    const loanRef = db.collection('loans').doc(loanId);
+    const loanDoc = await loanRef.get();
+    if (!loanDoc.exists) {
+        throw new Error('Loan not found.');
+    }
+
+    const loanData = loanDoc.data() as Loan;
+    const payments = loanData.payments || [];
+    const paymentIndex = payments.findIndex(p => p.month === month);
+
+    if (paymentIndex === -1) {
+        throw new Error('Payment for the specified month not found.');
+    }
+
+    payments[paymentIndex].status = 'Paid';
+
+    // Check if all payments are paid
+    const allPaid = payments.every(p => p.status === 'Paid');
+    const newStatus = allPaid ? 'Paid' : 'Approved';
+
+    await loanRef.update({
+        payments: payments,
+        status: newStatus
+    });
 };

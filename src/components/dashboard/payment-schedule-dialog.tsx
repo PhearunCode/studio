@@ -18,9 +18,14 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { type Loan } from '@/lib/types';
-import { calculateAmortizationSchedule, calculateMonthlyPayment } from '@/lib/utils';
-import { useMemo } from 'react';
+import { type Loan, type Payment } from '@/lib/types';
+import { calculateMonthlyPayment } from '@/lib/utils';
+import { useTransition } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { markPaymentAsPaidAction } from '@/lib/actions';
+import { Badge } from '@/components/ui/badge';
+import { Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface PaymentScheduleDialogProps {
   loan: Loan | null;
@@ -35,22 +40,60 @@ const formatCurrency = (amount: number) => {
     });
 };
 
+const formatDate = (dateString: string) => {
+    // Add T00:00:00 to treat the date as local time and avoid timezone shifts
+    return new Date(dateString + 'T00:00:00').toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+    });
+};
+
+function MarkAsPaidButton({ loanId, month }: { loanId: string, month: number }) {
+  const [isPending, startTransition] = useTransition();
+  const { toast } = useToast();
+
+  const handleClick = () => {
+    startTransition(async () => {
+      const result = await markPaymentAsPaidAction(loanId, month);
+      if (result?.error) {
+        toast({ title: 'Error', description: result.message, variant: 'destructive' });
+      } else {
+        toast({ title: 'Success', description: result.message, className: 'bg-accent text-accent-foreground' });
+      }
+    });
+  };
+
+  return (
+    <Button size="sm" onClick={handleClick} disabled={isPending}>
+      {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+      Mark as Paid
+    </Button>
+  );
+}
+
 export function PaymentScheduleDialog({ loan, open, onOpenChange }: PaymentScheduleDialogProps) {
-  const schedule = useMemo(() => {
-    if (!loan || !loan.term) return [];
-    return calculateAmortizationSchedule(loan.amount, loan.interestRate, loan.term);
-  }, [loan]);
-
-  const monthlyPayment = useMemo(() => {
-      if (!loan || !loan.term) return 0;
-      return calculateMonthlyPayment(loan.amount, loan.interestRate, loan.term);
-  }, [loan]);
-
+  const schedule = loan?.payments ?? [];
+  const monthlyPayment = loan ? calculateMonthlyPayment(loan.amount, loan.interestRate, loan.term) : 0;
+  
   if (!loan) return null;
+
+  const getStatusVariant = (status: Payment['status']): "default" | "secondary" | "destructive" | "outline" => {
+    switch(status) {
+        case 'Paid':
+            return 'default';
+        case 'Upcoming':
+            return 'outline';
+        case 'Overdue':
+            return 'destructive';
+        default:
+            return 'outline';
+    }
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-3xl">
+      <DialogContent className="sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle>Monthly Payment Schedule</DialogTitle>
           <DialogDescription>
@@ -64,10 +107,13 @@ export function PaymentScheduleDialog({ loan, open, onOpenChange }: PaymentSched
             <TableHeader className="sticky top-0 bg-background">
               <TableRow>
                 <TableHead className="w-[80px]">Month</TableHead>
+                <TableHead>Due Date</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead className="text-right">Principal</TableHead>
                 <TableHead className="text-right">Interest</TableHead>
                 <TableHead className="text-right">Total Payment</TableHead>
                 <TableHead className="text-right">Remaining Balance</TableHead>
+                <TableHead className="text-center">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -75,16 +121,29 @@ export function PaymentScheduleDialog({ loan, open, onOpenChange }: PaymentSched
                 schedule.map((entry) => (
                   <TableRow key={entry.month}>
                     <TableCell className="font-medium">{entry.month}</TableCell>
+                    <TableCell>{formatDate(entry.dueDate)}</TableCell>
+                    <TableCell>
+                        <Badge variant={getStatusVariant(entry.status)} className={cn(
+                            entry.status === 'Paid' && 'bg-accent text-accent-foreground'
+                        )}>
+                            {entry.status}
+                        </Badge>
+                    </TableCell>
                     <TableCell className="text-right">{formatCurrency(entry.principalPayment)}</TableCell>
                     <TableCell className="text-right">{formatCurrency(entry.interestPayment)}</TableCell>
                     <TableCell className="text-right font-medium">{formatCurrency(entry.monthlyPayment)}</TableCell>
                     <TableCell className="text-right">{formatCurrency(entry.remainingBalance)}</TableCell>
+                    <TableCell className="text-center w-[150px]">
+                        {entry.status !== 'Paid' && loan.status === 'Approved' && (
+                            <MarkAsPaidButton loanId={loan.id} month={entry.month} />
+                        )}
+                    </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
-                        No term is set for this loan. Please edit the loan to add a term.
+                    <TableCell colSpan={8} className="h-24 text-center">
+                        This loan has not been approved yet. A payment schedule will be generated upon approval.
                     </TableCell>
                 </TableRow>
               )}

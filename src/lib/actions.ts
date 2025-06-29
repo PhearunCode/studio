@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { addLoan, addCustomer, updateCustomer, deleteCustomer, getLoans, updateLoanStatus, deleteLoan, updateLoan } from './firebase';
+import { addLoan, addCustomer, updateCustomer, deleteCustomer, getLoans, updateLoanStatus, deleteLoan, updateLoan, markPaymentAsPaid } from './firebase';
 import { verifyLoanApplication } from '@/ai/flows/verify-loan-application';
 import { loanSchema, customerSchema, updateLoanSchema, type FormState, type Loan } from '@/lib/types';
 
@@ -197,6 +197,7 @@ export async function updateLoanStatusAction(
       await updateLoanStatus(loanId, status);
       revalidatePath('/loans');
       revalidatePath('/');
+      revalidatePath('/payments');
       return { message: `Loan status updated to ${status}.` };
     } catch (error) {
       console.error('Error updating loan status:', error);
@@ -225,6 +226,28 @@ export async function deleteLoanAction(
         return {
             message,
             error: true
+        };
+    }
+}
+
+export async function markPaymentAsPaidAction(
+    loanId: string,
+    month: number
+): Promise<FormState> {
+    try {
+        if (!loanId || !month) {
+            throw new Error('Loan ID and payment month are required.');
+        }
+        await markPaymentAsPaid(loanId, month);
+        revalidatePath('/payments');
+        revalidatePath('/loans');
+        return { message: `Payment for month ${month} marked as paid.` };
+    } catch (error) {
+        console.error('Error marking payment as paid:', error);
+        const message = error instanceof Error ? error.message : 'An unexpected error occurred.';
+        return {
+            message,
+            error: true,
         };
     }
 }
