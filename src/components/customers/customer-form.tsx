@@ -85,6 +85,10 @@ export function CustomerForm() {
               <Input id="name" name="name" placeholder="Juan dela Cruz" required />
           </div>
           <div className="space-y-2">
+            <Label htmlFor="phone">Phone Number</Label>
+            <Input id="phone" name="phone" placeholder="09123456789" type="tel" required />
+          </div>
+          <div className="space-y-2">
             <Label htmlFor="address">Address</Label>
             <Input id="address" name="address" placeholder="123 Rizal St, Manila" required />
           </div>

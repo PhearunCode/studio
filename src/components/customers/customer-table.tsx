@@ -30,6 +30,7 @@ export function CustomerTable({ customers }: CustomerTableProps) {
       <TableHeader>
         <TableRow>
           <TableHead>Customer</TableHead>
+          <TableHead>Phone</TableHead>
           <TableHead>Address</TableHead>
           <TableHead className="text-right">Total Loans</TableHead>
           <TableHead className="text-right">Total Loaned Amount</TableHead>
@@ -52,6 +53,7 @@ export function CustomerTable({ customers }: CustomerTableProps) {
                 </div>
               </div>
             </TableCell>
+            <TableCell>{customer.phone}</TableCell>
             <TableCell>{customer.address}</TableCell>
             <TableCell className="text-right">{customer.totalLoans}</TableCell>
             <TableCell className="text-right">

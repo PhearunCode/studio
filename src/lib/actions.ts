@@ -86,6 +86,7 @@ export async function createCustomerAction(
     const validatedFields = customerSchema.safeParse({
       name: formData.get('name'),
       address: formData.get('address'),
+      phone: formData.get('phone'),
     });
 
     if (!validatedFields.success) {

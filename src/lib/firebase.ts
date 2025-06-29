@@ -13,7 +13,7 @@ if (!getApps().length) {
   };
 
   if (!serviceAccount.projectId || !serviceAccount.privateKey || !serviceAccount.clientEmail) {
-    console.warn('Firebase credentials not found in environment variables. Firebase features will be disabled. Please add FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, and FIREBASE_CLIENT_EMAIL to your .env file.');
+    throw new Error('Firebase credentials not found in environment variables. Firebase features will be disabled. Please add FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, and FIREBASE_CLIENT_EMAIL to your .env file.');
   } else {
     try {
       admin.initializeApp({
@@ -84,6 +84,7 @@ export const getCustomers = async (): Promise<Customer[]> => {
             id: doc.id,
             name: data.name,
             address: data.address,
+            phone: data.phone || '',
             totalLoans: 0,
             totalLoanAmount: 0,
         } as Customer;
@@ -150,7 +151,7 @@ export const addLoan = async (loan: Omit<Loan, 'id' | 'status' | 'documents'> & 
   // Check if customer exists, if not create one
   const customerQuery = await db.collection('customers').where('name', '==', loan.name).limit(1).get();
   if (customerQuery.empty) {
-      await db.collection('customers').add({ name: loan.name, address: loan.address });
+      await db.collection('customers').add({ name: loan.name, address: loan.address, phone: '' });
   }
 
   const newDocRef = db.collection('loans').doc();

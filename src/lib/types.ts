@@ -17,6 +17,7 @@ export interface Customer {
   id: string;
   name: string;
   address: string;
+  phone: string;
   totalLoans: number;
   totalLoanAmount: number;
 }
@@ -40,6 +41,7 @@ export const loanSchema = z.object({
 export const customerSchema = z.object({
     name: z.string().min(3, "Name must be at least 3 characters"),
     address: z.string().min(5, "Address must be at least 5 characters"),
+    phone: z.string().min(10, "Phone number must be at least 10 characters"),
 });
 
 export type FormState = {
