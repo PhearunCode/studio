@@ -16,6 +16,7 @@ const VerifyLoanApplicationInputSchema = z.object({
   name: z.string().describe('Borrower name'),
   amount: z.number().describe('Loan amount requested'),
   interestRate: z.number().describe('Interest rate (%)'),
+  term: z.number().describe('Loan term in months'),
   loanDate: z.string().describe('Loan disbursement date'),
   address: z.string().describe('Borrower address'),
   historicalData: z.string().describe('Historical loan data for comparison.'),
@@ -54,6 +55,7 @@ Loan Application Data:
 Name: {{{name}}}
 Amount: {{{amount}}}
 Interest Rate: {{{interestRate}}}
+Term: {{{term}}} months
 Loan Date: {{{loanDate}}}
 Address: {{{address}}}
 

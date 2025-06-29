@@ -61,6 +61,7 @@ export const getLoans = async (): Promise<Omit<Loan, 'documents'>[]> => {
         name: data.name || '',
         amount: data.amount || 0,
         interestRate: data.interestRate || 0,
+        term: data.term || 0,
         loanDate: serializableLoanDate,
         address: data.address || '',
         status: data.status || 'Pending',
@@ -201,7 +202,7 @@ export const addLoan = async (loan: Omit<Loan, 'id' | 'status'>): Promise<Omit<L
   return { ...newLoan, id: newId };
 };
 
-export const updateLoan = async (id: string, data: { amount: number; interestRate: number; loanDate: string; }) => {
+export const updateLoan = async (id: string, data: { amount: number; interestRate: number; loanDate: string; term: number }) => {
     if (!db) {
         throw connectionError;
     }

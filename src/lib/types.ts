@@ -6,6 +6,7 @@ export interface Loan {
   name: string;
   amount: number;
   interestRate: number;
+  term: number; // Loan term in months
   loanDate: string; // Storing as ISO string e.g., "2024-05-21"
   address: string;
   status: 'Pending' | 'Approved' | 'Rejected' | 'Paid';
@@ -28,6 +29,7 @@ export const loanSchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters'),
   amount: z.coerce.number().positive('Amount must be positive'),
   interestRate: z.coerce.number().min(0, 'Interest rate cannot be negative'),
+  term: z.coerce.number().positive('Term must be in months').int(),
   loanDate: z.string().refine(isValidDate, 'Invalid date'),
   address: z.string().min(5, 'Address must be at least 5 characters'),
 });
@@ -35,6 +37,7 @@ export const loanSchema = z.object({
 export const updateLoanSchema = z.object({
   amount: z.coerce.number().positive('Amount must be positive'),
   interestRate: z.coerce.number().min(0, 'Interest rate cannot be negative'),
+  term: z.coerce.number().positive('Term must be in months').int(),
   loanDate: z.string().refine(isValidDate, 'Invalid date'),
 });
 

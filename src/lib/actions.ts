@@ -16,6 +16,7 @@ export async function createLoanAction(
       name: rawFormData.name,
       amount: rawFormData.amount,
       interestRate: rawFormData.interestRate,
+      term: rawFormData.term,
       loanDate: rawFormData.loanDate,
       address: rawFormData.address,
     });
@@ -29,7 +30,7 @@ export async function createLoanAction(
       };
     }
 
-    const { name, amount, interestRate, loanDate, address } = validatedFields.data;
+    const { name, amount, interestRate, term, loanDate, address } = validatedFields.data;
     
     // Fetch historical data inside the action
     const historicalData = await getLoans();
@@ -39,6 +40,7 @@ export async function createLoanAction(
       name,
       amount,
       interestRate,
+      term,
       loanDate,
       address,
       historicalData: JSON.stringify(historicalData.slice(0, 5).map(l => ({
@@ -53,11 +55,13 @@ export async function createLoanAction(
       name,
       amount,
       interestRate,
+      term,
       loanDate,
       address,
       verificationResult,
     });
 
+    revalidatePath('/loans');
     revalidatePath('/');
     revalidatePath('/customers');
 
@@ -88,6 +92,7 @@ export async function updateLoanAction(
     const validatedFields = updateLoanSchema.safeParse({
       amount: formData.get('amount'),
       interestRate: formData.get('interestRate'),
+      term: formData.get('term'),
       loanDate: formData.get('loanDate'),
     });
 

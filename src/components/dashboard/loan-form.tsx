@@ -101,24 +101,24 @@ export function LoanForm({ open, onOpenChange, children, customers }: LoanFormPr
           </DialogDescription>
         </DialogHeader>
         <form ref={formRef} action={formAction} className="space-y-4">
+          <div className="space-y-2 col-span-2">
+            <Label htmlFor="name">Borrower Name</Label>
+            <Select name="name" required onValueChange={handleCustomerSelect}>
+              <SelectTrigger id="name">
+                <SelectValue placeholder="Select an existing customer" />
+              </SelectTrigger>
+              <SelectContent>
+                {customers.length > 0 ? customers.map((customer) => (
+                  <SelectItem key={customer.id} value={customer.name}>
+                    {customer.name}
+                  </SelectItem>
+                )) : (
+                  <div className="p-2 text-sm text-muted-foreground text-center">Please add a customer first.</div>
+                )}
+              </SelectContent>
+            </Select>
+          </div>
           <div className="grid grid-cols-2 gap-4">
-             <div className="space-y-2 col-span-2">
-                <Label htmlFor="name">Borrower Name</Label>
-                <Select name="name" required onValueChange={handleCustomerSelect}>
-                  <SelectTrigger id="name">
-                    <SelectValue placeholder="Select an existing customer" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {customers.length > 0 ? customers.map((customer) => (
-                      <SelectItem key={customer.id} value={customer.name}>
-                        {customer.name}
-                      </SelectItem>
-                    )) : (
-                      <div className="p-2 text-sm text-muted-foreground text-center">Please add a customer first.</div>
-                    )}
-                  </SelectContent>
-                </Select>
-            </div>
             <div className="space-y-2">
                 <Label htmlFor="amount">Amount ($)</Label>
                 <Input id="amount" name="amount" type="number" placeholder="50000" required />
@@ -128,10 +128,16 @@ export function LoanForm({ open, onOpenChange, children, customers }: LoanFormPr
                 <Input id="interestRate" name="interestRate" type="number" step="0.1" placeholder="5.5" required />
             </div>
           </div>
-           <div className="space-y-2">
-              <Label htmlFor="loanDate">Loan Date</Label>
-              <Input id="loanDate" name="loanDate" type="date" required />
-            </div>
+          <div className="grid grid-cols-2 gap-4">
+             <div className="space-y-2">
+                <Label htmlFor="term">Term (Months)</Label>
+                <Input id="term" name="term" type="number" placeholder="36" required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="loanDate">Loan Date</Label>
+                <Input id="loanDate" name="loanDate" type="date" required />
+              </div>
+          </div>
           <div className="space-y-2">
             <Label htmlFor="address">Address</Label>
             <Input 

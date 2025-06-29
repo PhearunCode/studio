@@ -101,9 +101,15 @@ export function EditLoanForm({ loan, open, onOpenChange, children }: EditLoanFor
                 </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="loanDate">Loan Date</Label>
-              <Input id="loanDate" name="loanDate" type="date" required defaultValue={loan?.loanDate} />
+            <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <Label htmlFor="term">Term (Months)</Label>
+                    <Input id="term" name="term" type="number" placeholder="36" required defaultValue={loan?.term} />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="loanDate">Loan Date</Label>
+                    <Input id="loanDate" name="loanDate" type="date" required defaultValue={loan?.loanDate} />
+                </div>
             </div>
 
           <DialogFooter>

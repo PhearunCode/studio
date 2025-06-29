@@ -26,6 +26,7 @@ import { useToast } from '@/hooks/use-toast';
 import { updateLoanStatusAction } from '@/lib/actions';
 import { DeleteLoanDialog } from './delete-loan-dialog';
 import { EditLoanForm } from './edit-loan-form';
+import { PaymentScheduleDialog } from './payment-schedule-dialog';
 
 interface LoanTableProps {
   loans: Loan[];
@@ -36,6 +37,7 @@ export function LoanTable({ loans }: LoanTableProps) {
   const [isPending, startTransition] = useTransition();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isPaymentScheduleOpen, setIsPaymentScheduleOpen] = useState(false);
   const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
 
   const handleStatusChange = (loanId: string, status: Loan['status']) => {
@@ -65,6 +67,11 @@ export function LoanTable({ loans }: LoanTableProps) {
   const handleDelete = (loan: Loan) => {
     setSelectedLoan(loan);
     setIsDeleteDialogOpen(true);
+  };
+  
+  const handleViewPayments = (loan: Loan) => {
+    setSelectedLoan(loan);
+    setIsPaymentScheduleOpen(true);
   };
 
   const formatDate = (dateString: string) => {
@@ -102,12 +109,18 @@ export function LoanTable({ loans }: LoanTableProps) {
         onOpenChange={setIsDeleteDialogOpen}
         loan={selectedLoan}
       />
+      <PaymentScheduleDialog
+        open={isPaymentScheduleOpen}
+        onOpenChange={setIsPaymentScheduleOpen}
+        loan={selectedLoan}
+      />
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Borrower</TableHead>
             <TableHead>Amount</TableHead>
             <TableHead>Interest</TableHead>
+            <TableHead>Term</TableHead>
             <TableHead>Date</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>
@@ -126,6 +139,7 @@ export function LoanTable({ loans }: LoanTableProps) {
                 })}
               </TableCell>
               <TableCell>{loan.interestRate}%</TableCell>
+              <TableCell>{loan.term} mo</TableCell>
               <TableCell>{formatDate(loan.loanDate)}</TableCell>
               <TableCell>
                 <Badge variant={getStatusVariant(loan.status)} className={cn(
@@ -142,6 +156,9 @@ export function LoanTable({ loans }: LoanTableProps) {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                    <DropdownMenuItem onSelect={() => handleViewPayments(loan)}>
+                        View Payments
+                    </DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => handleEdit(loan)}>
                       Edit Loan
                     </DropdownMenuItem>
