@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -12,7 +11,7 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { type Loan } from '@/lib/types';
-import { calculateMonthlyPayment } from '@/lib/utils';
+import { calculateMonthlyPayment, formatCurrency } from '@/lib/utils';
 import { PaymentScheduleDialog } from '@/components/dashboard/payment-schedule-dialog';
 import { Eye } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
@@ -20,13 +19,6 @@ import { Progress } from '@/components/ui/progress';
 interface PaymentsTableProps {
   loans: Loan[];
 }
-
-const formatCurrency = (amount: number) => {
-    return amount.toLocaleString('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    });
-};
 
 export function PaymentsTable({ loans }: PaymentsTableProps) {
   const [isPaymentScheduleOpen, setIsPaymentScheduleOpen] = useState(false);

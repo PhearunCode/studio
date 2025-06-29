@@ -20,7 +20,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal } from 'lucide-react';
 import { type Loan } from '@/lib/types';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 import { useState, useTransition } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { updateLoanStatusAction } from '@/lib/actions';
@@ -133,10 +133,7 @@ export function LoanTable({ loans }: LoanTableProps) {
             <TableRow key={loan.id}>
               <TableCell className="font-medium">{loan.name}</TableCell>
               <TableCell>
-                ${loan.amount.toLocaleString('en-US', {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
+                {formatCurrency(loan.amount)}
               </TableCell>
               <TableCell>{loan.interestRate}%</TableCell>
               <TableCell>{loan.term} mo</TableCell>

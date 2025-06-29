@@ -120,7 +120,7 @@ export function LoanForm({ open, onOpenChange, children, customers }: LoanFormPr
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-                <Label htmlFor="amount">Amount ($)</Label>
+                <Label htmlFor="amount">Amount (៛)</Label>
                 <Input id="amount" name="amount" type="number" placeholder="50000" required />
             </div>
             <div className="space-y-2">

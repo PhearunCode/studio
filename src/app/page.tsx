@@ -2,7 +2,7 @@ import { getLoans, getCustomers } from "@/lib/firebase";
 import { type Loan, type Customer } from "@/lib/types";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { DollarSign, Users, Percent, Landmark } from "lucide-react";
-import { calculateMonthlyPayment } from "@/lib/utils";
+import { calculateMonthlyPayment, formatCurrency } from "@/lib/utils";
 
 export default async function DashboardPage() {
   const loans: Loan[] = await getLoans();
@@ -33,10 +33,7 @@ export default async function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Total Loaned"
-          value={`$${totalAmountLoaned.toLocaleString("en-US", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          })}`}
+          value={formatCurrency(totalAmountLoaned)}
           icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
           description="Total amount disbursed to borrowers"
         />
@@ -54,10 +51,7 @@ export default async function DashboardPage() {
         />
         <StatCard
           title="Potential Interest"
-          value={`$${totalInterestEarned.toLocaleString("en-US", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          })}`}
+          value={formatCurrency(totalInterestEarned)}
           icon={<Landmark className="h-4 w-4 text-muted-foreground" />}
           description="Total potential interest from active loans"
         />

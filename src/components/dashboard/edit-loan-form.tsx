@@ -92,7 +92,7 @@ export function EditLoanForm({ loan, open, onOpenChange, children }: EditLoanFor
 
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <Label htmlFor="amount">Amount ($)</Label>
+                    <Label htmlFor="amount">Amount (៛)</Label>
                     <Input id="amount" name="amount" type="number" placeholder="50000" required defaultValue={loan?.amount} />
                 </div>
                 <div className="space-y-2">

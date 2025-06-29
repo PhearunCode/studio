@@ -8,6 +8,12 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+export function formatCurrency(amount: number) {
+  return new Intl.NumberFormat('km-KH', {
+    style: 'currency',
+    currency: 'KHR',
+  }).format(amount);
+}
 
 export function calculateMonthlyPayment(principal: number, annualRate: number, termMonths: number): number {
   if (principal <= 0 || annualRate < 0 || termMonths <= 0) {

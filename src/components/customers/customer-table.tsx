@@ -22,6 +22,7 @@ import { type Customer } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CustomerForm } from './customer-form';
 import { DeleteCustomerDialog } from './delete-customer-dialog';
+import { formatCurrency } from '@/lib/utils';
 
 interface CustomerTableProps {
   customers: Customer[];
@@ -86,10 +87,7 @@ export function CustomerTable({ customers }: CustomerTableProps) {
               <TableCell>{customer.address}</TableCell>
               <TableCell className="text-right">{customer.totalLoans}</TableCell>
               <TableCell className="text-right">
-                ${customer.totalLoanAmount.toLocaleString('en-US', {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
+                {formatCurrency(customer.totalLoanAmount)}
               </TableCell>
               <TableCell>
                 <DropdownMenu>

@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { type Loan, type Payment } from '@/lib/types';
-import { calculateMonthlyPayment } from '@/lib/utils';
+import { calculateMonthlyPayment, formatCurrency } from '@/lib/utils';
 import { useTransition } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { markPaymentAsPaidAction } from '@/lib/actions';
@@ -32,13 +32,6 @@ interface PaymentScheduleDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
-
-const formatCurrency = (amount: number) => {
-    return amount.toLocaleString('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    });
-};
 
 const formatDate = (dateString: string) => {
     // Add T00:00:00 to treat the date as local time and avoid timezone shifts
