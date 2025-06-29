@@ -55,44 +55,50 @@ export default async function DashboardPage() {
             <StatCard
             title="Total Loaned (KHR)"
             value={formatCurrency(totalAmountLoanedKhr, 'KHR')}
-            icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
+            icon={<DollarSign className="h-4 w-4 text-destructive-foreground opacity-80" />}
             description="Total amount disbursed in KHR"
+            className="bg-chart-1 text-destructive-foreground"
             />
         )}
         {totalAmountLoanedUsd > 0 && (
              <StatCard
              title="Total Loaned (USD)"
              value={formatCurrency(totalAmountLoanedUsd, 'USD')}
-             icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
+             icon={<DollarSign className="h-4 w-4 text-destructive-foreground opacity-80" />}
              description="Total amount disbursed in USD"
+             className="bg-chart-2 text-destructive-foreground"
            />
         )}
         <StatCard
           title="Total Borrowers"
           value={customers.length.toString()}
-          icon={<Users className="h-4 w-4 text-muted-foreground" />}
+          icon={<Users className="h-4 w-4 text-destructive-foreground opacity-80" />}
           description="Total number of unique customers"
+          className="bg-chart-4 text-destructive-foreground"
         />
         <StatCard
           title="Avg. Interest Rate"
           value={`${averageInterestRate.toFixed(2)}%`}
-          icon={<Percent className="h-4 w-4 text-muted-foreground" />}
+          icon={<Percent className="h-4 w-4 text-destructive-foreground opacity-80" />}
           description="Average interest rate across all loans"
+          className="bg-chart-5 text-destructive-foreground"
         />
         {totalInterestEarnedKhr > 0 && (
             <StatCard
                 title="Potential Interest (KHR)"
                 value={formatCurrency(totalInterestEarnedKhr, 'KHR')}
-                icon={<Landmark className="h-4 w-4 text-muted-foreground" />}
+                icon={<Landmark className="h-4 w-4 text-destructive-foreground opacity-80" />}
                 description="Potential interest from KHR loans"
+                className="bg-chart-1 text-destructive-foreground"
             />
         )}
         {totalInterestEarnedUsd > 0 && (
             <StatCard
                 title="Potential Interest (USD)"
                 value={formatCurrency(totalInterestEarnedUsd, 'USD')}
-                icon={<Landmark className="h-4 w-4 text-muted-foreground" />}
+                icon={<Landmark className="h-4 w-4 text-destructive-foreground opacity-80" />}
                 description="Potential interest from USD loans"
+                className="bg-chart-2 text-destructive-foreground"
             />
         )}
       </div>
