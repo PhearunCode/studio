@@ -43,12 +43,12 @@ export function AppLayout({ children }: { children: ReactNode }) {
           </SidebarHeader>
           <SidebarMenu>
             <SidebarMenuItem>
-              <Link href="/" legacyBehavior passHref>
-                <SidebarMenuButton tooltip="Dashboard" isActive={isActive('/')}>
+              <SidebarMenuButton tooltip="Dashboard" isActive={isActive('/')} asChild>
+                <Link href="/">
                   <LayoutDashboard />
                   <span>Dashboard</span>
-                </SidebarMenuButton>
-              </Link>
+                </Link>
+              </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarContent>
