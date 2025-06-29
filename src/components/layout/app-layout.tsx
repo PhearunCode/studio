@@ -1,4 +1,3 @@
-
 'use client';
 import { ReactNode, useState, useEffect } from 'react';
 import Link from "next/link";
@@ -26,6 +25,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getInitials } from '@/lib/utils';
+import { ThemeToggle } from './theme-toggle';
 
 interface Profile {
   name: string;
@@ -128,6 +128,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-md sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
           <SidebarTrigger className="md:hidden" />
           <div className="flex-1" />
+          <ThemeToggle />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
