@@ -133,7 +133,7 @@ export function LoanTable({ loans }: LoanTableProps) {
             <TableRow key={loan.id}>
               <TableCell className="font-medium">{loan.name}</TableCell>
               <TableCell>
-                {formatCurrency(loan.amount)}
+                {formatCurrency(loan.amount, loan.currency)}
               </TableCell>
               <TableCell>{loan.interestRate}%</TableCell>
               <TableCell>{loan.term} mo</TableCell>

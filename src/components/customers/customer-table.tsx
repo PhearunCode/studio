@@ -42,6 +42,16 @@ export function CustomerTable({ customers }: CustomerTableProps) {
     setSelectedCustomer(customer);
     setIsDeleteDialogOpen(true);
   };
+  
+  const formatTotalLoaned = (customer: Customer) => {
+    const khrAmount = customer.totalLoanAmountKhr > 0 ? formatCurrency(customer.totalLoanAmountKhr, 'KHR') : null;
+    const usdAmount = customer.totalLoanAmountUsd > 0 ? formatCurrency(customer.totalLoanAmountUsd, 'USD') : null;
+
+    if (khrAmount && usdAmount) {
+        return `${khrAmount} / ${usdAmount}`;
+    }
+    return khrAmount || usdAmount || '-';
+  }
 
 
   return (
@@ -87,7 +97,7 @@ export function CustomerTable({ customers }: CustomerTableProps) {
               <TableCell>{customer.address}</TableCell>
               <TableCell className="text-right">{customer.totalLoans}</TableCell>
               <TableCell className="text-right">
-                {formatCurrency(customer.totalLoanAmount)}
+                {formatTotalLoaned(customer)}
               </TableCell>
               <TableCell>
                 <DropdownMenu>

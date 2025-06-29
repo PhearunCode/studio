@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { addLoan, addCustomer, updateCustomer, deleteCustomer, getLoans, updateLoanStatus, deleteLoan, updateLoan, markPaymentAsPaid } from './firebase';
 import { verifyLoanApplication } from '@/ai/flows/verify-loan-application';
-import { loanSchema, customerSchema, updateLoanSchema, type FormState, type Loan } from '@/lib/types';
+import { loanSchema, customerSchema, updateLoanSchema, type FormState, type Loan, type Currency } from '@/lib/types';
 
 export async function createLoanAction(
   prevState: FormState, 
@@ -15,6 +15,7 @@ export async function createLoanAction(
     const validatedFields = loanSchema.safeParse({
       name: rawFormData.name,
       amount: rawFormData.amount,
+      currency: rawFormData.currency,
       interestRate: rawFormData.interestRate,
       term: rawFormData.term,
       loanDate: rawFormData.loanDate,
@@ -30,7 +31,7 @@ export async function createLoanAction(
       };
     }
 
-    const { name, amount, interestRate, term, loanDate, address } = validatedFields.data;
+    const { name, amount, currency, interestRate, term, loanDate, address } = validatedFields.data;
     
     // Fetch historical data inside the action
     const historicalData = await getLoans();
@@ -54,6 +55,7 @@ export async function createLoanAction(
     await addLoan({
       name,
       amount,
+      currency,
       interestRate,
       term,
       loanDate,
@@ -91,6 +93,7 @@ export async function updateLoanAction(
     
     const validatedFields = updateLoanSchema.safeParse({
       amount: formData.get('amount'),
+      currency: formData.get('currency'),
       interestRate: formData.get('interestRate'),
       term: formData.get('term'),
       loanDate: formData.get('loanDate'),

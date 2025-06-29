@@ -11,10 +11,13 @@ export interface Payment {
   remainingBalance: number;
 }
 
+export type Currency = 'KHR' | 'USD';
+
 export interface Loan {
   id: string;
   name: string;
   amount: number;
+  currency: Currency;
   interestRate: number;
   term: number; // Loan term in months
   loanDate: string; // Storing as ISO string e.g., "2024-05-21"
@@ -30,7 +33,8 @@ export interface Customer {
   address: string;
   phone: string;
   totalLoans: number;
-  totalLoanAmount: number;
+  totalLoanAmountKhr: number;
+  totalLoanAmountUsd: number;
 }
 
 // Helper functions for validation
@@ -39,6 +43,7 @@ const isValidDate = (date: string) => !isNaN(Date.parse(date));
 export const loanSchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters'),
   amount: z.coerce.number().positive('Amount must be positive'),
+  currency: z.enum(['KHR', 'USD']),
   interestRate: z.coerce.number().min(0, 'Interest rate cannot be negative'),
   term: z.coerce.number().positive('Term must be in months').int(),
   loanDate: z.string().refine(isValidDate, 'Invalid date'),
@@ -47,6 +52,7 @@ export const loanSchema = z.object({
 
 export const updateLoanSchema = z.object({
   amount: z.coerce.number().positive('Amount must be positive'),
+  currency: z.enum(['KHR', 'USD']),
   interestRate: z.coerce.number().min(0, 'Interest rate cannot be negative'),
   term: z.coerce.number().positive('Term must be in months').int(),
   loanDate: z.string().refine(isValidDate, 'Invalid date'),

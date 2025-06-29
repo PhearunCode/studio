@@ -1,7 +1,7 @@
 import admin from 'firebase-admin';
 import { getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
-import { type Loan, type Customer, type Payment } from './types';
+import { type Loan, type Customer, type Payment, type Currency } from './types';
 import { generatePaymentSchedule } from './utils';
 
 // Initialize Firebase Admin SDK
@@ -61,6 +61,7 @@ export const getLoans = async (): Promise<Omit<Loan, 'documents'>[]> => {
         id: doc.id,
         name: data.name || '',
         amount: data.amount || 0,
+        currency: data.currency || 'KHR',
         interestRate: data.interestRate || 0,
         term: data.term || 0,
         loanDate: serializableLoanDate,
@@ -92,7 +93,8 @@ export const getCustomers = async (): Promise<Customer[]> => {
             address: data.address,
             phone: data.phone || '',
             totalLoans: 0,
-            totalLoanAmount: 0,
+            totalLoanAmountKhr: 0,
+            totalLoanAmountUsd: 0,
         } as Customer;
     });
     
@@ -107,7 +109,11 @@ export const getCustomers = async (): Promise<Customer[]> => {
         if (customerMap.has(loan.name)) {
             const customer = customerMap.get(loan.name)!;
             customer.totalLoans += 1;
-            customer.totalLoanAmount += loan.amount;
+            if (loan.currency === 'KHR') {
+                customer.totalLoanAmountKhr += loan.amount;
+            } else if (loan.currency === 'USD') {
+                customer.totalLoanAmountUsd += loan.amount;
+            }
         }
     });
 
@@ -169,7 +175,7 @@ export const deleteCustomer = async (id: string) => {
     }
 };
 
-export const addCustomer = async (customer: Omit<Customer, 'id' | 'totalLoans' | 'totalLoanAmount'>) => {
+export const addCustomer = async (customer: Omit<Customer, 'id' | 'totalLoans' | 'totalLoanAmountKhr' | 'totalLoanAmountUsd'>) => {
     if (!db) {
         throw connectionError;
     }
@@ -205,7 +211,7 @@ export const addLoan = async (loan: Omit<Loan, 'id' | 'status' | 'payments'>): P
   return { ...newLoan, id: newId };
 };
 
-export const updateLoan = async (id: string, data: { amount: number; interestRate: number; loanDate: string; term: number }) => {
+export const updateLoan = async (id: string, data: { amount: number; currency: Currency; interestRate: number; loanDate: string; term: number }) => {
     if (!db) {
         throw connectionError;
     }

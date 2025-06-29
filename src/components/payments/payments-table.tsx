@@ -85,10 +85,10 @@ export function PaymentsTable({ loans }: PaymentsTableProps) {
                     )}
                 </TableCell>
                 <TableCell className="text-right font-medium">
-                    {formatCurrency(loan.monthlyPayment)}
+                    {formatCurrency(loan.monthlyPayment, loan.currency)}
                 </TableCell>
                 <TableCell className="text-right font-medium text-destructive">
-                    {formatCurrency(loan.totalInterest)}
+                    {formatCurrency(loan.totalInterest, loan.currency)}
                 </TableCell>
                 <TableCell className="text-center">
                     <Button variant="ghost" size="icon" onClick={() => handleViewPayments(loan)}>

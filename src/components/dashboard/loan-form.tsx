@@ -119,14 +119,26 @@ export function LoanForm({ open, onOpenChange, children, customers }: LoanFormPr
             </Select>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-                <Label htmlFor="amount">Amount (៛)</Label>
-                <Input id="amount" name="amount" type="number" placeholder="50000" required />
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="interestRate">Interest Rate (%)</Label>
-                <Input id="interestRate" name="interestRate" type="number" step="0.1" placeholder="5.5" required />
-            </div>
+              <div className="space-y-2">
+                  <Label htmlFor="amount">Amount</Label>
+                  <Input id="amount" name="amount" type="number" placeholder="50000" required />
+              </div>
+               <div className="space-y-2">
+                  <Label htmlFor="currency">Currency</Label>
+                   <Select name="currency" required defaultValue="KHR">
+                       <SelectTrigger id="currency">
+                           <SelectValue placeholder="Select currency" />
+                       </SelectTrigger>
+                       <SelectContent>
+                           <SelectItem value="KHR">KHR (៛)</SelectItem>
+                           <SelectItem value="USD">USD ($)</SelectItem>
+                       </SelectContent>
+                   </Select>
+               </div>
+          </div>
+          <div className="space-y-2">
+              <Label htmlFor="interestRate">Interest Rate (%)</Label>
+              <Input id="interestRate" name="interestRate" type="number" step="0.1" placeholder="5.5" required />
           </div>
           <div className="grid grid-cols-2 gap-4">
              <div className="space-y-2">

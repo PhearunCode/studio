@@ -1,18 +1,20 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { addMonths, formatISO, isPast } from 'date-fns';
-import type { Payment } from './types';
+import type { Payment, Currency } from './types';
 
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function formatCurrency(amount: number) {
-  return new Intl.NumberFormat('km-KH', {
+export function formatCurrency(amount: number, currency: Currency = 'KHR') {
+  const options = {
     style: 'currency',
-    currency: 'KHR',
-  }).format(amount);
+    currency,
+  };
+  const locale = currency === 'KHR' ? 'km-KH' : 'en-US';
+  return new Intl.NumberFormat(locale, options).format(amount);
 }
 
 export function calculateMonthlyPayment(principal: number, annualRate: number, termMonths: number): number {

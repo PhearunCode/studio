@@ -90,9 +90,9 @@ export function PaymentScheduleDialog({ loan, open, onOpenChange }: PaymentSched
         <DialogHeader>
           <DialogTitle>Monthly Payment Schedule</DialogTitle>
           <DialogDescription>
-            For a loan of {formatCurrency(loan.amount)} over {loan.term} months at {loan.interestRate}% interest.
+            For a loan of {formatCurrency(loan.amount, loan.currency)} over {loan.term} months at {loan.interestRate}% interest.
             The calculated monthly payment is{' '}
-            <span className="font-semibold text-foreground">{formatCurrency(monthlyPayment)}</span>.
+            <span className="font-semibold text-foreground">{formatCurrency(monthlyPayment, loan.currency)}</span>.
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-[60vh] rounded-md border">
@@ -122,10 +122,10 @@ export function PaymentScheduleDialog({ loan, open, onOpenChange }: PaymentSched
                             {entry.status}
                         </Badge>
                     </TableCell>
-                    <TableCell className="text-right">{formatCurrency(entry.principalPayment)}</TableCell>
-                    <TableCell className="text-right">{formatCurrency(entry.interestPayment)}</TableCell>
-                    <TableCell className="text-right font-medium">{formatCurrency(entry.monthlyPayment)}</TableCell>
-                    <TableCell className="text-right">{formatCurrency(entry.remainingBalance)}</TableCell>
+                    <TableCell className="text-right">{formatCurrency(entry.principalPayment, loan.currency)}</TableCell>
+                    <TableCell className="text-right">{formatCurrency(entry.interestPayment, loan.currency)}</TableCell>
+                    <TableCell className="text-right font-medium">{formatCurrency(entry.monthlyPayment, loan.currency)}</TableCell>
+                    <TableCell className="text-right">{formatCurrency(entry.remainingBalance, loan.currency)}</TableCell>
                     <TableCell className="text-center w-[150px]">
                         {entry.status !== 'Paid' && loan.status === 'Approved' && (
                             <MarkAsPaidButton loanId={loan.id} month={entry.month} />
