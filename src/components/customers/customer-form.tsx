@@ -104,6 +104,10 @@ export function CustomerForm({ customer, open, onOpenChange, children }: Custome
                 <Label htmlFor="address">Address</Label>
                 <Input id="address" name="address" placeholder="123 Rizal St, Manila" required defaultValue={customer?.address ?? ''} />
             </div>
+            <div className="space-y-2">
+                <Label htmlFor="avatar">Profile Picture URL</Label>
+                <Input id="avatar" name="avatar" placeholder="https://example.com/avatar.png" type="url" defaultValue={customer?.avatar ?? ''} />
+            </div>
 
             <DialogFooter className="pt-4">
                 <DialogClose asChild>

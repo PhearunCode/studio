@@ -137,6 +137,7 @@ export async function saveCustomerAction(
       address: formData.get('address'),
       phone: formData.get('phone'),
       idCardNumber: formData.get('idCardNumber'),
+      avatar: formData.get('avatar'),
     });
 
     if (!validatedFields.success) {
@@ -160,10 +161,10 @@ export async function saveCustomerAction(
     const message = id ? 'Customer updated successfully.' : 'Customer created successfully.';
     return { message };
   } catch (error) {
-    console.error('Error saving customer:', error);
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred.';
+    const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred.';
+    console.error('Error saving customer:', errorMessage);
     return {
-      message,
+      message: errorMessage,
       error: true
     };
   }
@@ -182,10 +183,10 @@ export async function deleteCustomerAction(
         revalidatePath('/');
         return { message: 'Customer and all associated loans have been deleted.' };
     } catch (error) {
-        console.error('Error deleting customer:', error);
-        const message = error instanceof Error ? error.message : 'An unexpected error occurred.';
+        const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred.';
+        console.error('Error deleting customer:', errorMessage);
         return {
-            message,
+            message: errorMessage,
             error: true
         };
     }
@@ -226,10 +227,10 @@ export async function deleteLoanAction(
         revalidatePath('/');
         return { message: 'Loan has been deleted.' };
     } catch (error) {
-        console.error('Error deleting loan:', error);
-        const message = error instanceof Error ? error.message : 'An unexpected error occurred.';
+        const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred.';
+        console.error('Error deleting loan:', errorMessage);
         return {
-            message,
+            message: errorMessage,
             error: true
         };
     }
