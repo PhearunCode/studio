@@ -200,3 +200,19 @@ export const addLoan = async (loan: Omit<Loan, 'id' | 'status' | 'documents'>): 
 
   return { ...newLoan, id: newId };
 };
+
+export const updateLoanStatus = async (id: string, status: Loan['status']) => {
+    if (!db) {
+        throw connectionError;
+    }
+    const loanRef = db.collection('loans').doc(id);
+    await loanRef.update({ status });
+};
+
+export const deleteLoan = async (id: string) => {
+    if (!db) {
+        throw connectionError;
+    }
+    const loanRef = db.collection('loans').doc(id);
+    await loanRef.delete();
+};

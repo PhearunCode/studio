@@ -1,9 +1,9 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { addLoan, addCustomer, updateCustomer, deleteCustomer, getLoans } from './firebase';
+import { addLoan, addCustomer, updateCustomer, deleteCustomer, getLoans, updateLoanStatus, deleteLoan } from './firebase';
 import { verifyLoanApplication } from '@/ai/flows/verify-loan-application';
-import { loanSchema, customerSchema, type FormState } from '@/lib/types';
+import { loanSchema, customerSchema, type FormState, type Loan } from '@/lib/types';
 
 export async function createLoanAction(
   prevState: FormState, 
@@ -132,6 +132,49 @@ export async function deleteCustomerAction(
         return { message: 'Customer and all associated loans have been deleted.' };
     } catch (error) {
         console.error('Error deleting customer:', error);
+        const message = error instanceof Error ? error.message : 'An unexpected error occurred.';
+        return {
+            message,
+            error: true
+        };
+    }
+}
+
+export async function updateLoanStatusAction(
+    loanId: string,
+    status: Loan['status']
+  ): Promise<FormState> {
+    try {
+      if (!loanId || !status) {
+        throw new Error('Loan ID and status are required.');
+      }
+      await updateLoanStatus(loanId, status);
+      revalidatePath('/loans');
+      revalidatePath('/');
+      return { message: `Loan status updated to ${status}.` };
+    } catch (error) {
+      console.error('Error updating loan status:', error);
+      const message = error instanceof Error ? error.message : 'An unexpected error occurred.';
+      return {
+        message,
+        error: true,
+      };
+    }
+}
+
+export async function deleteLoanAction(
+    loanId: string,
+    prevState: FormState, 
+    formData: FormData
+): Promise<FormState> {
+    try {
+        if (!loanId) throw new Error("Loan ID is required.");
+        await deleteLoan(loanId);
+        revalidatePath('/loans');
+        revalidatePath('/');
+        return { message: 'Loan has been deleted.' };
+    } catch (error) {
+        console.error('Error deleting loan:', error);
         const message = error instanceof Error ? error.message : 'An unexpected error occurred.';
         return {
             message,
