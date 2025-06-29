@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Table,
   TableBody,
@@ -23,6 +23,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CustomerForm } from './customer-form';
 import { DeleteCustomerDialog } from './delete-customer-dialog';
 import { formatCurrency, getInitials } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
 
 interface CustomerTableProps {
   customers: Customer[];
@@ -32,6 +33,7 @@ export function CustomerTable({ customers }: CustomerTableProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const handleEdit = (customer: Customer) => {
     setSelectedCustomer(customer);
@@ -53,6 +55,15 @@ export function CustomerTable({ customers }: CustomerTableProps) {
     return khrAmount || usdAmount || '-';
   }
 
+  const filteredCustomers = useMemo(() => {
+    if (!searchTerm) {
+      return customers;
+    }
+    return customers.filter(customer =>
+      customer.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [customers, searchTerm]);
+
 
   return (
     <>
@@ -66,6 +77,14 @@ export function CustomerTable({ customers }: CustomerTableProps) {
         onOpenChange={setIsDeleteDialogOpen}
         customer={selectedCustomer}
       />
+      <div className="py-4">
+        <Input
+          placeholder="Search by customer name..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="max-w-sm"
+        />
+      </div>
       <Table>
         <TableHeader>
           <TableRow>
@@ -81,7 +100,7 @@ export function CustomerTable({ customers }: CustomerTableProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {customers.map((customer) => (
+          {filteredCustomers.map((customer) => (
             <TableRow key={customer.id}>
               <TableCell className="font-medium">
                 <div className="flex items-center gap-3">
