@@ -29,7 +29,9 @@ if (!getApps().length) {
 const db = getApps().length ? getFirestore() : null;
 const storage = getApps().length ? getStorage().bucket() : null;
 
-const connectionError = new Error("Failed to connect to Firebase. Please ensure your Firebase credentials are set correctly in your environment variables and that the connection is successful.");
+const connectionError = new Error(
+  "Failed to connect to Firebase. This usually means the app's environment variables (FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY) are not set correctly. Please check your .env file and ensure they are present and valid."
+);
 
 export const getLoans = async (): Promise<Loan[]> => {
   if (!db) {
