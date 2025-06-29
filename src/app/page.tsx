@@ -1,8 +1,18 @@
+
 import { getLoans, getCustomers } from "@/lib/firebase";
 import { type Loan, type Customer } from "@/lib/types";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { DollarSign, Users, Percent, Landmark } from "lucide-react";
 import { calculateMonthlyPayment, formatCurrency } from "@/lib/utils";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { CustomerTable } from "@/components/customers/customer-table";
+import { CustomerFormWrapper } from "@/components/customers/customer-form-wrapper";
 
 export default async function DashboardPage() {
   const loans: Loan[] = await getLoans();
@@ -85,6 +95,23 @@ export default async function DashboardPage() {
                 description="Potential interest from USD loans"
             />
         )}
+      </div>
+
+      <div className="space-y-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Customer List</CardTitle>
+              <CardDescription>
+                A list of all customers and their loan summaries.
+              </CardDescription>
+            </div>
+            <CustomerFormWrapper />
+          </CardHeader>
+          <CardContent>
+            <CustomerTable customers={customers} />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
