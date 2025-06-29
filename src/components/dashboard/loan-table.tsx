@@ -21,12 +21,13 @@ import { Button } from '@/components/ui/button';
 import { MoreHorizontal } from 'lucide-react';
 import { type Loan } from '@/lib/types';
 import { cn, formatCurrency } from '@/lib/utils';
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { updateLoanStatusAction } from '@/lib/actions';
 import { DeleteLoanDialog } from './delete-loan-dialog';
 import { EditLoanForm } from './edit-loan-form';
 import { PaymentScheduleDialog } from './payment-schedule-dialog';
+import { Input } from '@/components/ui/input';
 
 interface LoanTableProps {
   loans: Loan[];
@@ -39,6 +40,7 @@ export function LoanTable({ loans }: LoanTableProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isPaymentScheduleOpen, setIsPaymentScheduleOpen] = useState(false);
   const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const handleStatusChange = (loanId: string, status: Loan['status']) => {
     startTransition(async () => {
@@ -97,6 +99,15 @@ export function LoanTable({ loans }: LoanTableProps) {
     }
   }
 
+  const filteredLoans = useMemo(() => {
+    if (!searchTerm) {
+      return loans;
+    }
+    return loans.filter(loan =>
+      loan.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [loans, searchTerm]);
+
   return (
     <>
       <EditLoanForm
@@ -114,6 +125,14 @@ export function LoanTable({ loans }: LoanTableProps) {
         onOpenChange={setIsPaymentScheduleOpen}
         loan={selectedLoan}
       />
+      <div className="py-4">
+        <Input
+          placeholder="Search by borrower name..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="max-w-sm"
+        />
+      </div>
       <Table>
         <TableHeader>
           <TableRow>
@@ -129,7 +148,7 @@ export function LoanTable({ loans }: LoanTableProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {loans.map((loan) => (
+          {filteredLoans.map((loan) => (
             <TableRow key={loan.id}>
               <TableCell className="font-medium">{loan.name}</TableCell>
               <TableCell>
