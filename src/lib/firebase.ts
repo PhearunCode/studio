@@ -1,3 +1,4 @@
+
 import admin from 'firebase-admin';
 import { getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
@@ -28,13 +29,13 @@ if (!getApps().length) {
 
 const db = getApps().length ? getFirestore() : null;
 
-const connectionError = new Error(
+const createConnectionError = () => new Error(
   "Failed to connect to Firebase. This usually means the app's environment variables (FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY) are not set correctly. Please check your .env file and ensure they are present and valid."
 );
 
 export const getLoans = async (): Promise<Omit<Loan, 'documents'>[]> => {
   if (!db) {
-    console.warn(connectionError.message);
+    console.warn(createConnectionError().message);
     return [];
   }
   try {
@@ -83,7 +84,7 @@ export const getLoans = async (): Promise<Omit<Loan, 'documents'>[]> => {
 
 export const getCustomers = async (): Promise<Customer[]> => {
     if (!db) {
-        console.warn(connectionError.message);
+        console.warn(createConnectionError().message);
         return [];
     }
 
@@ -127,7 +128,7 @@ export const getCustomers = async (): Promise<Customer[]> => {
 
 export const updateCustomer = async (id: string, data: z.infer<typeof customerSchema>) => {
     if (!db) {
-        throw connectionError;
+        throw createConnectionError();
     }
     const customerRef = db.collection('customers').doc(id);
     const oldCustomerSnapshot = await customerRef.get();
@@ -156,7 +157,7 @@ export const updateCustomer = async (id: string, data: z.infer<typeof customerSc
 
 export const deleteCustomer = async (id: string) => {
     if (!db) {
-        throw connectionError;
+        throw createConnectionError();
     }
     const customerRef = db.collection('customers').doc(id);
     const customerDoc = await customerRef.get();
@@ -182,7 +183,7 @@ export const deleteCustomer = async (id: string) => {
 
 export const addCustomer = async (customer: Omit<Customer, 'id' | 'totalLoans' | 'totalLoanAmountKhr' | 'totalLoanAmountUsd'>) => {
     if (!db) {
-        throw connectionError;
+        throw createConnectionError();
     }
     const customerQuery = await db.collection('customers').where('name', '==', customer.name).limit(1).get();
     if (!customerQuery.empty) {
@@ -193,7 +194,7 @@ export const addCustomer = async (customer: Omit<Customer, 'id' | 'totalLoans' |
 
 export const addLoan = async (loan: Omit<Loan, 'id' | 'status' | 'payments'>): Promise<Omit<Loan, 'id'>> => {
   if (!db) {
-    throw connectionError;
+    throw createConnectionError();
   }
 
   // Check if customer exists, if not create one
@@ -218,7 +219,7 @@ export const addLoan = async (loan: Omit<Loan, 'id' | 'status' | 'payments'>): P
 
 export const updateLoan = async (id: string, data: { amount: number; currency: Currency; interestRate: number; loanDate: string; term: number }) => {
     if (!db) {
-        throw connectionError;
+        throw createConnectionError();
     }
     const loanRef = db.collection('loans').doc(id);
     const loanDoc = await loanRef.get();
@@ -241,7 +242,7 @@ export const updateLoan = async (id: string, data: { amount: number; currency: C
 
 export const updateLoanStatus = async (id: string, status: Loan['status']) => {
     if (!db) {
-        throw connectionError;
+        throw createConnectionError();
     }
     const loanRef = db.collection('loans').doc(id);
     const loanDoc = await loanRef.get();
@@ -266,7 +267,7 @@ export const updateLoanStatus = async (id: string, status: Loan['status']) => {
 
 export const deleteLoan = async (id: string) => {
     if (!db) {
-        throw connectionError;
+        throw createConnectionError();
     }
     const loanRef = db.collection('loans').doc(id);
     await loanRef.delete();
@@ -274,7 +275,7 @@ export const deleteLoan = async (id: string) => {
 
 
 export const markPaymentAsPaid = async (loanId: string, month: number) => {
-    if (!db) throw connectionError;
+    if (!db) throw createConnectionError();
 
     const loanRef = db.collection('loans').doc(loanId);
     const loanDoc = await loanRef.get();
