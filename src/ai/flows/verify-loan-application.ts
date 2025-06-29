@@ -18,11 +18,6 @@ const VerifyLoanApplicationInputSchema = z.object({
   interestRate: z.number().describe('Interest rate (%)'),
   loanDate: z.string().describe('Loan disbursement date'),
   address: z.string().describe('Borrower address'),
-  supportingDocuments: z
-    .array(z.string())
-    .describe(
-      'List of data URIs of supporting documents, each as a data URI that must include a MIME type and use Base64 encoding. Expected format: data:<mimetype>;base64,<encoded_data>.'
-    ),
   historicalData: z.string().describe('Historical loan data for comparison.'),
 });
 export type VerifyLoanApplicationInput = z.infer<
@@ -61,7 +56,6 @@ Amount: {{{amount}}}
 Interest Rate: {{{interestRate}}}
 Loan Date: {{{loanDate}}}
 Address: {{{address}}}
-Supporting Documents: {{#each supportingDocuments}} {{media url=this}} {{/each}}
 
 Historical Data: {{{historicalData}}}
 

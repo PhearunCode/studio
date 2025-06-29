@@ -8,7 +8,6 @@ export interface Loan {
   interestRate: number;
   loanDate: string; // Storing as ISO string e.g., "2024-05-21"
   address: string;
-  documents: { name: string; url: string }[];
   status: 'Pending' | 'Approved' | 'Rejected' | 'Paid';
   verificationResult: VerifyLoanApplicationOutput | null;
 }
@@ -23,7 +22,6 @@ export interface Customer {
 }
 
 // Helper functions for validation
-const isDataUrl = (s: string) => s.startsWith('data:');
 const isValidDate = (date: string) => !isNaN(Date.parse(date));
 
 export const loanSchema = z.object({
@@ -32,10 +30,6 @@ export const loanSchema = z.object({
   interestRate: z.coerce.number().min(0, 'Interest rate cannot be negative'),
   loanDate: z.string().refine(isValidDate, 'Invalid date'),
   address: z.string().min(5, 'Address must be at least 5 characters'),
-  documents: z.array(z.object({
-    name: z.string(),
-    dataUrl: z.string().refine(isDataUrl, 'Invalid data URL')
-  })).min(1, 'At least one document is required'),
 });
 
 export const customerSchema = z.object({

@@ -1,7 +1,6 @@
 import admin from 'firebase-admin';
 import { getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
-import { getStorage } from 'firebase-admin/storage';
 import { type Loan, type Customer } from './types';
 
 // Initialize Firebase Admin SDK
@@ -18,7 +17,6 @@ if (!getApps().length) {
     try {
       admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
-        storageBucket: `${serviceAccount.projectId}.appspot.com`,
       });
     } catch (error) {
       console.error('Firebase admin initialization error:', error);
@@ -27,13 +25,12 @@ if (!getApps().length) {
 }
 
 const db = getApps().length ? getFirestore() : null;
-const storage = getApps().length ? getStorage().bucket() : null;
 
 const connectionError = new Error(
   "Failed to connect to Firebase. This usually means the app's environment variables (FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY) are not set correctly. Please check your .env file and ensure they are present and valid."
 );
 
-export const getLoans = async (): Promise<Loan[]> => {
+export const getLoans = async (): Promise<Omit<Loan, 'documents'>[]> => {
   if (!db) {
     throw connectionError;
   }
@@ -42,7 +39,7 @@ export const getLoans = async (): Promise<Loan[]> => {
     if (loansSnapshot.empty) {
       return [];
     }
-    const loans: Loan[] = loansSnapshot.docs.map(doc => {
+    const loans = loansSnapshot.docs.map(doc => {
       const data = doc.data();
       const loanDate = data.loanDate;
       let serializableLoanDate: string;
@@ -66,7 +63,6 @@ export const getLoans = async (): Promise<Loan[]> => {
         interestRate: data.interestRate || 0,
         loanDate: serializableLoanDate,
         address: data.address || '',
-        documents: data.documents || [],
         status: data.status || 'Pending',
         verificationResult: verificationResult,
       };
@@ -170,30 +166,6 @@ export const deleteCustomer = async (id: string) => {
     }
 };
 
-export const uploadFile = async (file: { name: string; data: string }, path: string): Promise<{ name: string; url: string }> => {
-    if (!storage) {
-        throw connectionError;
-    }
-    const mimeType = file.data.match(/data:(.*);base64,/)?.[1];
-    if (!mimeType) {
-        throw new Error('Invalid data URI format for file upload.');
-    }
-
-    const base64Data = file.data.split(',')[1];
-    const buffer = Buffer.from(base64Data, 'base64');
-    const filePath = `${path}/${Date.now()}_${file.name}`; // Add timestamp to avoid overwrites
-    const fileUpload = storage.file(filePath);
-
-    await fileUpload.save(buffer, {
-        metadata: {
-            contentType: mimeType,
-        },
-    });
-
-    await fileUpload.makePublic();
-    return { name: file.name, url: fileUpload.publicUrl() };
-};
-
 export const addCustomer = async (customer: Omit<Customer, 'id' | 'totalLoans' | 'totalLoanAmount'>) => {
     if (!db) {
         throw connectionError;
@@ -205,7 +177,7 @@ export const addCustomer = async (customer: Omit<Customer, 'id' | 'totalLoans' |
     await db.collection('customers').add(customer);
 };
 
-export const addLoan = async (loan: Omit<Loan, 'id' | 'status' | 'documents'> & { documents: { name: string; data: string }[] }): Promise<Loan> => {
+export const addLoan = async (loan: Omit<Loan, 'id' | 'status' | 'documents'>): Promise<Omit<Loan, 'documents'>> => {
   if (!db) {
     throw connectionError;
   }
@@ -219,14 +191,9 @@ export const addLoan = async (loan: Omit<Loan, 'id' | 'status' | 'documents'> & 
   const newDocRef = db.collection('loans').doc();
   const newId = newDocRef.id;
 
-  const uploadedDocuments = await Promise.all(
-      loan.documents.map(doc => uploadFile(doc, `loans/${newId}`))
-  );
-
-  const newLoan: Omit<Loan, 'id'> = {
+  const newLoan: Omit<Loan, 'id' | 'documents'> = {
     ...loan,
     status: 'Pending',
-    documents: uploadedDocuments,
   };
 
   await newDocRef.set(newLoan);

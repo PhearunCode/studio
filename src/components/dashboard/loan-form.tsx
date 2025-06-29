@@ -17,7 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { createLoanAction } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, FileUp, X, FileIcon } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { VerificationResultDialog } from './verification-result-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Customer } from '@/lib/types';
@@ -32,15 +32,6 @@ function SubmitButton() {
   );
 }
 
-const readFileAsDataURL = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    });
-};
-
 interface LoanFormProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
@@ -49,8 +40,6 @@ interface LoanFormProps {
 }
 
 export function LoanForm({ open, onOpenChange, children, customers }: LoanFormProps) {
-  const [files, setFiles] = useState<File[]>([]);
-  const [documentsJson, setDocumentsJson] = useState('[]');
   const formRef = useRef<HTMLFormElement>(null);
   const { toast } = useToast();
 
@@ -65,35 +54,9 @@ export function LoanForm({ open, onOpenChange, children, customers }: LoanFormPr
     const customer = customers.find((c) => c.name === customerName) || null;
     setSelectedCustomer(customer);
   };
-
-  const updateDocumentsJson = async (updatedFiles: File[]) => {
-    const fileData = await Promise.all(
-      updatedFiles.map(async (file) => ({
-        name: file.name,
-        dataUrl: await readFileAsDataURL(file),
-      }))
-    );
-    setDocumentsJson(JSON.stringify(fileData));
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const newFiles = Array.from(e.target.files);
-      setFiles(newFiles);
-      updateDocumentsJson(newFiles);
-    }
-  };
-
-  const removeFile = (index: number) => {
-    const newFiles = files.filter((_, i) => i !== index);
-    setFiles(newFiles);
-    updateDocumentsJson(newFiles);
-  };
   
   const resetFormState = () => {
     formRef.current?.reset();
-    setFiles([]);
-    setDocumentsJson('[]');
     setSelectedCustomer(null);
   };
 
@@ -138,7 +101,6 @@ export function LoanForm({ open, onOpenChange, children, customers }: LoanFormPr
           </DialogDescription>
         </DialogHeader>
         <form ref={formRef} action={formAction} className="space-y-4">
-          <input type="hidden" name="documents" value={documentsJson} />
           <div className="grid grid-cols-2 gap-4">
              <div className="space-y-2 col-span-2">
                 <Label htmlFor="name">Borrower Name</Label>
@@ -182,31 +144,6 @@ export function LoanForm({ open, onOpenChange, children, customers }: LoanFormPr
                 readOnly={!!selectedCustomer}
             />
           </div>
-          <div className="space-y-2">
-              <Label htmlFor="documents-upload">Supporting Documents</Label>
-              <div className="relative">
-                  <FileUp className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  <Input id="documents-upload" type="file" multiple onChange={handleFileChange} className="pl-10"/>
-              </div>
-          </div>
-            {files.length > 0 && (
-                <div className="space-y-2">
-                    <p className="text-sm font-medium">Selected files:</p>
-                    <ul className="space-y-1">
-                        {files.map((file, index) => (
-                            <li key={index} className="flex items-center justify-between text-sm bg-muted p-2 rounded-md">
-                                <div className="flex items-center gap-2">
-                                    <FileIcon className="h-4 w-4" />
-                                    <span>{file.name}</span>
-                                </div>
-                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeFile(index)}>
-                                    <X className="h-4 w-4"/>
-                                </Button>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            )}
           <DialogFooter>
             <DialogClose asChild>
                 <Button variant="outline">Cancel</Button>

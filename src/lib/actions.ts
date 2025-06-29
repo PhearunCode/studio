@@ -3,7 +3,6 @@
 import { revalidatePath } from 'next/cache';
 import { addLoan, addCustomer, updateCustomer, deleteCustomer, getLoans } from './firebase';
 import { verifyLoanApplication } from '@/ai/flows/verify-loan-application';
-import type { Loan } from './types';
 import { loanSchema, customerSchema, type FormState } from '@/lib/types';
 
 export async function createLoanAction(
@@ -12,7 +11,6 @@ export async function createLoanAction(
 ): Promise<FormState> {
   try {
     const rawFormData = Object.fromEntries(formData.entries());
-    const documents = JSON.parse(rawFormData.documents as string);
 
     const validatedFields = loanSchema.safeParse({
       name: rawFormData.name,
@@ -20,7 +18,6 @@ export async function createLoanAction(
       interestRate: rawFormData.interestRate,
       loanDate: rawFormData.loanDate,
       address: rawFormData.address,
-      documents: documents,
     });
     
     if (!validatedFields.success) {
@@ -44,7 +41,6 @@ export async function createLoanAction(
       interestRate,
       loanDate,
       address,
-      supportingDocuments: validatedFields.data.documents.map(d => d.dataUrl),
       historicalData: JSON.stringify(historicalData.slice(0, 5).map(l => ({
         name: l.name, amount: l.amount, address: l.address
       })), null, 2),
@@ -52,14 +48,13 @@ export async function createLoanAction(
 
     const verificationResult = await verifyLoanApplication(verificationInput);
 
-    // 2. Save to database (mock)
+    // 2. Save to database
     await addLoan({
       name,
       amount,
       interestRate,
       loanDate,
       address,
-      documents: validatedFields.data.documents.map(d => ({ name: d.name, data: d.dataUrl })),
       verificationResult,
     });
 
