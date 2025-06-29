@@ -15,7 +15,7 @@ import {
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Landmark, LayoutDashboard, Users, UserCircle } from 'lucide-react';
+import { Landmark, LayoutDashboard, Users, UserCircle, Banknote } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -58,6 +58,14 @@ export function AppLayout({ children, customers }: { children: ReactNode, custom
                   <Link href="/">
                     <LayoutDashboard />
                     <span>Dashboard</span>
+                  </Link>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+                <SidebarMenuButton tooltip="Loans" isActive={isActive('/loans')} asChild>
+                  <Link href="/loans">
+                    <Banknote />
+                    <span>Loans</span>
                   </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>

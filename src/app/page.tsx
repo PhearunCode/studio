@@ -1,14 +1,6 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { getLoans, getCustomers } from "@/lib/firebase";
 import { type Loan, type Customer } from "@/lib/types";
 import { StatCard } from "@/components/dashboard/stat-card";
-import { LoanTable } from "@/components/dashboard/loan-table";
 import { DollarSign, Users, Percent } from "lucide-react";
 
 export default async function DashboardPage() {
@@ -51,18 +43,6 @@ export default async function DashboardPage() {
           description="Average interest rate across all loans"
         />
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Loan Applications</CardTitle>
-          <CardDescription>
-            A list of all recent loan applications.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <LoanTable loans={loans} />
-        </CardContent>
-      </Card>
     </div>
   );
 }
