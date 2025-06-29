@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useActionState } from 'react';
+import { useEffect, useRef, useActionState, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import {
   Dialog,
@@ -17,8 +17,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { saveCustomerAction } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Upload } from 'lucide-react';
 import type { Customer } from '@/lib/types';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { getInitials } from '@/lib/utils';
 
 function SubmitButton({ isEdit }: { isEdit: boolean }) {
   const { pending } = useFormStatus();
@@ -39,9 +41,12 @@ interface CustomerFormProps {
 
 export function CustomerForm({ customer, open, onOpenChange, children }: CustomerFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const [state, formAction] = useActionState(saveCustomerAction, null);
+  const [name, setName] = useState(customer?.name ?? '');
+  const [avatar, setAvatar] = useState(customer?.avatar ?? '');
 
   const isEdit = !!customer;
 
@@ -67,8 +72,29 @@ export function CustomerForm({ customer, open, onOpenChange, children }: Custome
   useEffect(() => {
       if (open) {
         formRef.current?.reset();
+        setName(customer?.name ?? '');
+        setAvatar(customer?.avatar ?? '');
       }
   }, [open, customer]);
+
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+        if (!['image/png', 'image/jpeg'].includes(file.type)) {
+            toast({ title: 'Invalid File Type', description: 'Please upload a PNG or JPG image.', variant: 'destructive' });
+            return;
+        }
+        if (file.size > 2 * 1024 * 1024) { // 2MB limit
+            toast({ title: 'File Too Large', description: 'Please upload an image smaller than 2MB.', variant: 'destructive' });
+            return;
+        }
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setAvatar(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -87,10 +113,11 @@ export function CustomerForm({ customer, open, onOpenChange, children }: Custome
             className="space-y-4"
         >
             {isEdit && <input type="hidden" name="id" value={customer.id} />}
+            <input type="hidden" name="avatar" value={avatar} />
             
             <div className="space-y-2">
                 <Label htmlFor="name">Customer Name</Label>
-                <Input id="name" name="name" placeholder="Juan dela Cruz" required defaultValue={customer?.name ?? ''} />
+                <Input id="name" name="name" placeholder="Juan dela Cruz" required defaultValue={customer?.name ?? ''} onChange={(e) => setName(e.target.value)} />
             </div>
             <div className="space-y-2">
                 <Label htmlFor="phone">Phone Number</Label>
@@ -104,9 +131,38 @@ export function CustomerForm({ customer, open, onOpenChange, children }: Custome
                 <Label htmlFor="address">Address</Label>
                 <Input id="address" name="address" placeholder="123 Rizal St, Manila" required defaultValue={customer?.address ?? ''} />
             </div>
+            
             <div className="space-y-2">
-                <Label htmlFor="avatar">Profile Picture URL</Label>
-                <Input id="avatar" name="avatar" placeholder="https://example.com/avatar.png" type="url" defaultValue={customer?.avatar ?? ''} />
+                <Label>Profile Picture</Label>
+                <div className="flex items-center gap-4">
+                    <Avatar className="h-16 w-16">
+                        <AvatarImage src={avatar || `https://avatar.vercel.sh/${name || 'user'}.png`} alt={name} />
+                        <AvatarFallback>{getInitials(name)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 space-y-2">
+                        <Label htmlFor="avatar-url">URL or Upload</Label>
+                        <div className="flex items-center gap-2">
+                            <Input
+                                id="avatar-url"
+                                placeholder="https://example.com/avatar.png"
+                                value={avatar.startsWith('data:') ? 'Uploaded File' : avatar}
+                                onChange={(e) => setAvatar(e.target.value)}
+                                readOnly={avatar.startsWith('data:')}
+                            />
+                            <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
+                                <Upload className="mr-2 h-4 w-4" />
+                                Upload
+                            </Button>
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                onChange={handleAvatarUpload}
+                                accept="image/png, image/jpeg"
+                                className="hidden"
+                            />
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <DialogFooter className="pt-4">

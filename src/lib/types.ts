@@ -65,7 +65,7 @@ export const customerSchema = z.object({
     address: z.string().min(5, "Address must be at least 5 characters"),
     phone: z.string().min(10, "Phone number must be at least 10 characters"),
     idCardNumber: z.string().optional(),
-    avatar: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
+    avatar: z.string().optional(),
 });
 
 export type FormState = {
