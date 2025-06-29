@@ -60,8 +60,8 @@ export const getLoans = async (): Promise<Loan[]> => {
         address: data.address || '',
         documents: data.documents || [],
         status: data.status || 'Pending',
-        verificationResult: data.verificationResult
-      } as Loan;
+        verificationResult: data.verificationResult || null
+      };
     });
     return loans;
   } catch(error) {

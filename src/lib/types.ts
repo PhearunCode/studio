@@ -10,7 +10,7 @@ export interface Loan {
   address: string;
   documents: { name: string; url: string }[];
   status: 'Pending' | 'Approved' | 'Rejected' | 'Paid';
-  verificationResult?: VerifyLoanApplicationOutput;
+  verificationResult: VerifyLoanApplicationOutput | null;
 }
 
 export interface Customer {
