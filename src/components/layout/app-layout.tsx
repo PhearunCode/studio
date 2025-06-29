@@ -1,3 +1,4 @@
+
 'use client';
 import { ReactNode, useState, useEffect } from 'react';
 import Link from "next/link";
@@ -14,7 +15,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Landmark, LayoutDashboard, Users, UserCircle, Banknote } from 'lucide-react';
+import { Landmark, LayoutDashboard, Users, UserCircle, Banknote, CreditCard } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -63,6 +64,14 @@ export function AppLayout({ children }: { children: ReactNode }) {
                   <Link href="/loans">
                     <Banknote />
                     <span>Loans</span>
+                  </Link>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+                <SidebarMenuButton tooltip="Payments" isActive={isActive('/payments')} asChild>
+                  <Link href="/payments">
+                    <CreditCard />
+                    <span>Payments</span>
                   </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
