@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { addLoan, addCustomer } from './firebase';
+import { addLoan, addCustomer, updateCustomer, deleteCustomer } from './firebase';
 import { verifyLoanApplication } from '@/ai/flows/verify-loan-application';
 import type { Loan } from './types';
 import { loanSchema, customerSchema, type FormState } from '@/lib/types';
@@ -78,11 +78,13 @@ export async function createLoanAction(
   }
 }
 
-export async function createCustomerAction(
+export async function saveCustomerAction(
   prevState: FormState, 
   formData: FormData
 ): Promise<FormState> {
   try {
+    const id = formData.get('id') as string | null;
+    
     const validatedFields = customerSchema.safeParse({
       name: formData.get('name'),
       address: formData.get('address'),
@@ -98,17 +100,45 @@ export async function createCustomerAction(
       };
     }
 
-    await addCustomer(validatedFields.data);
+    if (id) {
+        await updateCustomer(id, validatedFields.data);
+    } else {
+        await addCustomer(validatedFields.data);
+    }
 
     revalidatePath('/customers');
+    revalidatePath('/');
 
-    return { message: 'Customer created successfully.' };
+    const message = id ? 'Customer updated successfully.' : 'Customer created successfully.';
+    return { message };
   } catch (error) {
-    console.error('Error creating customer:', error);
+    console.error('Error saving customer:', error);
     const message = error instanceof Error ? error.message : 'An unexpected error occurred.';
     return {
       message,
       error: true
     };
   }
+}
+
+
+export async function deleteCustomerAction(
+    customerId: string,
+    prevState: FormState, 
+    formData: FormData
+): Promise<FormState> {
+    try {
+        if (!customerId) throw new Error("Customer ID is required.");
+        await deleteCustomer(customerId);
+        revalidatePath('/customers');
+        revalidatePath('/');
+        return { message: 'Customer and all associated loans have been deleted.' };
+    } catch (error) {
+        console.error('Error deleting customer:', error);
+        const message = error instanceof Error ? error.message : 'An unexpected error occurred.';
+        return {
+            message,
+            error: true
+        };
+    }
 }

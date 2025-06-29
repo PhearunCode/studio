@@ -115,6 +115,61 @@ export const getCustomers = async (): Promise<Customer[]> => {
     return Array.from(customerMap.values());
 };
 
+export const updateCustomer = async (id: string, data: { name: string; phone: string; address: string; }) => {
+    if (!db) {
+        throw connectionError;
+    }
+    const customerRef = db.collection('customers').doc(id);
+    const oldCustomerSnapshot = await customerRef.get();
+    const oldCustomerData = oldCustomerSnapshot.data();
+
+    if (oldCustomerData?.name !== data.name) {
+        const existingCustomer = await db.collection('customers').where('name', '==', data.name).limit(1).get();
+        if (!existingCustomer.empty) {
+            throw new Error('A customer with this name already exists.');
+        }
+    }
+
+    await customerRef.update(data);
+
+    if (oldCustomerData && oldCustomerData.name !== data.name) {
+        const loansSnapshot = await db.collection('loans').where('name', '==', oldCustomerData.name).get();
+        if (!loansSnapshot.empty) {
+            const batch = db.batch();
+            loansSnapshot.docs.forEach(doc => {
+                batch.update(doc.ref, { name: data.name });
+            });
+            await batch.commit();
+        }
+    }
+};
+
+export const deleteCustomer = async (id: string) => {
+    if (!db) {
+        throw connectionError;
+    }
+    const customerRef = db.collection('customers').doc(id);
+    const customerDoc = await customerRef.get();
+    if (!customerDoc.exists) {
+        return; 
+    }
+    const customerName = customerDoc.data()?.name;
+
+    await customerRef.delete();
+    
+    if(customerName) {
+        const loansQuery = db.collection('loans').where('name', '==', customerName);
+        const loansSnapshot = await loansQuery.get();
+        if (!loansSnapshot.empty) {
+            const batch = db.batch();
+            loansSnapshot.docs.forEach(doc => {
+                batch.delete(doc.ref);
+            });
+            await batch.commit();
+        }
+    }
+};
+
 export const uploadFile = async (file: { name: string; data: string }, path: string): Promise<{ name: string; url: string }> => {
     if (!storage) {
         throw connectionError;
