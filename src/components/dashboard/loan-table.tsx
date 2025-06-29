@@ -68,7 +68,7 @@ export function LoanTable({ loans }: LoanTableProps) {
           <TableRow key={loan.id}>
             <TableCell className="font-medium">{loan.name}</TableCell>
             <TableCell>
-              ₱{loan.amount.toLocaleString('en-US', {
+              ${loan.amount.toLocaleString('en-US', {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })}

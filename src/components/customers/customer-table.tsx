@@ -57,7 +57,7 @@ export function CustomerTable({ customers }: CustomerTableProps) {
             <TableCell>{customer.address}</TableCell>
             <TableCell className="text-right">{customer.totalLoans}</TableCell>
             <TableCell className="text-right">
-              ₱{customer.totalLoanAmount.toLocaleString('en-US', {
+              ${customer.totalLoanAmount.toLocaleString('en-US', {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })}

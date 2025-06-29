@@ -34,7 +34,7 @@ export default async function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <StatCard
           title="Total Loaned"
-          value={`₱${totalAmountLoaned.toLocaleString("en-US", {
+          value={`$${totalAmountLoaned.toLocaleString("en-US", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
           })}`}
