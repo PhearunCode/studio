@@ -34,7 +34,8 @@ const connectionError = new Error(
 
 export const getLoans = async (): Promise<Omit<Loan, 'documents'>[]> => {
   if (!db) {
-    throw connectionError;
+    console.warn(connectionError.message);
+    return [];
   }
   try {
     const loansSnapshot = await db.collection('loans').orderBy('loanDate', 'desc').get();
@@ -82,7 +83,8 @@ export const getLoans = async (): Promise<Omit<Loan, 'documents'>[]> => {
 
 export const getCustomers = async (): Promise<Customer[]> => {
     if (!db) {
-        throw connectionError;
+        console.warn(connectionError.message);
+        return [];
     }
 
     const customersSnapshot = await db.collection('customers').orderBy('name').get();
