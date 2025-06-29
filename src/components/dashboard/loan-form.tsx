@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useTransition, useEffect, useRef } from 'react';
-import { useFormState } from 'react-dom';
+import { useState, useTransition, useEffect, useRef, useActionState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -20,6 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { PlusCircle, Loader2, FileUp, X, FileIcon } from 'lucide-react';
 import { VerificationResultDialog } from './verification-result-dialog';
 import type { Loan } from '@/lib/types';
+import type { FormState } from '@/lib/types';
 
 function SubmitButton({ isPending }: { isPending: boolean }) {
   return (
@@ -50,7 +50,7 @@ export function LoanForm({ loans }: { loans: Loan[] }) {
   const [isVerificationDialogOpen, setVerificationDialogOpen] = useState(false);
 
   const createLoanWithHistoricalData = createLoanAction.bind(null, loans);
-  const [state, formAction] = useFormState(createLoanWithHistoricalData, null);
+  const [state, formAction] = useActionState(createLoanWithHistoricalData, null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -82,11 +82,6 @@ export function LoanForm({ loans }: { loans: Loan[] }) {
   useEffect(() => {
     if (!state) return;
 
-    // Reset pending state regardless of outcome
-    if (isPending && !state) {
-        // This is a way to handle finishing the transition, but not strictly needed with this setup
-    }
-
     if (state.error) {
       toast({
         title: 'Error',
@@ -107,7 +102,7 @@ export function LoanForm({ loans }: { loans: Loan[] }) {
       formRef.current?.reset();
       setFiles([]);
     }
-  }, [state, toast, isPending]);
+  }, [state, toast]);
 
   return (
     <>
