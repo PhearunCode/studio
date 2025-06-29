@@ -265,8 +265,31 @@ export async function markPaymentAsPaidAction(
             throw new Error('Loan ID and payment month are required.');
         }
         await markPaymentAsPaid(loanId, month);
+        
         revalidatePath('/payments');
         revalidatePath('/loans');
+
+        // Try to send notification, but don't let it block the success response
+        try {
+            const loans = await getLoans();
+            const customers = await getCustomers();
+            const loan = loans.find(l => l.id === loanId);
+            if (!loan) return { message: `Payment for month ${month} marked as paid. (Loan not found for notification)` };
+
+            const customer = customers.find(c => c.name === loan.name);
+            if (!customer?.telegramChatId) return { message: `Payment for month ${month} marked as paid.` };
+            
+            const payment = loan.payments?.find(p => p.month === month);
+            if (!payment) return { message: `Payment for month ${month} marked as paid. (Payment details not found for notification)` };
+
+            const message = `Hi ${customer.name}, we have received your payment of ${formatCurrency(payment.monthlyPayment, loan.currency)}. Thank you!`;
+            await sendTelegramNotification(message, customer.telegramChatId);
+
+        } catch (notificationError) {
+            console.error('Failed to send payment confirmation notification:', notificationError);
+            // Don't rethrow, just log it. The main action succeeded.
+        }
+
         return { message: `Payment for month ${month} marked as paid.` };
     } catch (error) {
         console.error('Error marking payment as paid:', error);
