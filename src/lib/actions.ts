@@ -25,8 +25,10 @@ export async function createLoanAction(
     });
     
     if (!validatedFields.success) {
+      const fieldErrors = validatedFields.error.flatten().fieldErrors;
+      const errorMessages = Object.values(fieldErrors).flat().join('. ');
       return { 
-        message: 'Validation failed: ' + JSON.stringify(validatedFields.error.flatten().fieldErrors), 
+        message: `Validation failed: ${errorMessages}.`, 
         error: true 
       };
     }

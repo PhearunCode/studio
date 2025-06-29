@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useTransition, useEffect, useRef, useActionState } from 'react';
+import { useState, useEffect, useRef, useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import {
   Dialog,
   DialogContent,
@@ -19,12 +20,12 @@ import { useToast } from '@/hooks/use-toast';
 import { PlusCircle, Loader2, FileUp, X, FileIcon } from 'lucide-react';
 import { VerificationResultDialog } from './verification-result-dialog';
 import type { Loan } from '@/lib/types';
-import type { FormState } from '@/lib/types';
 
-function SubmitButton({ isPending }: { isPending: boolean }) {
+function SubmitButton() {
+  const { pending } = useFormStatus();
   return (
-    <Button type="submit" disabled={isPending}>
-      {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+    <Button type="submit" disabled={pending}>
+      {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
       Save
     </Button>
   );
@@ -41,8 +42,8 @@ const readFileAsDataURL = (file: File): Promise<string> => {
 
 export function LoanForm({ loans }: { loans: Loan[] }) {
   const [open, setOpen] = useState(false);
-  const [isPending, startTransition] = useTransition();
   const [files, setFiles] = useState<File[]>([]);
+  const [documentsJson, setDocumentsJson] = useState('[]');
   const formRef = useRef<HTMLFormElement>(null);
   const { toast } = useToast();
 
@@ -52,32 +53,36 @@ export function LoanForm({ loans }: { loans: Loan[] }) {
   const createLoanWithHistoricalData = createLoanAction.bind(null, loans);
   const [state, formAction] = useActionState(createLoanWithHistoricalData, null);
 
+  const updateDocumentsJson = async (updatedFiles: File[]) => {
+    const fileData = await Promise.all(
+      updatedFiles.map(async (file) => ({
+        name: file.name,
+        dataUrl: await readFileAsDataURL(file),
+      }))
+    );
+    setDocumentsJson(JSON.stringify(fileData));
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setFiles(Array.from(e.target.files));
+      const newFiles = Array.from(e.target.files);
+      setFiles(newFiles);
+      updateDocumentsJson(newFiles);
     }
   };
 
   const removeFile = (index: number) => {
-    setFiles(files.filter((_, i) => i !== index));
-  }
-
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const form = event.currentTarget;
-    startTransition(async () => {
-      const formData = new FormData(form);
-      const fileData = await Promise.all(
-        files.map(async file => ({
-          name: file.name,
-          dataUrl: await readFileAsDataURL(file)
-        }))
-      );
-      formData.set('documents', JSON.stringify(fileData));
-      
-      formAction(formData);
-    });
+    const newFiles = files.filter((_, i) => i !== index);
+    setFiles(newFiles);
+    updateDocumentsJson(newFiles);
   };
+  
+  const resetFormState = () => {
+    formRef.current?.reset();
+    setFiles([]);
+    setDocumentsJson('[]');
+  };
+
 
   useEffect(() => {
     if (!state) return;
@@ -99,14 +104,18 @@ export function LoanForm({ loans }: { loans: Loan[] }) {
           setVerificationDialogOpen(true);
       }
       setOpen(false);
-      formRef.current?.reset();
-      setFiles([]);
+      resetFormState();
     }
   }, [state, toast]);
 
   return (
     <>
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(isOpen) => {
+        setOpen(isOpen);
+        if (!isOpen) {
+            resetFormState();
+        }
+    }}>
       <DialogTrigger asChild>
         <Button>
           <PlusCircle className="mr-2 h-4 w-4" /> New Loan
@@ -119,7 +128,8 @@ export function LoanForm({ loans }: { loans: Loan[] }) {
             Fill in the details below to create a new loan.
           </DialogDescription>
         </DialogHeader>
-        <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
+        <form ref={formRef} action={formAction} className="space-y-4">
+          <input type="hidden" name="documents" value={documentsJson} />
           <div className="grid grid-cols-2 gap-4">
              <div className="space-y-2 col-span-2">
                 <Label htmlFor="name">Borrower Name</Label>
@@ -146,7 +156,7 @@ export function LoanForm({ loans }: { loans: Loan[] }) {
               <Label htmlFor="documents-upload">Supporting Documents</Label>
               <div className="relative">
                   <FileUp className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  <Input id="documents-upload" name="documents-upload" type="file" multiple onChange={handleFileChange} className="pl-10"/>
+                  <Input id="documents-upload" type="file" multiple onChange={handleFileChange} className="pl-10"/>
               </div>
           </div>
             {files.length > 0 && (
@@ -171,7 +181,7 @@ export function LoanForm({ loans }: { loans: Loan[] }) {
             <DialogClose asChild>
                 <Button variant="outline">Cancel</Button>
             </DialogClose>
-            <SubmitButton isPending={isPending} />
+            <SubmitButton />
           </DialogFooter>
         </form>
       </DialogContent>
