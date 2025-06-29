@@ -1,10 +1,10 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { addLoan } from './firebase';
+import { addLoan, addCustomer } from './firebase';
 import { verifyLoanApplication } from '@/ai/flows/verify-loan-application';
 import type { Loan } from './types';
-import { loanSchema, type FormState } from '@/lib/types';
+import { loanSchema, customerSchema, type FormState } from '@/lib/types';
 
 export async function createLoanAction(
   historicalData: Loan[], 
@@ -62,6 +62,7 @@ export async function createLoanAction(
     });
 
     revalidatePath('/');
+    revalidatePath('/customers');
 
     return { 
       message: 'Loan application submitted successfully.',
@@ -70,6 +71,40 @@ export async function createLoanAction(
   } catch (error) {
     console.error('Error creating loan:', error);
     const message = error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.';
+    return {
+      message,
+      error: true
+    };
+  }
+}
+
+export async function createCustomerAction(
+  prevState: FormState, 
+  formData: FormData
+): Promise<FormState> {
+  try {
+    const validatedFields = customerSchema.safeParse({
+      name: formData.get('name'),
+      address: formData.get('address'),
+    });
+
+    if (!validatedFields.success) {
+      const fieldErrors = validatedFields.error.flatten().fieldErrors;
+      const errorMessages = Object.values(fieldErrors).flat().join('. ');
+      return { 
+        message: `Validation failed: ${errorMessages}.`, 
+        error: true 
+      };
+    }
+
+    await addCustomer(validatedFields.data);
+
+    revalidatePath('/customers');
+
+    return { message: 'Customer created successfully.' };
+  } catch (error) {
+    console.error('Error creating customer:', error);
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred.';
     return {
       message,
       error: true

@@ -73,32 +73,39 @@ export const getLoans = async (): Promise<Loan[]> => {
 };
 
 export const getCustomers = async (): Promise<Customer[]> => {
-  const loans = await getLoans();
-  if (!loans.length) {
-    return [];
-  }
-
-  const customerMap = new Map<string, Customer>();
-
-  loans.forEach(loan => {
-    let customer = customerMap.get(loan.name);
-    if (!customer) {
-      customer = {
-        id: loan.name, // Using name as a unique ID for simplicity
-        name: loan.name,
-        address: loan.address,
-        totalLoans: 0,
-        totalLoanAmount: 0,
-      };
+    if (!db) {
+        console.log("Firestore is not initialized. Returning empty array.");
+        return [];
     }
-    
-    customer.totalLoans += 1;
-    customer.totalLoanAmount += loan.amount;
-    
-    customerMap.set(loan.name, customer);
-  });
 
-  return Array.from(customerMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+    const customersSnapshot = await db.collection('customers').orderBy('name').get();
+    const customers = customersSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+            id: doc.id,
+            name: data.name,
+            address: data.address,
+            totalLoans: 0,
+            totalLoanAmount: 0,
+        } as Customer;
+    });
+    
+    if (customers.length === 0) {
+        return [];
+    }
+
+    const customerMap = new Map(customers.map(c => [c.name, c]));
+    const loans = await getLoans();
+
+    loans.forEach(loan => {
+        if (customerMap.has(loan.name)) {
+            const customer = customerMap.get(loan.name)!;
+            customer.totalLoans += 1;
+            customer.totalLoanAmount += loan.amount;
+        }
+    });
+
+    return Array.from(customerMap.values());
 };
 
 export const uploadFile = async (file: { name: string; data: string }, path: string): Promise<{ name: string; url: string }> => {
@@ -125,10 +132,28 @@ export const uploadFile = async (file: { name: string; data: string }, path: str
     return { name: file.name, url: fileUpload.publicUrl() };
 };
 
+export const addCustomer = async (customer: Omit<Customer, 'id' | 'totalLoans' | 'totalLoanAmount'>) => {
+    if (!db) {
+        throw new Error('Firestore is not initialized.');
+    }
+    const customerQuery = await db.collection('customers').where('name', '==', customer.name).limit(1).get();
+    if (!customerQuery.empty) {
+        throw new Error('A customer with this name already exists.');
+    }
+    await db.collection('customers').add(customer);
+};
+
 export const addLoan = async (loan: Omit<Loan, 'id' | 'status' | 'documents'> & { documents: { name: string; data: string }[] }): Promise<Loan> => {
   if (!db) {
     throw new Error('Firestore is not initialized.');
   }
+
+  // Check if customer exists, if not create one
+  const customerQuery = await db.collection('customers').where('name', '==', loan.name).limit(1).get();
+  if (customerQuery.empty) {
+      await db.collection('customers').add({ name: loan.name, address: loan.address });
+  }
+
   const newDocRef = db.collection('loans').doc();
   const newId = newDocRef.id;
 

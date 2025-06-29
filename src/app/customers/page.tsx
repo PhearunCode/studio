@@ -8,8 +8,7 @@ import {
 import { getCustomers } from "@/lib/firebase";
 import { type Customer } from "@/lib/types";
 import { CustomerTable } from "@/components/customers/customer-table";
-import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
+import { CustomerForm } from "@/components/customers/customer-form";
 
 export default async function CustomersPage() {
   const customers: Customer[] = await getCustomers();
@@ -19,9 +18,7 @@ export default async function CustomersPage() {
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">Customers</h2>
         <div className="flex items-center space-x-2">
-           <Button>
-              <PlusCircle className="mr-2 h-4 w-4" /> New Customer
-            </Button>
+           <CustomerForm />
         </div>
       </div>
 

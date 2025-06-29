@@ -37,6 +37,11 @@ export const loanSchema = z.object({
   })).min(1, 'At least one document is required'),
 });
 
+export const customerSchema = z.object({
+    name: z.string().min(3, "Name must be at least 3 characters"),
+    address: z.string().min(5, "Address must be at least 5 characters"),
+});
+
 export type FormState = {
   message: string;
   verificationResult?: {
