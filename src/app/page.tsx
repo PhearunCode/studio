@@ -10,7 +10,7 @@ import { type Loan } from "@/lib/types";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { LoanTable } from "@/components/dashboard/loan-table";
 import { LoanForm } from "@/components/dashboard/loan-form";
-import { DollarSign, Users, Percent, Landmark } from "lucide-react";
+import { DollarSign, Users, Percent } from "lucide-react";
 
 export default async function DashboardPage() {
   const loans: Loan[] = await getLoans();
@@ -31,13 +31,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="App Name"
-          value="LendEasy PH"
-          icon={<Landmark className="h-4 w-4 text-muted-foreground" />}
-          description="Loan Management System"
-        />
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <StatCard
           title="Total Loaned"
           value={`₱${totalAmountLoaned.toLocaleString("en-US", {
