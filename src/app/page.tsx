@@ -33,6 +33,12 @@ export default async function DashboardPage() {
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
+          title="App Name"
+          value="LendEasy PH"
+          icon={<Landmark className="h-4 w-4 text-muted-foreground" />}
+          description="Loan Management System"
+        />
+        <StatCard
           title="Total Loaned"
           value={`₱${totalAmountLoaned.toLocaleString("en-US", {
             minimumFractionDigits: 2,
@@ -52,12 +58,6 @@ export default async function DashboardPage() {
           value={`${averageInterestRate.toFixed(2)}%`}
           icon={<Percent className="h-4 w-4 text-muted-foreground" />}
           description="Average interest rate across all loans"
-        />
-        <StatCard
-          title="App Name"
-          value="LendEasy PH"
-          icon={<Landmark className="h-4 w-4 text-muted-foreground" />}
-          description="Loan Management System"
         />
       </div>
 
