@@ -2,7 +2,7 @@ import admin from 'firebase-admin';
 import { getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
-import { type Loan } from './types';
+import { type Loan, type Customer } from './types';
 
 // Initialize Firebase Admin SDK
 if (!getApps().length) {
@@ -70,6 +70,35 @@ export const getLoans = async (): Promise<Loan[]> => {
     // Return an empty array if there's an issue, e.g. permissions.
     return [];
   }
+};
+
+export const getCustomers = async (): Promise<Customer[]> => {
+  const loans = await getLoans();
+  if (!loans.length) {
+    return [];
+  }
+
+  const customerMap = new Map<string, Customer>();
+
+  loans.forEach(loan => {
+    let customer = customerMap.get(loan.name);
+    if (!customer) {
+      customer = {
+        id: loan.name, // Using name as a unique ID for simplicity
+        name: loan.name,
+        address: loan.address,
+        totalLoans: 0,
+        totalLoanAmount: 0,
+      };
+    }
+    
+    customer.totalLoans += 1;
+    customer.totalLoanAmount += loan.amount;
+    
+    customerMap.set(loan.name, customer);
+  });
+
+  return Array.from(customerMap.values()).sort((a, b) => a.name.localeCompare(b.name));
 };
 
 export const uploadFile = async (file: { name: string; data: string }, path: string): Promise<{ name: string; url: string }> => {

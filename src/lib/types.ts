@@ -13,6 +13,14 @@ export interface Loan {
   verificationResult?: VerifyLoanApplicationOutput;
 }
 
+export interface Customer {
+  id: string;
+  name: string;
+  address: string;
+  totalLoans: number;
+  totalLoanAmount: number;
+}
+
 // Helper functions for validation
 const isDataUrl = (s: string) => s.startsWith('data:');
 const isValidDate = (date: string) => !isNaN(Date.parse(date));

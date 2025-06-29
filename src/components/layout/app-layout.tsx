@@ -14,7 +14,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Landmark, LayoutDashboard, PlusCircle, UserCircle } from 'lucide-react';
+import { Landmark, LayoutDashboard, Users, UserCircle } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,12 +43,20 @@ export function AppLayout({ children }: { children: ReactNode }) {
           </SidebarHeader>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton tooltip="Dashboard" isActive={isActive('/')} asChild>
-                <Link href="/">
-                  <LayoutDashboard />
-                  <span>Dashboard</span>
-                </Link>
-              </SidebarMenuButton>
+                <SidebarMenuButton tooltip="Dashboard" isActive={isActive('/')} asChild>
+                  <Link href="/">
+                    <LayoutDashboard />
+                    <span>Dashboard</span>
+                  </Link>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+                <SidebarMenuButton tooltip="Customers" isActive={isActive('/customers')} asChild>
+                  <Link href="/customers">
+                    <Users />
+                    <span>Customers</span>
+                  </Link>
+                </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarContent>
