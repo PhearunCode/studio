@@ -197,10 +197,10 @@ export const addLoan = async (loan: Omit<Loan, 'id' | 'status' | 'payments'>): P
     throw createConnectionError();
   }
 
-  // Check if customer exists, if not create one
+  // Ensure customer exists before creating a loan
   const customerQuery = await db.collection('customers').where('name', '==', loan.name).limit(1).get();
   if (customerQuery.empty) {
-      await db.collection('customers').add({ name: loan.name, address: loan.address, phone: '' });
+    throw new Error(`Customer "${loan.name}" not found. Please create the customer first.`);
   }
 
   const newDocRef = db.collection('loans').doc();
