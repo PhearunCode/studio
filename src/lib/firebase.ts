@@ -40,10 +40,31 @@ export const getLoans = async (): Promise<Loan[]> => {
     if (loansSnapshot.empty) {
       return [];
     }
-    return loansSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    } as Loan));
+    const loans: Loan[] = loansSnapshot.docs.map(doc => {
+      const data = doc.data();
+      const loanDate = data.loanDate;
+      let serializableLoanDate: string;
+
+      // Check if it's a Firestore Timestamp by checking for the toDate method
+      if (loanDate && typeof loanDate.toDate === 'function') { 
+        serializableLoanDate = loanDate.toDate().toISOString().split('T')[0]; // "YYYY-MM-DD"
+      } else {
+        serializableLoanDate = String(loanDate || '');
+      }
+      
+      return {
+        id: doc.id,
+        name: data.name || '',
+        amount: data.amount || 0,
+        interestRate: data.interestRate || 0,
+        loanDate: serializableLoanDate,
+        address: data.address || '',
+        documents: data.documents || [],
+        status: data.status || 'Pending',
+        verificationResult: data.verificationResult
+      } as Loan;
+    });
+    return loans;
   } catch(error) {
     console.error("Error fetching loans:", error);
     // Return an empty array if there's an issue, e.g. permissions.
