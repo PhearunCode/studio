@@ -96,6 +96,7 @@ export const getCustomers = async (): Promise<Customer[]> => {
             address: data.address,
             phone: data.phone || '',
             idCardNumber: data.idCardNumber || '',
+            telegramChatId: data.telegramChatId || '',
             avatar: data.avatar || '',
             totalLoans: 0,
             totalLoanAmountKhr: 0,
@@ -180,7 +181,7 @@ export const deleteCustomer = async (id: string) => {
     }
 };
 
-export const addCustomer = async (customer: Omit<Customer, 'id' | 'totalLoans' | 'totalLoanAmountKhr' | 'totalLoanAmountUsd'>) => {
+export const addCustomer = async (customer: z.infer<typeof customerSchema>) => {
     if (!db) {
         throw createConnectionError();
     }

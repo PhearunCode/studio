@@ -90,6 +90,7 @@ export function CustomerTable({ customers }: CustomerTableProps) {
           <TableRow>
             <TableHead>Customer</TableHead>
             <TableHead>Phone</TableHead>
+            <TableHead>Telegram ID</TableHead>
             <TableHead>ID Card #</TableHead>
             <TableHead>Address</TableHead>
             <TableHead className="text-right">Total Loans</TableHead>
@@ -114,6 +115,7 @@ export function CustomerTable({ customers }: CustomerTableProps) {
                 </div>
               </TableCell>
               <TableCell>{customer.phone}</TableCell>
+              <TableCell>{customer.telegramChatId || '-'}</TableCell>
               <TableCell>{customer.idCardNumber || '-'}</TableCell>
               <TableCell>{customer.address}</TableCell>
               <TableCell className="text-right">{customer.totalLoans}</TableCell>

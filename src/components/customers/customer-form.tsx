@@ -123,6 +123,10 @@ export function CustomerForm({ customer, open, onOpenChange, children }: Custome
                 <Label htmlFor="phone">Phone Number</Label>
                 <Input id="phone" name="phone" placeholder="09123456789" type="tel" required defaultValue={customer?.phone ?? ''} />
             </div>
+             <div className="space-y-2">
+                <Label htmlFor="telegramChatId">Telegram Chat ID (Optional)</Label>
+                <Input id="telegramChatId" name="telegramChatId" placeholder="Get from @userinfobot" defaultValue={customer?.telegramChatId ?? ''} />
+            </div>
             <div className="space-y-2">
                 <Label htmlFor="idCardNumber">ID Card Number</Label>
                 <Input id="idCardNumber" name="idCardNumber" placeholder="1234-5678-9012" defaultValue={customer?.idCardNumber ?? ''} />

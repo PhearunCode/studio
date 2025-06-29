@@ -1,11 +1,12 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { addLoan, addCustomer, updateCustomer, deleteCustomer, getLoans, updateLoanStatus, deleteLoan, updateLoan, markPaymentAsPaid } from './firebase';
+import { addLoan, addCustomer, updateCustomer, deleteCustomer, getLoans, getCustomers, updateLoanStatus, deleteLoan, updateLoan, markPaymentAsPaid } from './firebase';
 import { verifyLoanApplication } from '@/ai/flows/verify-loan-application';
 import { loanSchema, customerSchema, updateLoanSchema, type FormState, type Loan, type Currency } from '@/lib/types';
 import { sendTelegramNotification } from './telegram';
 import { formatCurrency } from './utils';
+import { addDays, formatISO } from 'date-fns';
 
 export async function createLoanAction(
   prevState: FormState, 
@@ -155,6 +156,7 @@ export async function saveCustomerAction(
       address: formData.get('address'),
       phone: formData.get('phone'),
       idCardNumber: formData.get('idCardNumber'),
+      telegramChatId: formData.get('telegramChatId'),
       avatar: formData.get('avatar'),
     });
 
@@ -291,4 +293,57 @@ export async function sendTestNotificationAction(
       error: true
     };
   }
+}
+
+export async function sendPaymentRemindersAction(
+    prevState: FormState,
+    formData: FormData
+): Promise<FormState> {
+    try {
+        const loans = await getLoans();
+        const customers = await getCustomers();
+        const customerMap = new Map(customers.map(c => [c.name, c]));
+
+        const today = new Date();
+        const reminderDate = addDays(today, 3);
+        const reminderDateString = formatISO(reminderDate, { representation: 'date' }); // "YYYY-MM-DD"
+        
+        let notificationsSent = 0;
+        const notificationPromises = [];
+
+        for (const loan of loans) {
+            if (loan.status !== 'Approved' || !loan.payments) continue;
+
+            for (const payment of loan.payments) {
+                if (payment.status === 'Upcoming' && payment.dueDate === reminderDateString) {
+                    const customer = customerMap.get(loan.name);
+                    if (customer && customer.telegramChatId) {
+                        const message = `Hi ${customer.name}, this is a friendly reminder that your loan payment of ${formatCurrency(payment.monthlyPayment, loan.currency)} is due in 3 days, on ${payment.dueDate}. Thank you!`;
+                        
+                        notificationPromises.push(
+                            sendTelegramNotification(message, customer.telegramChatId)
+                                .then(() => {
+                                    notificationsSent++;
+                                })
+                                .catch(err => {
+                                    console.error(`Failed to send reminder to ${customer.name}:`, err.message);
+                                })
+                        );
+                    }
+                }
+            }
+        }
+        
+        await Promise.all(notificationPromises);
+
+        if (notificationsSent === 0) {
+            return { message: 'No payments are due in 3 days. No reminders sent.' };
+        }
+        
+        return { message: `Successfully sent ${notificationsSent} payment reminder(s).` };
+    } catch (error) {
+        console.error('Error sending payment reminders:', error);
+        const message = error instanceof Error ? error.message : 'An unexpected error occurred while sending reminders.';
+        return { message, error: true };
+    }
 }
