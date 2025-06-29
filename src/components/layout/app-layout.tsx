@@ -12,7 +12,6 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarTrigger,
-  SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Landmark, LayoutDashboard, Users, UserCircle, Banknote } from 'lucide-react';
@@ -24,10 +23,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LoanFormWrapper } from '@/components/dashboard/loan-form-wrapper';
-import { type Customer } from '@/lib/types';
 
-export function AppLayout({ children, customers }: { children: ReactNode, customers: Customer[] }) {
+export function AppLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isActive = (path: string) => pathname === path;
   const [isClient, setIsClient] = useState(false);
@@ -79,9 +76,6 @@ export function AppLayout({ children, customers }: { children: ReactNode, custom
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarContent>
-        <SidebarFooter className="p-2 mt-auto">
-          <LoanFormWrapper customers={customers} />
-        </SidebarFooter>
       </Sidebar>
       <SidebarInset>
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-md sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
