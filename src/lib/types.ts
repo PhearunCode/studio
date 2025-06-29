@@ -32,6 +32,12 @@ export const loanSchema = z.object({
   address: z.string().min(5, 'Address must be at least 5 characters'),
 });
 
+export const updateLoanSchema = z.object({
+  amount: z.coerce.number().positive('Amount must be positive'),
+  interestRate: z.coerce.number().min(0, 'Interest rate cannot be negative'),
+  loanDate: z.string().refine(isValidDate, 'Invalid date'),
+});
+
 export const customerSchema = z.object({
     name: z.string().min(3, "Name must be at least 3 characters"),
     address: z.string().min(5, "Address must be at least 5 characters"),

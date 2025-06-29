@@ -25,6 +25,7 @@ import { useState, useTransition } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { updateLoanStatusAction } from '@/lib/actions';
 import { DeleteLoanDialog } from './delete-loan-dialog';
+import { EditLoanForm } from './edit-loan-form';
 
 interface LoanTableProps {
   loans: Loan[];
@@ -34,6 +35,7 @@ export function LoanTable({ loans }: LoanTableProps) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
 
   const handleStatusChange = (loanId: string, status: Loan['status']) => {
@@ -53,6 +55,11 @@ export function LoanTable({ loans }: LoanTableProps) {
         });
       }
     });
+  };
+
+  const handleEdit = (loan: Loan) => {
+    setSelectedLoan(loan);
+    setIsEditDialogOpen(true);
   };
 
   const handleDelete = (loan: Loan) => {
@@ -85,6 +92,11 @@ export function LoanTable({ loans }: LoanTableProps) {
 
   return (
     <>
+      <EditLoanForm
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        loan={selectedLoan}
+      />
       <DeleteLoanDialog
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
@@ -129,6 +141,14 @@ export function LoanTable({ loans }: LoanTableProps) {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                    <DropdownMenuItem onSelect={() => handleEdit(loan)}>
+                      Edit Loan
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => handleDelete(loan)} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+                      Delete Loan
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
                     <DropdownMenuLabel>Change Status</DropdownMenuLabel>
                     {loan.status !== 'Approved' && (
                       <DropdownMenuItem onSelect={() => handleStatusChange(loan.id, 'Approved')}>
@@ -150,10 +170,6 @@ export function LoanTable({ loans }: LoanTableProps) {
                             Set as Pending
                         </DropdownMenuItem>
                     )}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onSelect={() => handleDelete(loan)} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
-                      Delete Loan
-                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </TableCell>

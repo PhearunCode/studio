@@ -1,9 +1,9 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { addLoan, addCustomer, updateCustomer, deleteCustomer, getLoans, updateLoanStatus, deleteLoan } from './firebase';
+import { addLoan, addCustomer, updateCustomer, deleteCustomer, getLoans, updateLoanStatus, deleteLoan, updateLoan } from './firebase';
 import { verifyLoanApplication } from '@/ai/flows/verify-loan-application';
-import { loanSchema, customerSchema, type FormState, type Loan } from '@/lib/types';
+import { loanSchema, customerSchema, updateLoanSchema, type FormState, type Loan } from '@/lib/types';
 
 export async function createLoanAction(
   prevState: FormState, 
@@ -68,6 +68,47 @@ export async function createLoanAction(
   } catch (error) {
     console.error('Error creating loan:', error);
     const message = error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.';
+    return {
+      message,
+      error: true
+    };
+  }
+}
+
+export async function updateLoanAction(
+  prevState: FormState, 
+  formData: FormData
+): Promise<FormState> {
+  try {
+    const id = formData.get('id') as string | null;
+    if (!id) {
+        throw new Error("Loan ID is required.");
+    }
+    
+    const validatedFields = updateLoanSchema.safeParse({
+      amount: formData.get('amount'),
+      interestRate: formData.get('interestRate'),
+      loanDate: formData.get('loanDate'),
+    });
+
+    if (!validatedFields.success) {
+      const fieldErrors = validatedFields.error.flatten().fieldErrors;
+      const errorMessages = Object.values(fieldErrors).flat().join('. ');
+      return { 
+        message: `Validation failed: ${errorMessages}.`, 
+        error: true 
+      };
+    }
+
+    await updateLoan(id, validatedFields.data);
+
+    revalidatePath('/loans');
+    revalidatePath('/');
+
+    return { message: 'Loan updated successfully.' };
+  } catch (error) {
+    console.error('Error updating loan:', error);
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred.';
     return {
       message,
       error: true

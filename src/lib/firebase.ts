@@ -177,7 +177,7 @@ export const addCustomer = async (customer: Omit<Customer, 'id' | 'totalLoans' |
     await db.collection('customers').add(customer);
 };
 
-export const addLoan = async (loan: Omit<Loan, 'id' | 'status' | 'documents'>): Promise<Omit<Loan, 'documents'>> => {
+export const addLoan = async (loan: Omit<Loan, 'id' | 'status'>): Promise<Omit<Loan, 'id'>> => {
   if (!db) {
     throw connectionError;
   }
@@ -191,7 +191,7 @@ export const addLoan = async (loan: Omit<Loan, 'id' | 'status' | 'documents'>): 
   const newDocRef = db.collection('loans').doc();
   const newId = newDocRef.id;
 
-  const newLoan: Omit<Loan, 'id' | 'documents'> = {
+  const newLoan: Omit<Loan, 'id'> = {
     ...loan,
     status: 'Pending',
   };
@@ -199,6 +199,14 @@ export const addLoan = async (loan: Omit<Loan, 'id' | 'status' | 'documents'>): 
   await newDocRef.set(newLoan);
 
   return { ...newLoan, id: newId };
+};
+
+export const updateLoan = async (id: string, data: { amount: number; interestRate: number; loanDate: string; }) => {
+    if (!db) {
+        throw connectionError;
+    }
+    const loanRef = db.collection('loans').doc(id);
+    await loanRef.update(data);
 };
 
 export const updateLoanStatus = async (id: string, status: Loan['status']) => {
