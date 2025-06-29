@@ -5,14 +5,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getLoans } from "@/lib/firebase";
-import { type Loan } from "@/lib/types";
+import { getLoans, getCustomers } from "@/lib/firebase";
+import { type Loan, type Customer } from "@/lib/types";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { LoanTable } from "@/components/dashboard/loan-table";
 import { DollarSign, Users, Percent } from "lucide-react";
+import { LoanFormWrapper } from "@/components/dashboard/loan-form-wrapper";
 
 export default async function DashboardPage() {
   const loans: Loan[] = await getLoans();
+  const customers: Customer[] = await getCustomers();
 
   const totalLoans = loans.length;
   const totalAmountLoaned = loans.reduce((acc, loan) => acc + loan.amount, 0);
@@ -25,6 +27,9 @@ export default async function DashboardPage() {
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+        <div className="flex items-center space-x-2">
+          <LoanFormWrapper customers={customers} />
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -39,9 +44,9 @@ export default async function DashboardPage() {
         />
         <StatCard
           title="Total Borrowers"
-          value={totalLoans.toString()}
+          value={customers.length.toString()}
           icon={<Users className="h-4 w-4 text-muted-foreground" />}
-          description="Total number of active and past loans"
+          description="Total number of unique customers"
         />
         <StatCard
           title="Avg. Interest Rate"

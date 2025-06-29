@@ -19,6 +19,8 @@ import { createLoanAction } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, FileUp, X, FileIcon } from 'lucide-react';
 import { VerificationResultDialog } from './verification-result-dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import type { Customer } from '@/lib/types';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -43,9 +45,10 @@ interface LoanFormProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     children?: React.ReactNode;
+    customers: Customer[];
 }
 
-export function LoanForm({ open, onOpenChange, children }: LoanFormProps) {
+export function LoanForm({ open, onOpenChange, children, customers }: LoanFormProps) {
   const [files, setFiles] = useState<File[]>([]);
   const [documentsJson, setDocumentsJson] = useState('[]');
   const formRef = useRef<HTMLFormElement>(null);
@@ -55,6 +58,13 @@ export function LoanForm({ open, onOpenChange, children }: LoanFormProps) {
   const [isVerificationDialogOpen, setVerificationDialogOpen] = useState(false);
 
   const [state, formAction] = useActionState(createLoanAction, null);
+
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+
+  const handleCustomerSelect = (customerName: string) => {
+    const customer = customers.find((c) => c.name === customerName) || null;
+    setSelectedCustomer(customer);
+  };
 
   const updateDocumentsJson = async (updatedFiles: File[]) => {
     const fileData = await Promise.all(
@@ -84,6 +94,7 @@ export function LoanForm({ open, onOpenChange, children }: LoanFormProps) {
     formRef.current?.reset();
     setFiles([]);
     setDocumentsJson('[]');
+    setSelectedCustomer(null);
   };
 
   useEffect(() => {
@@ -123,7 +134,7 @@ export function LoanForm({ open, onOpenChange, children }: LoanFormProps) {
         <DialogHeader>
           <DialogTitle>New Loan</DialogTitle>
           <DialogDescription>
-            Fill in the details below to create a new loan.
+            Fill in the details below to create a new loan for an existing customer.
           </DialogDescription>
         </DialogHeader>
         <form ref={formRef} action={formAction} className="space-y-4">
@@ -131,7 +142,20 @@ export function LoanForm({ open, onOpenChange, children }: LoanFormProps) {
           <div className="grid grid-cols-2 gap-4">
              <div className="space-y-2 col-span-2">
                 <Label htmlFor="name">Borrower Name</Label>
-                <Input id="name" name="name" placeholder="Juan dela Cruz" required />
+                <Select name="name" required onValueChange={handleCustomerSelect}>
+                  <SelectTrigger id="name">
+                    <SelectValue placeholder="Select an existing customer" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {customers.length > 0 ? customers.map((customer) => (
+                      <SelectItem key={customer.id} value={customer.name}>
+                        {customer.name}
+                      </SelectItem>
+                    )) : (
+                      <div className="p-2 text-sm text-muted-foreground text-center">Please add a customer first.</div>
+                    )}
+                  </SelectContent>
+                </Select>
             </div>
             <div className="space-y-2">
                 <Label htmlFor="amount">Amount ($)</Label>
@@ -148,7 +172,15 @@ export function LoanForm({ open, onOpenChange, children }: LoanFormProps) {
             </div>
           <div className="space-y-2">
             <Label htmlFor="address">Address</Label>
-            <Input id="address" name="address" placeholder="123 Rizal St, Manila" required />
+            <Input 
+                id="address" 
+                name="address" 
+                placeholder="Address is auto-filled from customer" 
+                required 
+                key={selectedCustomer?.id ?? 'new-customer'}
+                defaultValue={selectedCustomer?.address ?? ''}
+                readOnly={!!selectedCustomer}
+            />
           </div>
           <div className="space-y-2">
               <Label htmlFor="documents-upload">Supporting Documents</Label>
