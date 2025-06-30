@@ -437,6 +437,7 @@ export async function sendManualTelegramMessageAction(
     const validatedFields = telegramMessageSchema.safeParse({
       customerId: formData.get('customerId'),
       message: formData.get('message'),
+      photo: formData.get('photo'),
     });
 
     if (!validatedFields.success) {
@@ -448,7 +449,7 @@ export async function sendManualTelegramMessageAction(
       };
     }
 
-    const { customerId, message } = validatedFields.data;
+    const { customerId, message, photo } = validatedFields.data;
 
     const customers = await getCustomers();
     const customer = customers.find(c => c.id === customerId);
@@ -461,13 +462,7 @@ export async function sendManualTelegramMessageAction(
       throw new Error('This customer does not have a Telegram Chat ID configured.');
     }
     
-    const adminMessage = `
-Message from LendEasy Admin:
------------------------------------
-${message}
-    `;
-
-    await sendTelegramNotification(adminMessage.trim(), customer.telegramChatId);
+    await sendTelegramNotification(message, customer.telegramChatId, photo);
 
     return { message: `Message sent successfully to ${customer.name}.` };
   } catch (error) {

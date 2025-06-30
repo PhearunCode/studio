@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useActionState } from 'react';
+import { useEffect, useRef, useActionState, useState } from 'react';
+import Image from 'next/image';
 import { useFormStatus } from 'react-dom';
 import {
   Dialog,
@@ -16,14 +17,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { sendManualTelegramMessageAction } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Send } from 'lucide-react';
+import { Loader2, Send, Upload, X } from 'lucide-react';
 import type { Customer } from '@/lib/types';
 import { useTranslation } from '@/contexts/language-context';
 
-function SubmitButton() {
+function SubmitButton({ disabled }: { disabled?: boolean }) {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" disabled={pending}>
+    <Button type="submit" disabled={pending || disabled}>
       {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
       Send Message
     </Button>
@@ -38,10 +39,32 @@ interface TelegramChatDialogProps {
 
 export function TelegramChatDialog({ customer, open, onOpenChange }: TelegramChatDialogProps) {
   const formRef = useRef<HTMLFormElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const { t } = useTranslation();
 
   const [state, formAction] = useActionState(sendManualTelegramMessageAction, null);
+  const [message, setMessage] = useState('');
+  const [photo, setPhoto] = useState('');
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+        if (!['image/png', 'image/jpeg'].includes(file.type)) {
+            toast({ title: 'Invalid File Type', description: 'Please upload a PNG or JPG image.', variant: 'destructive' });
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) { // 5MB limit
+            toast({ title: 'File Too Large', description: 'Photo must be smaller than 5MB.', variant: 'destructive' });
+            return;
+        }
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setPhoto(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+    }
+  };
 
   useEffect(() => {
     if (!state) return;
@@ -65,6 +88,8 @@ export function TelegramChatDialog({ customer, open, onOpenChange }: TelegramCha
   useEffect(() => {
       if (open) {
         formRef.current?.reset();
+        setMessage('');
+        setPhoto('');
       }
   }, [open]);
 
@@ -76,7 +101,7 @@ export function TelegramChatDialog({ customer, open, onOpenChange }: TelegramCha
         <DialogHeader>
           <DialogTitle>Send Message to {customer.name}</DialogTitle>
           <DialogDescription>
-            The message will be sent to the customer via the LendEasy Telegram bot.
+            The message will be sent to the customer via the LendEasy Telegram bot. You can send text, a photo, or both.
           </DialogDescription>
         </DialogHeader>
         <form 
@@ -86,23 +111,52 @@ export function TelegramChatDialog({ customer, open, onOpenChange }: TelegramCha
             className="space-y-4"
         >
             <input type="hidden" name="customerId" value={customer.id} />
+            <input type="hidden" name="photo" value={photo} />
             
             <div className="space-y-2">
-                <Label htmlFor="message">Message</Label>
+                <Label htmlFor="message">Message / Caption</Label>
                 <Textarea 
                     id="message" 
                     name="message" 
                     placeholder="Type your message here..."
-                    required
-                    rows={5}
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    rows={3}
                 />
+            </div>
+
+            <div className="space-y-2">
+                <Label htmlFor="photo-upload">Attach Photo</Label>
+                <div className="flex items-start gap-4">
+                    {photo && (
+                        <div className="relative">
+                            <Image src={photo} alt="Preview" width={80} height={80} className="rounded-md object-cover aspect-square" />
+                            <Button variant="destructive" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full" onClick={() => setPhoto('')}>
+                                <X className="h-4 w-4" />
+                                <span className="sr-only">Remove photo</span>
+                            </Button>
+                        </div>
+                    )}
+                    <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
+                        <Upload className="mr-2 h-4 w-4" />
+                        Upload Photo
+                    </Button>
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handlePhotoUpload}
+                        accept="image/png, image/jpeg"
+                        className="hidden"
+                        id="photo-upload"
+                    />
+                </div>
             </div>
 
             <DialogFooter className="pt-4">
                 <DialogClose asChild>
                     <Button variant="outline">{t('cancel')}</Button>
                 </DialogClose>
-                <SubmitButton />
+                <SubmitButton disabled={!message && !photo} />
             </DialogFooter>
         </form>
       </DialogContent>

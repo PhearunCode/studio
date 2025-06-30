@@ -77,7 +77,11 @@ export const principalPaymentSchema = z.object({
 
 export const telegramMessageSchema = z.object({
   customerId: z.string(),
-  message: z.string().min(1, 'Message cannot be empty.'),
+  message: z.string().optional(),
+  photo: z.string().optional(),
+}).refine(data => data.message || data.photo, {
+  message: "A message or a photo is required.",
+  path: ["message"],
 });
 
 
