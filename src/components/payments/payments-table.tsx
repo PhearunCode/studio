@@ -34,12 +34,11 @@ export function PaymentsTable({ loans }: PaymentsTableProps) {
     return loans
       .filter(loan => loan.status === 'Approved' || loan.status === 'Paid')
       .map(loan => {
-        const monthlyPayment = calculateMonthlyPayment(loan.amount, loan.interestRate, loan.term);
-        const monthlyInterest = loan.amount * (loan.interestRate / 100);
-        const totalInterest = monthlyInterest * loan.term;
+        const monthlyInterestPayment = calculateMonthlyPayment(loan.amount, loan.interestRate);
+        const totalInterest = monthlyInterestPayment * loan.term;
         return {
           ...loan,
-          monthlyPayment,
+          monthlyInterestPayment,
           totalInterest,
         };
       });
@@ -57,7 +56,7 @@ export function PaymentsTable({ loans }: PaymentsTableProps) {
           <TableRow>
             <TableHead>Borrower</TableHead>
             <TableHead>Payment Progress</TableHead>
-            <TableHead className="text-right">Monthly Payment</TableHead>
+            <TableHead className="text-right">Monthly Interest</TableHead>
             <TableHead className="text-right">Total Interest</TableHead>
             <TableHead className="text-center">Actions</TableHead>
           </TableRow>
@@ -86,7 +85,7 @@ export function PaymentsTable({ loans }: PaymentsTableProps) {
                     )}
                 </TableCell>
                 <TableCell className="text-right font-medium">
-                    {formatCurrency(loan.monthlyPayment, loan.currency)}
+                    {formatCurrency(loan.monthlyInterestPayment, loan.currency)}
                 </TableCell>
                 <TableCell className="text-right font-medium text-destructive">
                     {formatCurrency(loan.totalInterest, loan.currency)}

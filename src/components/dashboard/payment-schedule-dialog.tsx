@@ -71,7 +71,6 @@ export function PaymentScheduleDialog({ loan, open, onOpenChange }: PaymentSched
 
   const schedule = loan?.payments ?? [];
   const monthlyInterestPayment = loan.amount * (loan.interestRate / 100);
-  const monthlyPrincipalPayment = loan.amount / loan.term;
   
   const getStatusVariant = (status: Payment['status']): "default" | "secondary" | "destructive" | "outline" => {
     switch(status) {
@@ -93,9 +92,9 @@ export function PaymentScheduleDialog({ loan, open, onOpenChange }: PaymentSched
           <DialogTitle>Monthly Payment Schedule</DialogTitle>
           <DialogDescription>
             For a loan of {formatCurrency(loan.amount, loan.currency)} over {loan.term} months at {loan.interestRate}% interest.
-            Each month includes a principal payment of{' '}
-            <span className="font-semibold text-foreground">{formatCurrency(monthlyPrincipalPayment, loan.currency)}</span> and interest of{' '}
-            <span className="font-semibold text-foreground">{formatCurrency(monthlyInterestPayment, loan.currency)}</span>.
+            The borrower pays a fixed interest of{' '}
+            <span className="font-semibold text-foreground">{formatCurrency(monthlyInterestPayment, loan.currency)}</span> each month.
+            The full principal amount is due with the final payment.
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-[60vh] rounded-md border">
