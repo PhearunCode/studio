@@ -1,4 +1,3 @@
-
 'use client';
 import { ReactNode, useState, useEffect } from 'react';
 import Link from "next/link";
@@ -16,7 +15,7 @@ import {
   SidebarSeparator,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Landmark, LayoutDashboard, Users, UserCircle, Banknote, CreditCard, Send, Info, Settings } from 'lucide-react';
+import { Landmark, LayoutDashboard, Users, UserCircle, Banknote, CreditCard, Settings } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -138,22 +137,6 @@ export function AppLayout({ children }: { children: ReactNode }) {
           </SidebarMenu>
           <SidebarSeparator />
            <SidebarMenu>
-            <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Telegram" isActive={isActive('/telegram')} asChild>
-                    <Link href="/telegram">
-                        <Send />
-                        <span>Telegram</span>
-                    </Link>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
-             <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Firebase" isActive={isActive('/firebase')} asChild>
-                    <Link href="/firebase">
-                        <Info />
-                        <span>Firebase</span>
-                    </Link>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
              <SidebarMenuItem>
                 <SidebarMenuButton tooltip="Settings" isActive={isActive('/settings')} asChild>
                     <Link href="/settings">
