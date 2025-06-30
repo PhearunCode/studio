@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -9,11 +10,19 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { type Loan, type Customer } from '@/lib/types';
 import { calculateMonthlyPayment, formatCurrency, getInitials } from '@/lib/utils';
 import { PaymentScheduleDialog } from '@/components/dashboard/payment-schedule-dialog';
-import { Eye } from 'lucide-react';
+import { LoanDetailsDialog } from '@/components/dashboard/loan-details-dialog';
+import { MoreHorizontal } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from '@/contexts/language-context';
@@ -28,6 +37,7 @@ interface PaymentsTableProps {
 export function PaymentsTable({ loans, customers }: PaymentsTableProps) {
   const { t } = useTranslation();
   const [isPaymentScheduleOpen, setIsPaymentScheduleOpen] = useState(false);
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -38,6 +48,11 @@ export function PaymentsTable({ loans, customers }: PaymentsTableProps) {
   const handleViewPayments = (loan: Loan) => {
     setSelectedLoan(loan);
     setIsPaymentScheduleOpen(true);
+  };
+  
+  const handleViewDetails = (loan: Loan) => {
+    setSelectedLoan(loan);
+    setIsDetailsDialogOpen(true);
   };
 
   const loansWithPayments = useMemo(() => {
@@ -69,6 +84,12 @@ export function PaymentsTable({ loans, customers }: PaymentsTableProps) {
         open={isPaymentScheduleOpen}
         onOpenChange={setIsPaymentScheduleOpen}
         loan={selectedLoan}
+      />
+       <LoanDetailsDialog
+        open={isDetailsDialogOpen}
+        onOpenChange={setIsDetailsDialogOpen}
+        loan={selectedLoan}
+        customer={selectedLoan ? customerMap.get(selectedLoan.name) : undefined}
       />
       <div className="py-4">
         <Input
@@ -129,10 +150,23 @@ export function PaymentsTable({ loans, customers }: PaymentsTableProps) {
                     {formatCurrency(loan.totalInterest, loan.currency)}
                 </TableCell>
                 <TableCell className="text-center">
-                    <Button variant="ghost" size="icon" onClick={() => handleViewPayments(loan)}>
-                        <Eye className="h-4 w-4" />
-                        <span className="sr-only">{t('paymentsPage.viewSchedule')}</span>
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button aria-haspopup="true" size="icon" variant="ghost">
+                          <MoreHorizontal className="h-4 w-4" />
+                          <span className="sr-only">Toggle menu</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>{t('actions')}</DropdownMenuLabel>
+                        <DropdownMenuItem onSelect={() => handleViewDetails(loan)}>
+                          {t('viewDetails')}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => handleViewPayments(loan)}>
+                            {t('loansPage.actions.viewPayments')}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                 </TableCell>
                 </TableRow>
             );
