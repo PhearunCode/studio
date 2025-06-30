@@ -171,7 +171,7 @@ export const en = {
       nameLabel: 'Customer Name',
       namePlaceholder: 'Juan dela Cruz',
       phoneLabel: 'Phone Number',
-      phonePlaceholder: '09123456789',
+      phonePlaceholder: 'e.g. 1234567890',
       telegramLabel: 'Telegram Chat ID (Optional)',
       telegramPlaceholder: 'Get from @userinfobot',
       idCardLabel: 'ID Card Number',

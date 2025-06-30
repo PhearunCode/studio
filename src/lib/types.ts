@@ -64,7 +64,7 @@ export const updateLoanSchema = z.object({
 export const customerSchema = z.object({
     name: z.string().min(3, "Name must be at least 3 characters"),
     address: z.string().min(5, "Address must be at least 5 characters"),
-    phone: z.string().min(10, "Phone number must be at least 10 characters"),
+    phone: z.string().min(1, "Phone number is required.").max(10, "Phone number cannot exceed 10 characters."),
     idCardNumber: z.string().optional(),
     telegramChatId: z.string().optional(),
     avatar: z.string().optional(),

@@ -171,7 +171,7 @@ export const km = {
       nameLabel: 'ឈ្មោះអតិថិជន',
       namePlaceholder: 'Juan dela Cruz',
       phoneLabel: 'លេខទូរសព្ទ',
-      phonePlaceholder: '09123456789',
+      phonePlaceholder: 'ឧ. 1234567890',
       telegramLabel: 'លេខសម្គាល់ Telegram (ស្រេចចិត្ត)',
       telegramPlaceholder: 'យកពី @userinfobot',
       idCardLabel: 'លេខអត្តសញ្ញាណប័ណ្ណ',
