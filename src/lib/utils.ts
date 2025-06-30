@@ -18,9 +18,9 @@ export function formatCurrency(amount: number, currency: Currency = 'KHR') {
   return new Intl.NumberFormat(locale, options).format(amount);
 }
 
-// This now calculates the monthly interest payment.
+// This calculates the total monthly payment for a flat-rate installment loan.
 export function calculateMonthlyPayment(principal: number, interestRate: number, termMonths: number): number {
-  if (principal <= 0) {
+  if (principal <= 0 || termMonths <= 0) {
     return 0;
   }
    if (interestRate < 0) {
@@ -29,8 +29,9 @@ export function calculateMonthlyPayment(principal: number, interestRate: number,
 
   // Interest is calculated monthly on the original principal.
   const monthlyInterest = principal * (interestRate / 100);
+  const monthlyPrincipal = principal / termMonths;
   
-  return monthlyInterest;
+  return monthlyPrincipal + monthlyInterest;
 }
 
 export function generatePaymentSchedule(principal: number, interestRate: number, termMonths: number, loanDateStr: string): Payment[] {
@@ -42,27 +43,29 @@ export function generatePaymentSchedule(principal: number, interestRate: number,
   }
 
   const monthlyInterest = principal * (interestRate / 100);
-  
+  const monthlyPrincipal = principal / termMonths;
+  const monthlyPayment = monthlyPrincipal + monthlyInterest;
+
   const schedule: Payment[] = [];
   const startDate = new Date(loanDateStr + 'T00:00:00'); // Avoid timezone issues
+  let remainingBalance = principal;
+
 
   for (let i = 1; i <= termMonths; i++) {
       const dueDate = addMonths(startDate, i);
       const status: 'Upcoming' | 'Overdue' = isPast(dueDate) ? 'Overdue' : 'Upcoming';
       
-      const isFinalPayment = i === termMonths;
-      const principalPaymentThisMonth = isFinalPayment ? principal : 0;
-      const monthlyPayment = principalPaymentThisMonth + monthlyInterest;
-      const remainingBalance = isFinalPayment ? 0 : principal;
+      remainingBalance -= monthlyPrincipal;
 
       schedule.push({
           month: i,
           dueDate: formatISO(dueDate, { representation: 'date' }), // YYYY-MM-DD
           status: status,
           monthlyPayment: monthlyPayment,
-          principalPayment: principalPaymentThisMonth,
+          principalPayment: monthlyPrincipal,
           interestPayment: monthlyInterest,
-          remainingBalance: remainingBalance,
+          // Use Math.max to avoid floating point inaccuracies showing a tiny negative number on last payment
+          remainingBalance: Math.max(0, remainingBalance),
       });
   }
 

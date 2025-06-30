@@ -3,7 +3,7 @@ import { getLoans, getCustomers } from "@/lib/firebase";
 import { type Loan, type Customer } from "@/lib/types";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { DollarSign, Users, Percent, Landmark } from "lucide-react";
-import { calculateMonthlyPayment, formatCurrency } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 import {
   Card,
   CardContent,
@@ -35,9 +35,9 @@ export default async function DashboardPage() {
       return filteredLoans
         .filter(loan => loan.status === 'Approved' || loan.status === 'Paid')
         .reduce((acc, loan) => {
-            const monthlyInterest = calculateMonthlyPayment(loan.amount, loan.interestRate, loan.term);
-            const totalInterest = monthlyInterest * loan.term;
-            return acc + totalInterest;
+            const monthlyInterest = loan.amount * (loan.interestRate / 100);
+            const totalInterestForLoan = monthlyInterest * loan.term;
+            return acc + totalInterestForLoan;
         }, 0);
   }
 

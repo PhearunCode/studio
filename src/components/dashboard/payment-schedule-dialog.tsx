@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { type Loan, type Payment } from '@/lib/types';
-import { calculateMonthlyPayment, formatCurrency } from '@/lib/utils';
+import { formatCurrency } from '@/lib/utils';
 import { useTransition } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { markPaymentAsPaidAction } from '@/lib/actions';
@@ -67,11 +67,12 @@ function MarkAsPaidButton({ loanId, month }: { loanId: string, month: number }) 
 }
 
 export function PaymentScheduleDialog({ loan, open, onOpenChange }: PaymentScheduleDialogProps) {
-  const schedule = loan?.payments ?? [];
-  const monthlyInterestPayment = loan ? calculateMonthlyPayment(loan.amount, loan.interestRate, loan.term) : 0;
-  
   if (!loan) return null;
 
+  const schedule = loan?.payments ?? [];
+  const monthlyInterestPayment = loan.amount * (loan.interestRate / 100);
+  const monthlyPrincipalPayment = loan.amount / loan.term;
+  
   const getStatusVariant = (status: Payment['status']): "default" | "secondary" | "destructive" | "outline" => {
     switch(status) {
         case 'Paid':
@@ -92,8 +93,9 @@ export function PaymentScheduleDialog({ loan, open, onOpenChange }: PaymentSched
           <DialogTitle>Monthly Payment Schedule</DialogTitle>
           <DialogDescription>
             For a loan of {formatCurrency(loan.amount, loan.currency)} over {loan.term} months at {loan.interestRate}% interest.
-            This is an interest-only loan. The calculated monthly interest payment is{' '}
-            <span className="font-semibold text-foreground">{formatCurrency(monthlyInterestPayment, loan.currency)}</span>. The full principal is due with the final payment.
+            Each month includes a principal payment of{' '}
+            <span className="font-semibold text-foreground">{formatCurrency(monthlyPrincipalPayment, loan.currency)}</span> and interest of{' '}
+            <span className="font-semibold text-foreground">{formatCurrency(monthlyInterestPayment, loan.currency)}</span>.
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-[60vh] rounded-md border">
