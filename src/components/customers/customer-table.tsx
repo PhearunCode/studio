@@ -177,10 +177,10 @@ export function CustomerTable({ customers }: CustomerTableProps) {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuLabel>{t('actions')}</DropdownMenuLabel>
-                    <DropdownMenuItem onSelect={() => handleViewDetails(customer)} className="md:hidden"> 
+                    <DropdownMenuItem onSelect={() => handleViewDetails(customer)}> 
                       {t('viewDetails')}
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator className="md:hidden" />
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem onSelect={() => handleEdit(customer)}>
                       {t('borrowersPage.actions.editCustomer')}
                     </DropdownMenuItem>
