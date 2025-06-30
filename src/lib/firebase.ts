@@ -5,8 +5,6 @@ import { getFirestore } from 'firebase-admin/firestore';
 import { type Loan, type Customer, type Payment, type Currency, customerSchema } from './types';
 import { generatePaymentSchedule } from './utils';
 import { z } from 'zod';
-import { mockCustomers, mockLoans } from './mock-data';
-
 
 let db: admin.firestore.Firestore | null = null;
 let firebaseAdminError: Error | null = null;
@@ -43,33 +41,21 @@ if (!getApps().length) {
   db = getFirestore();
 }
 
-const createConnectionError = () => {
-    const baseMessage = "Failed to connect to Firebase. This usually means the app's environment variables (FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY) are not set correctly. Please check your .env file and ensure they are present and valid.";
-    const specificMessage = firebaseAdminError?.message;
-    // If the specific message is about credentials not found, don't show the base message.
-    if (specificMessage && specificMessage.includes('credentials not found')) {
-      return new Error(specificMessage);
-    }
-    return new Error(specificMessage || baseMessage);
-}
-
 export const isFirebaseConnected = () => !firebaseAdminError;
 
 const checkDbConnection = () => {
     if (!isFirebaseConnected() || !db) {
-        throw createConnectionError();
+        throw new Error(firebaseAdminError?.message || "Firebase is not connected. Please check your environment variables.");
     }
 }
 
-// Data fetching functions now fall back to mock data.
+// Data fetching functions will now return empty arrays if not connected, to prevent page crashes.
 export const getLoans = async (): Promise<Omit<Loan, 'documents'>[]> => {
   if (!isFirebaseConnected()) {
-      console.warn("Firebase not connected. Returning mock loan data.");
-      return mockLoans;
+    return [];
   }
   
   try {
-    checkDbConnection();
     const loansSnapshot = await db!.collection('loans').orderBy('loanDate', 'desc').get();
     if (loansSnapshot.empty) {
       return [];
@@ -107,37 +93,22 @@ export const getLoans = async (): Promise<Omit<Loan, 'documents'>[]> => {
     return loans;
   } catch (error: any) {
     if (error.message.includes('DECODER') || error.message.includes('unsupported')) {
-      const message = "Firebase connection failed due to a private key formatting issue. Falling back to mock data. Please check the Firebase setup page for instructions on how to fix your .env file.";
-      console.warn(message);
-      firebaseAdminError = new Error(message); // Set the flag for future calls
-      return mockLoans;
+      const message = "Firebase connection failed due to a private key formatting issue. Please check the Firebase setup page for instructions on how to fix your .env file.";
+      console.error(message);
+      firebaseAdminError = new Error(message);
+      return [];
     }
-    // Re-throw other errors
+    console.error("Error fetching loans:", error);
     throw error;
   }
 };
 
 export const getCustomers = async (): Promise<Customer[]> => {
     if (!isFirebaseConnected()) {
-        console.warn("Firebase not connected. Returning mock customer data.");
-        const customerMap = new Map(mockCustomers.map(c => [c.name, {...c}]));
-        mockLoans.forEach(loan => {
-            if(customerMap.has(loan.name)) {
-                const customer = customerMap.get(loan.name)!;
-                customer.totalLoans += 1;
-                if (loan.currency === 'KHR') {
-                    customer.totalLoanAmountKhr += loan.amount;
-                } else if (loan.currency === 'USD') {
-                    customer.totalLoanAmountUsd += loan.amount;
-                }
-            }
-        });
-        return Array.from(customerMap.values());
+        return [];
     }
 
     try {
-        checkDbConnection();
-
         const customersSnapshot = await db!.collection('customers').orderBy('name').get();
         const customers = customersSnapshot.docs.map(doc => {
             const data = doc.data();
@@ -160,7 +131,6 @@ export const getCustomers = async (): Promise<Customer[]> => {
         }
         
         const customerMap = new Map(customers.map(c => [c.name, c]));
-        // This call to getLoans() is now protected by its own try/catch
         const loans = await getLoans(); 
 
         loans.forEach(loan => {
@@ -178,31 +148,17 @@ export const getCustomers = async (): Promise<Customer[]> => {
         return Array.from(customerMap.values());
     } catch (error: any) {
         if (error.message.includes('DECODER') || error.message.includes('unsupported')) {
-            const message = "Firebase connection failed due to a private key formatting issue. Falling back to mock data. Please check the Firebase setup page for instructions on how to fix your .env file.";
-            console.warn(message);
-            firebaseAdminError = new Error(message); // Set the flag for future calls
-            
-            // Return mock customer data here as well
-            const customerMap = new Map(mockCustomers.map(c => [c.name, {...c}]));
-            mockLoans.forEach(loan => {
-                if(customerMap.has(loan.name)) {
-                    const customer = customerMap.get(loan.name)!;
-                    customer.totalLoans += 1;
-                    if (loan.currency === 'KHR') {
-                        customer.totalLoanAmountKhr += loan.amount;
-                    } else if (loan.currency === 'USD') {
-                        customer.totalLoanAmountUsd += loan.amount;
-                    }
-                }
-            });
-            return Array.from(customerMap.values());
+            const message = "Firebase connection failed due to a private key formatting issue. Please check the Firebase setup page for instructions on how to fix your .env file.";
+            console.error(message);
+            firebaseAdminError = new Error(message);
+            return [];
         }
-        // Re-throw other errors
+        console.error("Error fetching customers:", error);
         throw error;
     }
 };
 
-// Data mutation functions continue to throw errors so actions can report them.
+// Data mutation functions will throw an error if not connected, so the user knows the action failed.
 export const updateCustomer = async (id: string, data: z.infer<typeof customerSchema>) => {
     checkDbConnection();
     const customerRef = db!.collection('customers').doc(id);
@@ -409,5 +365,3 @@ export const recordPrincipalPayment = async (loanId: string, paymentAmount: numb
         });
     });
 };
-
-    

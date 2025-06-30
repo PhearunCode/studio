@@ -19,6 +19,15 @@ import { FirebaseWarning } from "@/components/layout/firebase-warning";
 
 export default async function DashboardPage() {
   const connected = isFirebaseConnected();
+  
+  if (!connected) {
+    return (
+      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+        <FirebaseWarning />
+      </div>
+    );
+  }
+
   const [loans, customers] = await Promise.all([getLoans(), getCustomers()]);
 
   const totalLoans = loans.length;
@@ -79,7 +88,6 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      {!connected && <FirebaseWarning />}
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
       </div>
