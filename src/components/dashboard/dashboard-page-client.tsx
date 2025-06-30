@@ -56,7 +56,7 @@ export function DashboardPageClient({ loans, customers }: DashboardPageClientPro
         <h2 className="text-3xl font-bold tracking-tight">{t('dashboard.title')}</h2>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
         {totalAmountLoanedKhr > 0 && (
             <StatCard
             title={t('dashboard.totalLoanedKhr')}
