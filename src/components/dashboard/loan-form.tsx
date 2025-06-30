@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useRef, useActionState } from 'react';
@@ -107,7 +108,7 @@ export function LoanForm({ open, onOpenChange, children, customers }: LoanFormPr
         <form ref={formRef} action={formAction} className="space-y-4">
           <ScrollArea className="h-[60vh] pr-4">
             <div className="space-y-4 pr-1">
-              <div className="space-y-2 col-span-2">
+              <div className="space-y-2">
                 <Label htmlFor="name">{t('loanForm.borrowerNameLabel')}</Label>
                 <Select name="name" required onValueChange={handleCustomerSelect}>
                   <SelectTrigger id="name">
