@@ -6,7 +6,10 @@ import { type Loan, type Customer, type Payment, type Currency, customerSchema }
 import { generatePaymentSchedule } from './utils';
 import { z } from 'zod';
 
-// Initialize Firebase Admin SDK
+let db: admin.firestore.Firestore | null = null;
+let firebaseAdminError: Error | null = null;
+
+// Initialize Firebase Admin SDK only once.
 if (!getApps().length) {
   const serviceAccount = {
     projectId: process.env.FIREBASE_PROJECT_ID,
@@ -15,33 +18,53 @@ if (!getApps().length) {
   };
 
   if (!serviceAccount.projectId || !serviceAccount.privateKey || !serviceAccount.clientEmail) {
-    console.warn('Firebase credentials not found in environment variables. Firebase features will be disabled. Please add FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, and FIREBASE_CLIENT_EMAIL to your .env file.');
+    const message = 'Firebase Admin credentials not found in environment variables. Firebase features will be disabled. Please check the "Firebase" page for setup instructions.';
+    console.warn(message);
+    firebaseAdminError = new Error(message);
   } else {
     try {
       admin.initializeApp({
         credential: admin.credential.cert({
             ...serviceAccount,
-            // The private key from the .env file must be formatted correctly with newlines
             privateKey: serviceAccount.privateKey.replace(/\\n/g, '\n'),
         }),
       });
+      db = getFirestore();
       console.log('Firebase Admin SDK initialized successfully.');
     } catch (error: any) {
-      console.error('Firebase admin initialization error:', error);
-       throw new Error(`Firebase admin initialization failed. This often happens if the FIREBASE_PRIVATE_KEY in your .env file is not formatted correctly. Please ensure it is the full key and wrapped in double quotes. Original error: ${error.message}`);
+      const message = `Firebase admin initialization failed. This often happens if the FIREBASE_PRIVATE_KEY in your .env file is not formatted correctly. Please ensure it is the full key and wrapped in double quotes. Original error: ${error.message}`;
+      console.error(message);
+      firebaseAdminError = new Error(message);
     }
   }
+} else {
+  db = getFirestore();
 }
 
-const db = getApps().length ? getFirestore() : null;
+const createConnectionError = () => {
+    return new Error(
+        firebaseAdminError?.message || 
+        "Failed to connect to Firebase. This usually means the app's environment variables (FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY) are not set correctly. Please check your .env file and ensure they are present and valid."
+    );
+}
 
-const createConnectionError = () => new Error(
-  "Failed to connect to Firebase. This usually means the app's environment variables (FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY) are not set correctly. Please check your .env file and ensure they are present and valid."
-);
+// Data fetching functions: Return empty arrays on error to prevent page crashes.
+const handleFetchError = (error: any, functionName: string): [] => {
+    if (error.message.includes('DECODER routines::unsupported') || error.message.includes('2 UNKNOWN')) {
+        const specificError = new Error(
+            `Firebase authentication failed during ${functionName}. The 'FIREBASE_PRIVATE_KEY' in your .env file is likely formatted incorrectly. Please ensure it's the full key and wrapped in double quotes.`
+        );
+        console.error(specificError.message);
+        firebaseAdminError = specificError; // Cache the error
+    } else {
+        console.error(`Error in ${functionName}:`, error);
+    }
+    return [];
+}
 
 export const getLoans = async (): Promise<Omit<Loan, 'documents'>[]> => {
-  if (!db) {
-    console.warn(createConnectionError().message);
+  if (!db || firebaseAdminError) {
+    if (firebaseAdminError) console.warn(firebaseAdminError.message);
     return [];
   }
   try {
@@ -54,9 +77,8 @@ export const getLoans = async (): Promise<Omit<Loan, 'documents'>[]> => {
       const loanDate = data.loanDate;
       let serializableLoanDate: string;
 
-      // Check if it's a Firestore Timestamp by checking for the toDate method
       if (loanDate && typeof loanDate.toDate === 'function') { 
-        serializableLoanDate = loanDate.toDate().toISOString().split('T')[0]; // "YYYY-MM-DD"
+        serializableLoanDate = loanDate.toDate().toISOString().split('T')[0];
       } else {
         serializableLoanDate = String(loanDate || '');
       }
@@ -82,20 +104,13 @@ export const getLoans = async (): Promise<Omit<Loan, 'documents'>[]> => {
     });
     return loans;
   } catch(error: any) {
-    if (error.message.includes('DECODER routines::unsupported') || error.message.includes('Error: 2 UNKNOWN')) {
-        throw new Error(
-            `Firebase authentication failed. The 'FIREBASE_PRIVATE_KEY' in your .env file is likely formatted incorrectly. Please ensure it's the full key and wrapped in double quotes. Original error: ${error.message}`
-        );
-    }
-    console.error("Error fetching loans:", error);
-    // Return an empty array for other errors, e.g. permissions.
-    return [];
+    return handleFetchError(error, 'getLoans');
   }
 };
 
 export const getCustomers = async (): Promise<Customer[]> => {
-    if (!db) {
-        console.warn(createConnectionError().message);
+    if (!db || firebaseAdminError) {
+        if (firebaseAdminError) console.warn(firebaseAdminError.message);
         return [];
     }
 
@@ -120,9 +135,10 @@ export const getCustomers = async (): Promise<Customer[]> => {
         if (customers.length === 0) {
             return [];
         }
-
+        
+        // This part can fail if getLoans fails, but getLoans will return [], so it's safe.
         const customerMap = new Map(customers.map(c => [c.name, c]));
-        const loans = await getLoans();
+        const loans = await getLoans(); 
 
         loans.forEach(loan => {
             if (customerMap.has(loan.name)) {
@@ -138,26 +154,25 @@ export const getCustomers = async (): Promise<Customer[]> => {
 
         return Array.from(customerMap.values());
     } catch(error: any) {
-        if (error.message.includes('DECODER routines::unsupported') || error.message.includes('Error: 2 UNKNOWN')) {
-            throw new Error(
-                `Firebase authentication failed. The 'FIREBASE_PRIVATE_KEY' in your .env file is likely formatted incorrectly. Please ensure it's the full key and wrapped in double quotes. Original error: ${error.message}`
-            );
-        }
-        console.error("Error fetching customers:", error);
-        return [];
+        return handleFetchError(error, 'getCustomers');
     }
 };
 
-export const updateCustomer = async (id: string, data: z.infer<typeof customerSchema>) => {
-    if (!db) {
+// Data mutation functions: Throw errors so actions can report them.
+const checkDbConnection = () => {
+    if (!db || firebaseAdminError) {
         throw createConnectionError();
     }
-    const customerRef = db.collection('customers').doc(id);
+}
+
+export const updateCustomer = async (id: string, data: z.infer<typeof customerSchema>) => {
+    checkDbConnection();
+    const customerRef = db!.collection('customers').doc(id);
     const oldCustomerSnapshot = await customerRef.get();
     const oldCustomerData = oldCustomerSnapshot.data();
 
     if (oldCustomerData?.name !== data.name) {
-        const existingCustomer = await db.collection('customers').where('name', '==', data.name).limit(1).get();
+        const existingCustomer = await db!.collection('customers').where('name', '==', data.name).limit(1).get();
         if (!existingCustomer.empty) {
             throw new Error('A customer with this name already exists.');
         }
@@ -166,9 +181,9 @@ export const updateCustomer = async (id: string, data: z.infer<typeof customerSc
     await customerRef.update(data);
 
     if (oldCustomerData && oldCustomerData.name !== data.name) {
-        const loansSnapshot = await db.collection('loans').where('name', '==', oldCustomerData.name).get();
+        const loansSnapshot = await db!.collection('loans').where('name', '==', oldCustomerData.name).get();
         if (!loansSnapshot.empty) {
-            const batch = db.batch();
+            const batch = db!.batch();
             loansSnapshot.docs.forEach(doc => {
                 batch.update(doc.ref, { name: data.name });
             });
@@ -178,10 +193,8 @@ export const updateCustomer = async (id: string, data: z.infer<typeof customerSc
 };
 
 export const deleteCustomer = async (id: string) => {
-    if (!db) {
-        throw createConnectionError();
-    }
-    const customerRef = db.collection('customers').doc(id);
+    checkDbConnection();
+    const customerRef = db!.collection('customers').doc(id);
     const customerDoc = await customerRef.get();
     if (!customerDoc.exists) {
         return; 
@@ -191,10 +204,10 @@ export const deleteCustomer = async (id: string) => {
     await customerRef.delete();
     
     if(customerName) {
-        const loansQuery = db.collection('loans').where('name', '==', customerName);
+        const loansQuery = db!.collection('loans').where('name', '==', customerName);
         const loansSnapshot = await loansQuery.get();
         if (!loansSnapshot.empty) {
-            const batch = db.batch();
+            const batch = db!.batch();
             loansSnapshot.docs.forEach(doc => {
                 batch.delete(doc.ref);
             });
@@ -204,28 +217,22 @@ export const deleteCustomer = async (id: string) => {
 };
 
 export const addCustomer = async (customer: z.infer<typeof customerSchema>) => {
-    if (!db) {
-        throw createConnectionError();
-    }
-    const customerQuery = await db.collection('customers').where('name', '==', customer.name).limit(1).get();
+    checkDbConnection();
+    const customerQuery = await db!.collection('customers').where('name', '==', customer.name).limit(1).get();
     if (!customerQuery.empty) {
         throw new Error('A customer with this name already exists.');
     }
-    await db.collection('customers').add(customer);
+    await db!.collection('customers').add(customer);
 };
 
 export const addLoan = async (loan: Omit<Loan, 'id' | 'status' | 'payments'>): Promise<Omit<Loan, 'id'>> => {
-  if (!db) {
-    throw createConnectionError();
-  }
-
-  // Ensure customer exists before creating a loan
-  const customerQuery = await db.collection('customers').where('name', '==', loan.name).limit(1).get();
+  checkDbConnection();
+  const customerQuery = await db!.collection('customers').where('name', '==', loan.name).limit(1).get();
   if (customerQuery.empty) {
     throw new Error(`Customer "${loan.name}" not found. Please create the customer first.`);
   }
 
-  const newDocRef = db.collection('loans').doc();
+  const newDocRef = db!.collection('loans').doc();
   const newId = newDocRef.id;
 
   const newLoan: Omit<Loan, 'id'> = {
@@ -240,10 +247,8 @@ export const addLoan = async (loan: Omit<Loan, 'id' | 'status' | 'payments'>): P
 };
 
 export const updateLoan = async (id: string, data: { amount: number; currency: Currency; interestRate: number; loanDate: string; term: number }) => {
-    if (!db) {
-        throw createConnectionError();
-    }
-    const loanRef = db.collection('loans').doc(id);
+    checkDbConnection();
+    const loanRef = db!.collection('loans').doc(id);
     const loanDoc = await loanRef.get();
     if (!loanDoc.exists) {
         throw new Error('Loan not found to update.');
@@ -252,8 +257,6 @@ export const updateLoan = async (id: string, data: { amount: number; currency: C
 
     const updates: any = { ...data };
 
-    // If the loan is approved, regenerate the payment schedule with the new terms.
-    // This will reset any existing payment progress.
     if (loanData?.status === 'Approved') {
         const schedule = generatePaymentSchedule(data.amount, data.interestRate, data.term, data.loanDate);
         updates.payments = schedule;
@@ -263,10 +266,8 @@ export const updateLoan = async (id: string, data: { amount: number; currency: C
 };
 
 export const updateLoanStatus = async (id: string, status: Loan['status']) => {
-    if (!db) {
-        throw createConnectionError();
-    }
-    const loanRef = db.collection('loans').doc(id);
+    checkDbConnection();
+    const loanRef = db!.collection('loans').doc(id);
     const loanDoc = await loanRef.get();
     if (!loanDoc.exists) {
         throw new Error('Loan not found to update status.');
@@ -275,7 +276,6 @@ export const updateLoanStatus = async (id: string, status: Loan['status']) => {
 
     const updates: { status: Loan['status'], payments?: Payment[] } = { status };
 
-    // If approving for the first time and no schedule exists
     if (status === 'Approved' && (!loanData.payments || loanData.payments.length === 0)) {
         const loanDate = typeof loanData.loanDate.toDate === 'function' 
             ? loanData.loanDate.toDate().toISOString().split('T')[0]
@@ -288,18 +288,15 @@ export const updateLoanStatus = async (id: string, status: Loan['status']) => {
 };
 
 export const deleteLoan = async (id: string) => {
-    if (!db) {
-        throw createConnectionError();
-    }
-    const loanRef = db.collection('loans').doc(id);
+    checkDbConnection();
+    const loanRef = db!.collection('loans').doc(id);
     await loanRef.delete();
 };
 
 
 export const markPaymentAsPaid = async (loanId: string, month: number) => {
-    if (!db) throw createConnectionError();
-
-    const loanRef = db.collection('loans').doc(loanId);
+    checkDbConnection();
+    const loanRef = db!.collection('loans').doc(loanId);
     const loanDoc = await loanRef.get();
     if (!loanDoc.exists) {
         throw new Error('Loan not found.');
@@ -314,8 +311,6 @@ export const markPaymentAsPaid = async (loanId: string, month: number) => {
     }
 
     payments[paymentIndex].status = 'Paid';
-
-    // Check if all payments are paid
     const allPaid = payments.every(p => p.status === 'Paid');
     const newStatus = allPaid ? 'Paid' : 'Approved';
 
@@ -326,13 +321,13 @@ export const markPaymentAsPaid = async (loanId: string, month: number) => {
 };
 
 export const recordPrincipalPayment = async (loanId: string, paymentAmount: number) => {
-    if (!db) throw createConnectionError();
+    checkDbConnection();
     if (paymentAmount <= 0) {
         throw new Error('Payment amount must be positive.');
     }
 
-    const loanRef = db.collection('loans').doc(loanId);
-    await db.runTransaction(async (transaction) => {
+    const loanRef = db!.collection('loans').doc(loanId);
+    await db!.runTransaction(async (transaction) => {
         const loanDoc = await transaction.get(loanRef);
         if (!loanDoc.exists) {
             throw new Error('Loan not found.');
