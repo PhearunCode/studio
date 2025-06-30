@@ -22,6 +22,7 @@ import type { Customer } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getInitials } from '@/lib/utils';
 import { useTranslation } from '@/contexts/language-context';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 function SubmitButton({ isEdit }: { isEdit: boolean }) {
   const { pending } = useFormStatus();
@@ -115,67 +116,71 @@ export function CustomerForm({ customer, open, onOpenChange, children }: Custome
             action={formAction} 
             className="space-y-4"
         >
-            {isEdit && <input type="hidden" name="id" value={customer.id} />}
-            <input type="hidden" name="avatar" value={avatar} />
-            
-            <div className="space-y-2">
-                <Label htmlFor="name">{t('customerForm.nameLabel')}</Label>
-                <Input id="name" name="name" placeholder={t('customerForm.namePlaceholder')} required defaultValue={customer?.name ?? ''} onChange={(e) => setName(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="phone">{t('customerForm.phoneLabel')}</Label>
-                <Input id="phone" name="phone" placeholder={t('customerForm.phonePlaceholder')} type="tel" required defaultValue={customer?.phone ?? ''} />
-            </div>
-             <div className="space-y-2">
-                <Label htmlFor="telegramChatId">{t('customerForm.telegramLabel')}</Label>
-                <Input id="telegramChatId" name="telegramChatId" placeholder={t('customerForm.telegramPlaceholder')} defaultValue={customer?.telegramChatId ?? ''} />
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="facebookUrl">{t('customerForm.facebookLabel')}</Label>
-                <Input id="facebookUrl" name="facebookUrl" placeholder={t('customerForm.facebookPlaceholder')} defaultValue={customer?.facebookUrl ?? ''} />
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="idCardNumber">{t('customerForm.idCardLabel')}</Label>
-                <Input id="idCardNumber" name="idCardNumber" placeholder={t('customerForm.idCardPlaceholder')} defaultValue={customer?.idCardNumber ?? ''} />
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="address">{t('customerForm.addressLabel')}</Label>
-                <Input id="address" name="address" placeholder={t('customerForm.addressPlaceholder')} required defaultValue={customer?.address ?? ''} />
-            </div>
-            
-            <div className="space-y-2">
-                <Label>{t('customerForm.profilePicLabel')}</Label>
-                <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-                    <Avatar className="h-16 w-16">
-                        <AvatarImage src={avatar || `https://avatar.vercel.sh/${name || 'user'}.png`} alt={name} />
-                        <AvatarFallback>{getInitials(name)}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 space-y-2 w-full">
-                        <Label htmlFor="avatar-url">{t('customerForm.avatarUrlLabel')}</Label>
-                        <div className="flex flex-col sm:flex-row items-center gap-2">
-                            <Input
-                                id="avatar-url"
-                                placeholder={t('customerForm.avatarUrlPlaceholder')}
-                                value={avatar.startsWith('data:') ? 'Uploaded File' : avatar}
-                                onChange={(e) => setAvatar(e.target.value)}
-                                readOnly={avatar.startsWith('data:')}
-                                className="w-full"
-                            />
-                            <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} className="w-full sm:w-auto">
-                                <Upload className="mr-2 h-4 w-4" />
-                                {t('settingsPage.upload')}
-                            </Button>
-                            <input
-                                type="file"
-                                ref={fileInputRef}
-                                onChange={handleAvatarUpload}
-                                accept="image/png, image/jpeg"
-                                className="hidden"
-                            />
+            <ScrollArea className="h-[60vh] pr-4">
+              <div className="space-y-4">
+                {isEdit && <input type="hidden" name="id" value={customer.id} />}
+                <input type="hidden" name="avatar" value={avatar} />
+                
+                <div className="space-y-2">
+                    <Label htmlFor="name">{t('customerForm.nameLabel')}</Label>
+                    <Input id="name" name="name" placeholder={t('customerForm.namePlaceholder')} required defaultValue={customer?.name ?? ''} onChange={(e) => setName(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="phone">{t('customerForm.phoneLabel')}</Label>
+                    <Input id="phone" name="phone" placeholder={t('customerForm.phonePlaceholder')} type="tel" required defaultValue={customer?.phone ?? ''} />
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="telegramChatId">{t('customerForm.telegramLabel')}</Label>
+                    <Input id="telegramChatId" name="telegramChatId" placeholder={t('customerForm.telegramPlaceholder')} defaultValue={customer?.telegramChatId ?? ''} />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="facebookUrl">{t('customerForm.facebookLabel')}</Label>
+                    <Input id="facebookUrl" name="facebookUrl" placeholder={t('customerForm.facebookPlaceholder')} defaultValue={customer?.facebookUrl ?? ''} />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="idCardNumber">{t('customerForm.idCardLabel')}</Label>
+                    <Input id="idCardNumber" name="idCardNumber" placeholder={t('customerForm.idCardPlaceholder')} defaultValue={customer?.idCardNumber ?? ''} />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="address">{t('customerForm.addressLabel')}</Label>
+                    <Input id="address" name="address" placeholder={t('customerForm.addressPlaceholder')} required defaultValue={customer?.address ?? ''} />
+                </div>
+                
+                <div className="space-y-2">
+                    <Label>{t('customerForm.profilePicLabel')}</Label>
+                    <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+                        <Avatar className="h-16 w-16">
+                            <AvatarImage src={avatar || `https://avatar.vercel.sh/${name || 'user'}.png`} alt={name} />
+                            <AvatarFallback>{getInitials(name)}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 space-y-2 w-full">
+                            <Label htmlFor="avatar-url">{t('customerForm.avatarUrlLabel')}</Label>
+                            <div className="flex flex-col sm:flex-row items-center gap-2">
+                                <Input
+                                    id="avatar-url"
+                                    placeholder={t('customerForm.avatarUrlPlaceholder')}
+                                    value={avatar.startsWith('data:') ? 'Uploaded File' : avatar}
+                                    onChange={(e) => setAvatar(e.target.value)}
+                                    readOnly={avatar.startsWith('data:')}
+                                    className="w-full"
+                                />
+                                <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} className="w-full sm:w-auto">
+                                    <Upload className="mr-2 h-4 w-4" />
+                                    {t('settingsPage.upload')}
+                                </Button>
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={handleAvatarUpload}
+                                    accept="image/png, image/jpeg"
+                                    className="hidden"
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+              </div>
+            </ScrollArea>
 
             <DialogFooter className="pt-4">
                 <DialogClose asChild>
