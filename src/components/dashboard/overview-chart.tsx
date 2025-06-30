@@ -30,7 +30,7 @@ const chartConfig = {
 export function OverviewChart({ data }: OverviewChartProps) {
   return (
     <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
-      <ResponsiveContainer width="100%" height={350}>
+      <ResponsiveContainer width="100%" height={250}>
         <BarChart data={data} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
           <XAxis
             dataKey="name"
