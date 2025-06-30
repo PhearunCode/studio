@@ -53,9 +53,11 @@ export default function SettingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Button variant="outline" className="w-full justify-start" disabled>
-              <LifeBuoy className="mr-2 h-4 w-4" />
-              {t('header.support')}
+            <Button variant="outline" className="w-full justify-start" asChild>
+              <a href="https://example.com/support" target="_blank" rel="noopener noreferrer">
+                <LifeBuoy className="mr-2 h-4 w-4" />
+                {t('header.support')}
+              </a>
             </Button>
             <Button variant="destructive" className="w-full justify-start" onClick={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" />
