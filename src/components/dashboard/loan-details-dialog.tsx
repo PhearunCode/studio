@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { type Loan, type Customer } from '@/lib/types';
 import { getInitials, formatCurrency } from '@/lib/utils';
 import { useTranslation } from '@/contexts/language-context';
+import { Progress } from '@/components/ui/progress';
 
 interface LoanDetailsDialogProps {
   loan: Loan | null;
@@ -52,6 +53,10 @@ export function LoanDetailsDialog({ loan, customer, open, onOpenChange }: LoanDe
             return 'outline';
     }
   }
+
+  const paidCount = loan.payments?.filter(p => p.status === 'Paid').length ?? 0;
+  const totalCount = loan.payments?.length ?? 0;
+  const progress = totalCount > 0 ? (paidCount / totalCount) * 100 : 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -93,6 +98,24 @@ export function LoanDetailsDialog({ loan, customer, open, onOpenChange }: LoanDe
                 <Badge variant={getStatusVariant(loan.status)}>{loan.status}</Badge>
             </div>
           </div>
+           {totalCount > 0 && (loan.status === 'Approved' || loan.status === 'Paid') && (
+             <>
+                <Separator />
+                <div className="grid grid-cols-1 gap-1 sm:grid-cols-3 sm:items-center sm:gap-4">
+                    <Label className="text-muted-foreground">{t('paymentsPage.table.paymentProgress')}</Label>
+                    <div className="sm:col-span-2">
+                        <div className="flex items-center gap-2">
+                            <div className="flex-1">
+                                <Progress value={progress} className="h-2" />
+                            </div>
+                            <span className="text-xs text-muted-foreground w-24 text-right">
+                                {paidCount} / {totalCount} {t('paymentsPage.paid')}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </>
+          )}
         </div>
         
         <DialogFooter>
