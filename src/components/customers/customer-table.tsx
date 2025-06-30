@@ -8,7 +8,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -177,10 +177,10 @@ export function CustomerTable({ customers }: CustomerTableProps) {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuLabel>{t('actions')}</DropdownMenuLabel>
-                    <DropdownMenuItem onSelect={() => handleViewDetails(customer)}> 
+                    <DropdownMenuItem onSelect={() => handleViewDetails(customer)} className="md:hidden"> 
                       {t('viewDetails')}
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator />
+                    <DropdownMenuSeparator className="md:hidden" />
                     <DropdownMenuItem onSelect={() => handleEdit(customer)}>
                       {t('borrowersPage.actions.editCustomer')}
                     </DropdownMenuItem>

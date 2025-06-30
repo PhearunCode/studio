@@ -16,6 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { type Loan, type Customer } from '@/lib/types';
@@ -159,9 +160,10 @@ export function PaymentsTable({ loans, customers }: PaymentsTableProps) {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>{t('actions')}</DropdownMenuLabel>
-                        <DropdownMenuItem onSelect={() => handleViewDetails(loan)}>
+                        <DropdownMenuItem onSelect={() => handleViewDetails(loan)} className="md:hidden">
                           {t('viewDetails')}
                         </DropdownMenuItem>
+                        <DropdownMenuSeparator className="md:hidden" />
                         <DropdownMenuItem onSelect={() => handleViewPayments(loan)}>
                             {t('loansPage.actions.viewPayments')}
                         </DropdownMenuItem>

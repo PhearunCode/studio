@@ -217,10 +217,10 @@ export function LoanTable({ loans, customers }: LoanTableProps) {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuLabel>{t('actions')}</DropdownMenuLabel>
-                    <DropdownMenuItem onSelect={() => handleViewDetails(loan)}>
+                    <DropdownMenuItem onSelect={() => handleViewDetails(loan)} className="md:hidden">
                       {t('viewDetails')}
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator />
+                    <DropdownMenuSeparator className="md:hidden" />
                     <DropdownMenuItem onSelect={() => handleViewPayments(loan)}>
                         {t('loansPage.actions.viewPayments')}
                     </DropdownMenuItem>
