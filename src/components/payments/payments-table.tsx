@@ -16,6 +16,7 @@ import { calculateMonthlyPayment, formatCurrency } from '@/lib/utils';
 import { PaymentScheduleDialog } from '@/components/dashboard/payment-schedule-dialog';
 import { Eye } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { Input } from '@/components/ui/input';
 
 interface PaymentsTableProps {
   loans: Loan[];
@@ -24,6 +25,7 @@ interface PaymentsTableProps {
 export function PaymentsTable({ loans }: PaymentsTableProps) {
   const [isPaymentScheduleOpen, setIsPaymentScheduleOpen] = useState(false);
   const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const handleViewPayments = (loan: Loan) => {
     setSelectedLoan(loan);
@@ -44,6 +46,15 @@ export function PaymentsTable({ loans }: PaymentsTableProps) {
       });
   }, [loans]);
 
+  const filteredLoans = useMemo(() => {
+    if (!searchTerm) {
+      return loansWithPayments;
+    }
+    return loansWithPayments.filter(loan =>
+      loan.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [loansWithPayments, searchTerm]);
+
   return (
     <>
       <PaymentScheduleDialog
@@ -51,6 +62,14 @@ export function PaymentsTable({ loans }: PaymentsTableProps) {
         onOpenChange={setIsPaymentScheduleOpen}
         loan={selectedLoan}
       />
+      <div className="py-4">
+        <Input
+          placeholder="Search by borrower name..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="max-w-sm"
+        />
+      </div>
       <Table>
         <TableHeader>
           <TableRow>
@@ -62,7 +81,7 @@ export function PaymentsTable({ loans }: PaymentsTableProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {loansWithPayments.map((loan) => {
+          {filteredLoans.map((loan) => {
             const paidCount = loan.payments?.filter(p => p.status === 'Paid').length ?? 0;
             const totalCount = loan.payments?.length ?? 0;
             const progress = totalCount > 0 ? (paidCount / totalCount) * 100 : 0;
