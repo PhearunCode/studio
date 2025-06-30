@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/card";
 import { CustomerTable } from "@/components/customers/customer-table";
 import { CustomerFormWrapper } from "@/components/customers/customer-form-wrapper";
-import { OverviewChart } from "@/components/dashboard/overview-chart";
 import { useTranslation } from "@/contexts/language-context";
 
 interface DashboardPageClientProps {
@@ -50,37 +49,6 @@ export function DashboardPageClient({ loans, customers }: DashboardPageClientPro
 
   const totalInterestEarnedKhr = calculateTotalInterest(khrLoans);
   const totalInterestEarnedUsd = calculateTotalInterest(usdLoans);
-  
-  const monthlyData: { [key: string]: { KHR: number; USD: number } } = {};
-  const monthLabels: {key: string, name: string}[] = [];
-  const today = new Date();
-  
-  for (let i = 11; i >= 0; i--) {
-      const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
-      const key = d.toISOString().slice(0, 7); // YYYY-MM
-      const name = d.toLocaleString('en-US', { month: 'short', year: '2-digit' });
-      monthLabels.push({key, name});
-      monthlyData[key] = { KHR: 0, USD: 0 };
-  }
-
-  activeLoans.forEach(loan => {
-    if(!loan.loanDate) return;
-    const key = loan.loanDate.slice(0, 7); // YYYY-MM
-    if (monthlyData[key]) {
-        if (loan.currency === 'KHR') {
-          monthlyData[key].KHR += loan.amount;
-        } else if (loan.currency === 'USD') {
-          monthlyData[key].USD += loan.amount;
-        }
-    }
-  });
-
-  const chartData = monthLabels.map(label => ({
-    name: label.name,
-    KHR: monthlyData[label.key].KHR,
-    USD: monthlyData[label.key].USD,
-  }));
-
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -140,18 +108,6 @@ export function DashboardPageClient({ loans, customers }: DashboardPageClientPro
             />
         )}
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('dashboard.monthlyLoanOverview')}</CardTitle>
-          <CardDescription>
-            {t('dashboard.monthlyLoanOverviewDesc')}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <OverviewChart data={chartData} />
-        </CardContent>
-      </Card>
 
       <div className="space-y-4">
         <Card>
