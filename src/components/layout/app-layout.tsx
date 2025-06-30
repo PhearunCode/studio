@@ -2,7 +2,7 @@
 'use client';
 import { ReactNode, useState, useEffect } from 'react';
 import Link from "next/link";
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   SidebarProvider,
   Sidebar,
@@ -27,6 +27,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getInitials } from '@/lib/utils';
 import { ThemeToggle } from './theme-toggle';
+import { signOut } from 'firebase/auth';
+import { auth } from '@/lib/firebase-client';
+import { useAuth } from '@/components/auth/auth-provider';
 
 interface Profile {
   name: string;
@@ -37,45 +40,54 @@ const STORAGE_KEY = 'user-profile';
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user } = useAuth();
+
   const isActive = (path: string) => pathname === path;
-  const [isClient, setIsClient] = useState(false);
-  const [profile, setProfile] = useState<Profile | null>(null);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
   
-  const loadProfile = () => {
-    try {
-       const storedProfile = localStorage.getItem(STORAGE_KEY);
-       if (storedProfile) {
-         setProfile(JSON.parse(storedProfile));
-       } else {
-         const defaultProfile = { name: 'Admin User', email: 'admin@lendeasy.ph', avatar: '' };
-         setProfile(defaultProfile);
-         localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultProfile));
-       }
-    } catch (error) {
-       console.error("Failed to parse user profile from localStorage", error);
-       setProfile({ name: 'Admin User', avatar: '' });
-    }
- };
+  // The profile from localStorage is now just a fallback for display purposes.
+  const [displayProfile, setDisplayProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
-    if (!isClient) return;
+    // Sync display profile from auth state or fallback to localStorage
+    if (user) {
+        setDisplayProfile({
+            name: user.displayName || user.email || 'Admin User',
+            avatar: user.photoURL || '',
+        });
+    } else {
+        try {
+            const storedProfile = localStorage.getItem(STORAGE_KEY);
+            if (storedProfile) {
+                setDisplayProfile(JSON.parse(storedProfile));
+            } else {
+                setDisplayProfile({ name: 'Admin User', avatar: '' });
+            }
+        } catch (error) {
+            console.error("Failed to parse user profile from localStorage", error);
+            setDisplayProfile({ name: 'Admin User', avatar: '' });
+        }
+    }
     
-    loadProfile();
-
-    window.addEventListener('profile-updated', loadProfile);
-    
-    return () => {
-      window.removeEventListener('profile-updated', loadProfile);
+    // Listen for manual profile updates (e.g., from settings page)
+    const handleProfileUpdate = () => {
+        const storedProfile = localStorage.getItem(STORAGE_KEY);
+        if (storedProfile) setDisplayProfile(JSON.parse(storedProfile));
     };
-  }, [isClient]);
+    window.addEventListener('profile-updated', handleProfileUpdate);
+    return () => window.removeEventListener('profile-updated', handleProfileUpdate);
 
-  if (!isClient) {
-    return null;
-  }
+  }, [user]);
+
+  const handleLogout = async () => {
+    if (!auth) return;
+    try {
+      await signOut(auth);
+      router.push('/login');
+    } catch (error) {
+      console.error('Failed to log out:', error);
+    }
+  };
 
   return (
     <SidebarProvider>
@@ -146,22 +158,22 @@ export function AppLayout({ children }: { children: ReactNode }) {
                 className="overflow-hidden rounded-full"
               >
                 <Avatar className="h-9 w-9">
-                  <AvatarImage src={profile?.avatar || `https://avatar.vercel.sh/${profile?.name}.png`} alt={profile?.name ?? 'User'} />
+                  <AvatarImage src={displayProfile?.avatar || `https://avatar.vercel.sh/${displayProfile?.name}.png`} alt={displayProfile?.name ?? 'User'} />
                   <AvatarFallback>
-                    {profile ? getInitials(profile.name) : <UserCircle className="h-6 w-6" />}
+                    {displayProfile ? getInitials(displayProfile.name) : <UserCircle className="h-6 w-6" />}
                   </AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>{profile?.name ?? 'My Account'}</DropdownMenuLabel>
+              <DropdownMenuLabel>{displayProfile?.name ?? 'My Account'}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <Link href="/settings">Settings</Link>
               </DropdownMenuItem>
               <DropdownMenuItem>Support</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Logout</DropdownMenuItem>
+              <DropdownMenuItem onSelect={handleLogout}>Logout</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </header>

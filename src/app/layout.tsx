@@ -1,8 +1,8 @@
 import type {Metadata} from 'next';
 import './globals.css';
-import { AppLayout } from '@/components/layout/app-layout';
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from '@/components/layout/theme-provider';
+import { AuthProvider } from '@/components/auth/auth-provider';
 
 export const metadata: Metadata = {
   title: 'LendEasy PH',
@@ -28,9 +28,9 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <AppLayout>
+            <AuthProvider>
               {children}
-            </AppLayout>
+            </AuthProvider>
             <Toaster />
           </ThemeProvider>
       </body>
