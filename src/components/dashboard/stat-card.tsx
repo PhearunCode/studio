@@ -23,7 +23,7 @@ export function StatCard({ title, value, icon, description, className }: StatCar
         {icon}
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+        <div className="text-xl font-bold md:text-2xl">{value}</div>
         {description && <p className="text-xs opacity-80">{description}</p>}
       </CardContent>
     </Card>
