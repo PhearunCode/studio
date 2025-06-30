@@ -60,9 +60,9 @@ export function CustomerDetailsDialog({ customer, open, onOpenChange }: Customer
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-3 items-center gap-4">
+          <div className="grid grid-cols-1 gap-1 sm:grid-cols-3 sm:items-center sm:gap-4">
             <Label className="text-muted-foreground">{t('borrowersPage.table.phone')}</Label>
-            <div className="col-span-2 flex items-center gap-2">
+            <div className="sm:col-span-2 flex items-center gap-2">
                <a href={`tel:${customer.phone}`} className="hover:underline">{customer.phone}</a>
                 {customer.phone && (
                     <a href={`https://wa.me/${customer.phone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" title="Chat on WhatsApp">
@@ -72,22 +72,22 @@ export function CustomerDetailsDialog({ customer, open, onOpenChange }: Customer
                 )}
             </div>
           </div>
-          <div className="grid grid-cols-3 items-center gap-4">
+          <div className="grid grid-cols-1 gap-1 sm:grid-cols-3 sm:items-start sm:gap-4">
             <Label className="text-muted-foreground">{t('borrowersPage.table.address')}</Label>
-            <p className="col-span-2 text-sm">{customer.address}</p>
+            <p className="sm:col-span-2 text-sm">{customer.address}</p>
           </div>
-          <div className="grid grid-cols-3 items-center gap-4">
+          <div className="grid grid-cols-1 gap-1 sm:grid-cols-3 sm:items-center sm:gap-4">
             <Label className="text-muted-foreground">{t('borrowersPage.table.idCardNumber')}</Label>
-            <p className="col-span-2 text-sm">{customer.idCardNumber || '-'}</p>
+            <p className="sm:col-span-2 text-sm">{customer.idCardNumber || '-'}</p>
           </div>
 
           {hasSocialLinks && (
               <>
                 <Separator />
                 {customer.telegramChatId && (
-                     <div className="grid grid-cols-3 items-center gap-4">
+                     <div className="grid grid-cols-1 gap-1 sm:grid-cols-3 sm:items-center sm:gap-4">
                         <Label className="text-muted-foreground">Telegram</Label>
-                        <div className="col-span-2">
+                        <div className="sm:col-span-2">
                             <Button asChild variant="outline" size="sm" className="justify-start w-full">
                                 <NextLink href={`https://t.me/${customer.telegramChatId.replace('@','')}`} target="_blank" rel="noopener noreferrer">
                                 <TelegramIcon className="mr-2 h-4 w-4" />
@@ -98,9 +98,9 @@ export function CustomerDetailsDialog({ customer, open, onOpenChange }: Customer
                     </div>
                 )}
                 {customer.facebookUrl && (
-                     <div className="grid grid-cols-3 items-center gap-4">
+                     <div className="grid grid-cols-1 gap-1 sm:grid-cols-3 sm:items-center sm:gap-4">
                         <Label className="text-muted-foreground">Facebook</Label>
-                        <div className="col-span-2">
+                        <div className="sm:col-span-2">
                              <Button asChild variant="outline" size="sm" className="justify-start w-full">
                                 <NextLink href={customer.facebookUrl} target="_blank" rel="noopener noreferrer">
                                 <FacebookIcon className="mr-2 h-4 w-4" />
@@ -114,13 +114,13 @@ export function CustomerDetailsDialog({ customer, open, onOpenChange }: Customer
           )}
 
           <Separator />
-          <div className="grid grid-cols-3 items-center gap-4">
+          <div className="grid grid-cols-1 gap-1 sm:grid-cols-3 sm:items-center sm:gap-4">
             <Label className="text-muted-foreground">{t('borrowersPage.table.totalLoans')}</Label>
-            <p className="col-span-2 text-sm font-medium">{customer.totalLoans}</p>
+            <p className="sm:col-span-2 text-sm font-medium">{customer.totalLoans}</p>
           </div>
-          <div className="grid grid-cols-3 items-center gap-4">
+          <div className="grid grid-cols-1 gap-1 sm:grid-cols-3 sm:items-center sm:gap-4">
             <Label className="text-muted-foreground">{t('borrowersPage.table.totalLoanedAmount')}</Label>
-            <p className="col-span-2 text-sm font-medium">{formatTotalLoaned(customer)}</p>
+            <p className="sm:col-span-2 text-sm font-medium">{formatTotalLoaned(customer)}</p>
           </div>
         </div>
         

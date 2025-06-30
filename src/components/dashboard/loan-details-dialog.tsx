@@ -70,26 +70,26 @@ export function LoanDetailsDialog({ loan, customer, open, onOpenChange }: LoanDe
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-3 items-center gap-4">
+          <div className="grid grid-cols-1 gap-1 sm:grid-cols-3 sm:items-center sm:gap-4">
             <Label className="text-muted-foreground">{t('loansPage.table.principal')}</Label>
-            <p className="col-span-2 text-sm font-medium">{formatCurrency(loan.amount, loan.currency)}</p>
+            <p className="sm:col-span-2 text-sm font-medium">{formatCurrency(loan.amount, loan.currency)}</p>
           </div>
-           <div className="grid grid-cols-3 items-center gap-4">
+           <div className="grid grid-cols-1 gap-1 sm:grid-cols-3 sm:items-center sm:gap-4">
             <Label className="text-muted-foreground">{t('loansPage.table.interest')}</Label>
-            <p className="col-span-2 text-sm">{loan.interestRate}%</p>
+            <p className="sm:col-span-2 text-sm">{loan.interestRate}%</p>
           </div>
-          <div className="grid grid-cols-3 items-center gap-4">
+          <div className="grid grid-cols-1 gap-1 sm:grid-cols-3 sm:items-center sm:gap-4">
             <Label className="text-muted-foreground">{t('loansPage.table.term')}</Label>
-            <p className="col-span-2 text-sm">{loan.term} mo</p>
+            <p className="sm:col-span-2 text-sm">{loan.term} mo</p>
           </div>
-           <div className="grid grid-cols-3 items-center gap-4">
+           <div className="grid grid-cols-1 gap-1 sm:grid-cols-3 sm:items-center sm:gap-4">
             <Label className="text-muted-foreground">{t('loansPage.table.date')}</Label>
-            <p className="col-span-2 text-sm">{formatDate(loan.loanDate)}</p>
+            <p className="sm:col-span-2 text-sm">{formatDate(loan.loanDate)}</p>
           </div>
           <Separator />
-          <div className="grid grid-cols-3 items-center gap-4">
+          <div className="grid grid-cols-1 gap-1 sm:grid-cols-3 sm:items-center sm:gap-4">
             <Label className="text-muted-foreground">{t('loansPage.table.status')}</Label>
-            <div className="col-span-2">
+            <div className="sm:col-span-2">
                 <Badge variant={getStatusVariant(loan.status)}>{loan.status}</Badge>
             </div>
           </div>
