@@ -17,11 +17,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal, MessageSquare } from 'lucide-react';
 import { type Customer } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CustomerForm } from './customer-form';
 import { DeleteCustomerDialog } from './delete-customer-dialog';
+import { TelegramChatDialog } from './telegram-chat-dialog';
 import { formatCurrency, getInitials } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from '@/contexts/language-context';
@@ -34,6 +35,7 @@ export function CustomerTable({ customers }: CustomerTableProps) {
   const { t } = useTranslation();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isChatDialogOpen, setIsChatDialogOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -47,6 +49,11 @@ export function CustomerTable({ customers }: CustomerTableProps) {
     setIsDeleteDialogOpen(true);
   };
   
+  const handleChat = (customer: Customer) => {
+    setSelectedCustomer(customer);
+    setIsChatDialogOpen(true);
+  };
+
   const formatTotalLoaned = (customer: Customer) => {
     const khrAmount = customer.totalLoanAmountKhr > 0 ? formatCurrency(customer.totalLoanAmountKhr, 'KHR') : null;
     const usdAmount = customer.totalLoanAmountUsd > 0 ? formatCurrency(customer.totalLoanAmountUsd, 'USD') : null;
@@ -77,6 +84,11 @@ export function CustomerTable({ customers }: CustomerTableProps) {
       <DeleteCustomerDialog
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
+        customer={selectedCustomer}
+      />
+      <TelegramChatDialog
+        open={isChatDialogOpen}
+        onOpenChange={setIsChatDialogOpen}
         customer={selectedCustomer}
       />
       <div className="py-4">
@@ -117,7 +129,17 @@ export function CustomerTable({ customers }: CustomerTableProps) {
                 </div>
               </TableCell>
               <TableCell>{customer.phone}</TableCell>
-              <TableCell>{customer.telegramChatId || '-'}</TableCell>
+              <TableCell>
+                 <div className="flex items-center gap-2">
+                  <span>{customer.telegramChatId || '-'}</span>
+                  {customer.telegramChatId && (
+                    <Button variant="ghost" size="icon" onClick={() => handleChat(customer)} title="Chat on Telegram">
+                      <MessageSquare className="h-4 w-4" />
+                       <span className="sr-only">Chat with customer</span>
+                    </Button>
+                  )}
+                </div>
+              </TableCell>
               <TableCell>{customer.idCardNumber || '-'}</TableCell>
               <TableCell>{customer.address}</TableCell>
               <TableCell className="text-right">{customer.totalLoans}</TableCell>

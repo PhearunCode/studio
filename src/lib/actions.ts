@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { addLoan, addCustomer, updateCustomer, deleteCustomer, getLoans, getCustomers, updateLoanStatus, deleteLoan, updateLoan, markPaymentAsPaid, recordPrincipalPayment } from './firebase';
 import { verifyLoanApplication } from '@/ai/flows/verify-loan-application';
-import { loanSchema, customerSchema, updateLoanSchema, principalPaymentSchema, type FormState, type Loan, type Currency } from '@/lib/types';
+import { loanSchema, customerSchema, updateLoanSchema, principalPaymentSchema, telegramMessageSchema, type FormState, type Loan, type Currency } from '@/lib/types';
 import { sendTelegramNotification } from './telegram';
 import { formatCurrency } from './utils';
 import { addDays, formatISO } from 'date-fns';
@@ -421,6 +421,57 @@ export async function recordPrincipalPaymentAction(
     return { message: 'Principal payment recorded successfully.' };
   } catch (error) {
     console.error('Error recording principal payment:', error);
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred.';
+    return {
+      message,
+      error: true
+    };
+  }
+}
+
+export async function sendManualTelegramMessageAction(
+  prevState: FormState, 
+  formData: FormData
+): Promise<FormState> {
+  try {
+    const validatedFields = telegramMessageSchema.safeParse({
+      customerId: formData.get('customerId'),
+      message: formData.get('message'),
+    });
+
+    if (!validatedFields.success) {
+      const fieldErrors = validatedFields.error.flatten().fieldErrors;
+      const errorMessages = Object.values(fieldErrors).flat().join('. ');
+      return { 
+        message: `Validation failed: ${errorMessages}.`, 
+        error: true 
+      };
+    }
+
+    const { customerId, message } = validatedFields.data;
+
+    const customers = await getCustomers();
+    const customer = customers.find(c => c.id === customerId);
+
+    if (!customer) {
+      throw new Error('Customer not found.');
+    }
+
+    if (!customer.telegramChatId) {
+      throw new Error('This customer does not have a Telegram Chat ID configured.');
+    }
+    
+    const adminMessage = `
+Message from LendEasy Admin:
+-----------------------------------
+${message}
+    `;
+
+    await sendTelegramNotification(adminMessage.trim(), customer.telegramChatId);
+
+    return { message: `Message sent successfully to ${customer.name}.` };
+  } catch (error) {
+    console.error('Error sending manual message:', error);
     const message = error instanceof Error ? error.message : 'An unexpected error occurred.';
     return {
       message,

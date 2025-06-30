@@ -75,6 +75,11 @@ export const principalPaymentSchema = z.object({
   amount: z.coerce.number().positive('Payment amount must be positive'),
 });
 
+export const telegramMessageSchema = z.object({
+  customerId: z.string(),
+  message: z.string().min(1, 'Message cannot be empty.'),
+});
+
 
 export type FormState = {
   message: string;
