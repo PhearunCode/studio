@@ -24,16 +24,18 @@ interface DashboardPageClientProps {
 export function DashboardPageClient({ loans, customers }: DashboardPageClientProps) {
   const { t } = useTranslation();
 
-  const totalLoans = loans.length;
-  const khrLoans = loans.filter(loan => loan.currency === 'KHR');
-  const usdLoans = loans.filter(loan => loan.currency === 'USD');
+  const activeLoans = loans.filter(loan => loan.status !== 'Rejected');
+
+  const totalLoans = activeLoans.length;
+  const khrLoans = activeLoans.filter(loan => loan.currency === 'KHR');
+  const usdLoans = activeLoans.filter(loan => loan.currency === 'USD');
 
   const totalAmountLoanedKhr = khrLoans.reduce((acc, loan) => acc + loan.amount, 0);
   const totalAmountLoanedUsd = usdLoans.reduce((acc, loan) => acc + loan.amount, 0);
 
   const averageInterestRate =
     totalLoans > 0
-      ? loans.reduce((acc, loan) => acc + loan.interestRate, 0) / totalLoans
+      ? activeLoans.reduce((acc, loan) => acc + loan.interestRate, 0) / totalLoans
       : 0;
 
   const calculateTotalInterest = (filteredLoans: Loan[]) => {
@@ -61,7 +63,7 @@ export function DashboardPageClient({ loans, customers }: DashboardPageClientPro
       monthlyData[key] = { KHR: 0, USD: 0 };
   }
 
-  loans.forEach(loan => {
+  activeLoans.forEach(loan => {
     if(!loan.loanDate) return;
     const key = loan.loanDate.slice(0, 7); // YYYY-MM
     if (monthlyData[key]) {
