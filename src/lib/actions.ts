@@ -1,9 +1,9 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { addLoan, addCustomer, updateCustomer, deleteCustomer, getLoans, getCustomers, updateLoanStatus, deleteLoan, updateLoan, markPaymentAsPaid } from './firebase';
+import { addLoan, addCustomer, updateCustomer, deleteCustomer, getLoans, getCustomers, updateLoanStatus, deleteLoan, updateLoan, markPaymentAsPaid, recordPrincipalPayment } from './firebase';
 import { verifyLoanApplication } from '@/ai/flows/verify-loan-application';
-import { loanSchema, customerSchema, updateLoanSchema, type FormState, type Loan, type Currency } from '@/lib/types';
+import { loanSchema, customerSchema, updateLoanSchema, principalPaymentSchema, type FormState, type Loan, type Currency } from '@/lib/types';
 import { sendTelegramNotification } from './telegram';
 import { formatCurrency } from './utils';
 import { addDays, formatISO } from 'date-fns';
@@ -369,4 +369,43 @@ export async function sendPaymentRemindersAction(
         const message = error instanceof Error ? error.message : 'An unexpected error occurred while sending reminders.';
         return { message, error: true };
     }
+}
+
+
+export async function recordPrincipalPaymentAction(
+  prevState: FormState,
+  formData: FormData
+): Promise<FormState> {
+  try {
+    const validatedFields = principalPaymentSchema.safeParse({
+      loanId: formData.get('loanId'),
+      amount: formData.get('amount'),
+    });
+
+    if (!validatedFields.success) {
+      const fieldErrors = validatedFields.error.flatten().fieldErrors;
+      const errorMessages = Object.values(fieldErrors).flat().join('. ');
+      return { 
+        message: `Validation failed: ${errorMessages}.`, 
+        error: true 
+      };
+    }
+    
+    const { loanId, amount } = validatedFields.data;
+
+    await recordPrincipalPayment(loanId, amount);
+
+    revalidatePath('/loans');
+    revalidatePath('/payments');
+    revalidatePath('/');
+
+    return { message: 'Principal payment recorded successfully.' };
+  } catch (error) {
+    console.error('Error recording principal payment:', error);
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred.';
+    return {
+      message,
+      error: true
+    };
+  }
 }

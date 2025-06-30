@@ -70,6 +70,12 @@ export const customerSchema = z.object({
     avatar: z.string().optional(),
 });
 
+export const principalPaymentSchema = z.object({
+  loanId: z.string(),
+  amount: z.coerce.number().positive('Payment amount must be positive'),
+});
+
+
 export type FormState = {
   message: string;
   verificationResult?: {

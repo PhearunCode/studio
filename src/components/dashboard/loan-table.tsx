@@ -27,6 +27,7 @@ import { updateLoanStatusAction } from '@/lib/actions';
 import { DeleteLoanDialog } from './delete-loan-dialog';
 import { EditLoanForm } from './edit-loan-form';
 import { PaymentScheduleDialog } from './payment-schedule-dialog';
+import { PrincipalPaymentDialog } from './principal-payment-dialog';
 import { Input } from '@/components/ui/input';
 
 interface LoanTableProps {
@@ -39,6 +40,7 @@ export function LoanTable({ loans }: LoanTableProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isPaymentScheduleOpen, setIsPaymentScheduleOpen] = useState(false);
+  const [isPrincipalPaymentOpen, setIsPrincipalPaymentOpen] = useState(false);
   const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -74,6 +76,11 @@ export function LoanTable({ loans }: LoanTableProps) {
   const handleViewPayments = (loan: Loan) => {
     setSelectedLoan(loan);
     setIsPaymentScheduleOpen(true);
+  };
+
+  const handlePrincipalPayment = (loan: Loan) => {
+    setSelectedLoan(loan);
+    setIsPrincipalPaymentOpen(true);
   };
 
   const formatDate = (dateString: string) => {
@@ -125,6 +132,11 @@ export function LoanTable({ loans }: LoanTableProps) {
         onOpenChange={setIsPaymentScheduleOpen}
         loan={selectedLoan}
       />
+      <PrincipalPaymentDialog
+        open={isPrincipalPaymentOpen}
+        onOpenChange={setIsPrincipalPaymentOpen}
+        loan={selectedLoan}
+      />
       <div className="py-4">
         <Input
           placeholder="Search by borrower name..."
@@ -137,7 +149,7 @@ export function LoanTable({ loans }: LoanTableProps) {
         <TableHeader>
           <TableRow>
             <TableHead>Borrower</TableHead>
-            <TableHead>Amount</TableHead>
+            <TableHead>Principal</TableHead>
             <TableHead>Interest</TableHead>
             <TableHead>Term</TableHead>
             <TableHead>Date</TableHead>
@@ -174,6 +186,9 @@ export function LoanTable({ loans }: LoanTableProps) {
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
                     <DropdownMenuItem onSelect={() => handleViewPayments(loan)}>
                         View Payments
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => handlePrincipalPayment(loan)} disabled={loan.status !== 'Approved'}>
+                        Make Principal Payment
                     </DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => handleEdit(loan)}>
                       Edit Loan

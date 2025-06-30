@@ -303,3 +303,55 @@ export const markPaymentAsPaid = async (loanId: string, month: number) => {
         status: newStatus
     });
 };
+
+export const recordPrincipalPayment = async (loanId: string, paymentAmount: number) => {
+    if (!db) throw createConnectionError();
+    if (paymentAmount <= 0) {
+        throw new Error('Payment amount must be positive.');
+    }
+
+    const loanRef = db.collection('loans').doc(loanId);
+    await db.runTransaction(async (transaction) => {
+        const loanDoc = await transaction.get(loanRef);
+        if (!loanDoc.exists) {
+            throw new Error('Loan not found.');
+        }
+
+        const loanData = loanDoc.data() as Loan;
+        const currentPrincipal = loanData.amount;
+
+        if (paymentAmount > currentPrincipal) {
+            throw new Error('Payment amount cannot be greater than the remaining principal.');
+        }
+        
+        const newPrincipal = currentPrincipal - paymentAmount;
+        const newStatus = newPrincipal <= 0 ? 'Paid' : loanData.status;
+
+        let newPayments = loanData.payments ?? [];
+        if (newPrincipal > 0 && (loanData.status === 'Approved')) {
+            const monthlyInterest = newPrincipal * (loanData.interestRate / 100);
+            newPayments = newPayments.map(p => {
+                if (p.status === 'Upcoming' || p.status === 'Overdue') {
+                    const isFinalPayment = p.month === loanData.term;
+                    const principalPayment = isFinalPayment ? newPrincipal : 0;
+                    const totalPayment = monthlyInterest + principalPayment;
+
+                    return {
+                        ...p,
+                        interestPayment: monthlyInterest,
+                        principalPayment: principalPayment,
+                        monthlyPayment: totalPayment,
+                        remainingBalance: isFinalPayment ? 0 : newPrincipal,
+                    };
+                }
+                return p;
+            });
+        }
+
+        transaction.update(loanRef, {
+            amount: newPrincipal,
+            status: newStatus,
+            payments: newPayments,
+        });
+    });
+};
