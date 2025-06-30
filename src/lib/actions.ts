@@ -399,6 +399,25 @@ export async function recordPrincipalPaymentAction(
     revalidatePath('/payments');
     revalidatePath('/');
 
+    // Try to send notification, but don't let it block the success response
+    try {
+        // Fetch fresh data after revalidation might take effect
+        const loans = await getLoans();
+        const customers = await getCustomers();
+        const loan = loans.find(l => l.id === loanId);
+
+        if (loan) {
+            const customer = customers.find(c => c.name === loan.name);
+            if (customer && customer.telegramChatId) {
+                const message = `Hi ${customer.name}, we have received your principal payment of ${formatCurrency(amount, loan.currency)}. Your new remaining principal is ${formatCurrency(loan.amount, loan.currency)}. Thank you!`;
+                await sendTelegramNotification(message, customer.telegramChatId);
+            }
+        }
+    } catch (notificationError) {
+        console.error('Failed to send principal payment confirmation notification:', notificationError);
+        // Don't rethrow, just log it. The main action succeeded.
+    }
+
     return { message: 'Principal payment recorded successfully.' };
   } catch (error) {
     console.error('Error recording principal payment:', error);
