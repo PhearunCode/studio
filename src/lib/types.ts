@@ -34,6 +34,7 @@ export interface Customer {
   phone: string;
   idCardNumber?: string;
   telegramChatId?: string;
+  facebookUrl?: string;
   avatar?: string;
   totalLoans: number;
   totalLoanAmountKhr: number;
@@ -67,6 +68,7 @@ export const customerSchema = z.object({
     phone: z.string().min(1, "Phone number is required.").max(20, "Phone number must be 20 characters or less."),
     idCardNumber: z.string().optional(),
     telegramChatId: z.string().optional(),
+    facebookUrl: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
     avatar: z.string().optional(),
 });
 

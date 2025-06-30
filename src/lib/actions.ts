@@ -157,6 +157,7 @@ export async function saveCustomerAction(
       phone: formData.get('phone'),
       idCardNumber: formData.get('idCardNumber'),
       telegramChatId: formData.get('telegramChatId'),
+      facebookUrl: formData.get('facebookUrl'),
       avatar: formData.get('avatar'),
     });
 

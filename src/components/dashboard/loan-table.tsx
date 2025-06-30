@@ -31,6 +31,7 @@ import { PrincipalPaymentDialog } from './principal-payment-dialog';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from '@/contexts/language-context';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { CustomerProfilePopover } from '../customers/customer-profile-popover';
 
 interface LoanTableProps {
   loans: Loan[];
@@ -174,10 +175,12 @@ export function LoanTable({ loans, customers }: LoanTableProps) {
             <TableRow key={loan.id}>
               <TableCell>
                 <div className="flex items-center gap-3">
-                  <Avatar>
-                    <AvatarImage src={customer?.avatar || `https://avatar.vercel.sh/${loan.name}.png`} alt={loan.name} />
-                    <AvatarFallback>{getInitials(loan.name)}</AvatarFallback>
-                  </Avatar>
+                  <CustomerProfilePopover customer={customer}>
+                    <Avatar className="cursor-pointer">
+                      <AvatarImage src={customer?.avatar || `https://avatar.vercel.sh/${loan.name}.png`} alt={loan.name} />
+                      <AvatarFallback>{getInitials(loan.name)}</AvatarFallback>
+                    </Avatar>
+                  </CustomerProfilePopover>
                   <span className="font-medium">{loan.name}</span>
                 </div>
               </TableCell>

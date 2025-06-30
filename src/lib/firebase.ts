@@ -119,6 +119,7 @@ export const getCustomers = async (): Promise<Customer[]> => {
                 phone: data.phone || '',
                 idCardNumber: data.idCardNumber || '',
                 telegramChatId: data.telegramChatId || '',
+                facebookUrl: data.facebookUrl || '',
                 avatar: data.avatar || '',
                 totalLoans: 0,
                 totalLoanAmountKhr: 0,

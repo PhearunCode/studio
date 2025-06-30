@@ -131,6 +131,10 @@ export function CustomerForm({ customer, open, onOpenChange, children }: Custome
                 <Input id="telegramChatId" name="telegramChatId" placeholder={t('customerForm.telegramPlaceholder')} defaultValue={customer?.telegramChatId ?? ''} />
             </div>
             <div className="space-y-2">
+                <Label htmlFor="facebookUrl">{t('customerForm.facebookLabel')}</Label>
+                <Input id="facebookUrl" name="facebookUrl" placeholder={t('customerForm.facebookPlaceholder')} defaultValue={customer?.facebookUrl ?? ''} />
+            </div>
+            <div className="space-y-2">
                 <Label htmlFor="idCardNumber">{t('customerForm.idCardLabel')}</Label>
                 <Input id="idCardNumber" name="idCardNumber" placeholder={t('customerForm.idCardPlaceholder')} defaultValue={customer?.idCardNumber ?? ''} />
             </div>

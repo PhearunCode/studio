@@ -18,6 +18,7 @@ import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from '@/contexts/language-context';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { CustomerProfilePopover } from '../customers/customer-profile-popover';
 
 interface PaymentsTableProps {
   loans: Loan[];
@@ -98,10 +99,12 @@ export function PaymentsTable({ loans, customers }: PaymentsTableProps) {
                 <TableRow key={loan.id}>
                 <TableCell>
                   <div className="flex items-center gap-3">
-                    <Avatar>
-                      <AvatarImage src={customer?.avatar || `https://avatar.vercel.sh/${loan.name}.png`} alt={loan.name} />
-                      <AvatarFallback>{getInitials(loan.name)}</AvatarFallback>
-                    </Avatar>
+                    <CustomerProfilePopover customer={customer}>
+                      <Avatar className="cursor-pointer">
+                        <AvatarImage src={customer?.avatar || `https://avatar.vercel.sh/${loan.name}.png`} alt={loan.name} />
+                        <AvatarFallback>{getInitials(loan.name)}</AvatarFallback>
+                      </Avatar>
+                    </CustomerProfilePopover>
                     <span className="font-medium">{loan.name}</span>
                   </div>
                 </TableCell>

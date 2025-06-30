@@ -27,6 +27,7 @@ import { formatCurrency, getInitials } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from '@/contexts/language-context';
 import { WhatsAppIcon } from '@/components/icons/whatsapp-icon';
+import { CustomerProfilePopover } from './customer-profile-popover';
 
 interface CustomerTableProps {
   customers: Customer[];
@@ -120,10 +121,12 @@ export function CustomerTable({ customers }: CustomerTableProps) {
             <TableRow key={customer.id}>
               <TableCell className="font-medium">
                 <div className="flex items-center gap-3">
-                  <Avatar>
-                    <AvatarImage src={customer.avatar || `https://avatar.vercel.sh/${customer.name}.png`} alt={customer.name} />
-                    <AvatarFallback>{getInitials(customer.name)}</AvatarFallback>
-                  </Avatar>
+                  <CustomerProfilePopover customer={customer}>
+                    <Avatar className="cursor-pointer">
+                      <AvatarImage src={customer.avatar || `https://avatar.vercel.sh/${customer.name}.png`} alt={customer.name} />
+                      <AvatarFallback>{getInitials(customer.name)}</AvatarFallback>
+                    </Avatar>
+                  </CustomerProfilePopover>
                   <div className="grid gap-0.5">
                     <span className="font-medium">{customer.name}</span>
                   </div>
