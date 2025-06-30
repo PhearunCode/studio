@@ -149,6 +149,7 @@ export const km = {
     title: 'ការកំណត់',
     profile: 'ប្រវត្តិរូប',
     profileDesc: 'នេះជារបៀបដែលអ្នកដទៃនឹងឃើញអ្នកនៅលើគេហទំព័រ។',
+    accountDesc: 'គ្រប់គ្រងគណនី និងសម័យរបស់អ្នក។',
     avatarLabel: 'URL រូបតំណាង ឬផ្ទុកឡើង',
     upload: 'ផ្ទុកឡើង',
     fullNameLabel: 'ឈ្មោះ​ពេញ',

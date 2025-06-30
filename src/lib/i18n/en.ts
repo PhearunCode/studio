@@ -149,6 +149,7 @@ export const en = {
     title: 'Settings',
     profile: 'Profile',
     profileDesc: 'This is how others will see you on the site.',
+    accountDesc: 'Manage your account and session.',
     avatarLabel: 'Avatar URL or Upload',
     upload: 'Upload',
     fullNameLabel: 'Full Name',
