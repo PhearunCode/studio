@@ -9,16 +9,14 @@ import {
 import { getLoans, isFirebaseConnected } from "@/lib/firebase";
 import { PaymentsTable } from "@/components/payments/payments-table";
 import { SendRemindersButton } from "@/components/payments/send-reminders-button";
-import { FirebaseWarning } from "@/components/layout/firebase-warning";
+import { FirebaseSetupInstructions } from "@/components/layout/firebase-setup-instructions";
 
 export default async function PaymentsPage() {
   const connected = isFirebaseConnected();
   
   if (!connected) {
     return (
-      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-        <FirebaseWarning />
-      </div>
+      <FirebaseSetupInstructions />
     );
   }
 

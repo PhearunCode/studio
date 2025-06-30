@@ -9,16 +9,14 @@ import {
 import { getCustomers, isFirebaseConnected } from "@/lib/firebase";
 import { CustomerTable } from "@/components/customers/customer-table";
 import { CustomerFormWrapper } from "@/components/customers/customer-form-wrapper";
-import { FirebaseWarning } from "@/components/layout/firebase-warning";
+import { FirebaseSetupInstructions } from "@/components/layout/firebase-setup-instructions";
 
 export default async function CustomersPage() {
   const connected = isFirebaseConnected();
 
   if (!connected) {
     return (
-      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-        <FirebaseWarning />
-      </div>
+      <FirebaseSetupInstructions />
     );
   }
   

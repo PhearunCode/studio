@@ -9,16 +9,14 @@ import {
 import { getLoans, getCustomers, isFirebaseConnected } from "@/lib/firebase";
 import { LoanTable } from "@/components/dashboard/loan-table";
 import { LoanFormWrapper } from "@/components/dashboard/loan-form-wrapper";
-import { FirebaseWarning } from "@/components/layout/firebase-warning";
+import { FirebaseSetupInstructions } from "@/components/layout/firebase-setup-instructions";
 
 export default async function LoansPage() {
   const connected = isFirebaseConnected();
 
   if (!connected) {
     return (
-      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-        <FirebaseWarning />
-      </div>
+      <FirebaseSetupInstructions />
     );
   }
 
