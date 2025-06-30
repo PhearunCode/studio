@@ -127,10 +127,10 @@ export function AppLayout({ children }: { children: ReactNode }) {
                 </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Customers" isActive={isActive('/customers')} asChild>
-                  <Link href="/customers">
+                <SidebarMenuButton tooltip="Borrowers" isActive={isActive('/borrowers')} asChild>
+                  <Link href="/borrowers">
                     <Users />
-                    <span>Customers</span>
+                    <span>Borrowers</span>
                   </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
