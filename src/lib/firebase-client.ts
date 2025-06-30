@@ -17,6 +17,7 @@ if (!getApps().length) {
     // Check if all config values are present
     if (Object.values(firebaseConfig).every(value => value)) {
         app = initializeApp(firebaseConfig);
+        console.log("Firebase client initialized successfully.");
     } else {
         console.warn("Firebase client config is incomplete. Firebase client features will be disabled. Please add all NEXT_PUBLIC_FIREBASE_* variables to your .env file.");
     }
