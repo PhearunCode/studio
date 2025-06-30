@@ -74,14 +74,13 @@ export function PrincipalPaymentDialog({ loan, open, onOpenChange }: PrincipalPa
   if (!loan) return null;
 
   const remainingPrincipal = loan.amount;
+  const percentages = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
 
-  const handlePayHalf = () => {
-    setAmount(String(remainingPrincipal / 2));
-  }
-
-  const handlePayFull = () => {
-    setAmount(String(remainingPrincipal));
-  }
+  const handlePercentagePay = (percentage: number) => {
+    const paymentValue = (remainingPrincipal * percentage) / 100;
+    // Round to 2 decimal places to avoid floating point issues
+    setAmount(String(Math.round(paymentValue * 100) / 100));
+  };
   
   const paymentAmount = Number(amount) || 0;
   const newPrincipal = remainingPrincipal - paymentAmount;
@@ -116,9 +115,18 @@ export function PrincipalPaymentDialog({ loan, open, onOpenChange }: PrincipalPa
                     onChange={(e) => setAmount(e.target.value)}
                 />
             </div>
-            <div className="flex gap-2">
-                <Button type="button" variant="secondary" onClick={handlePayHalf}>Pay Half ({formatCurrency(remainingPrincipal / 2, loan.currency)})</Button>
-                <Button type="button" variant="secondary" onClick={handlePayFull}>Pay Full ({formatCurrency(remainingPrincipal, loan.currency)})</Button>
+            <div className="flex flex-wrap gap-2">
+                {percentages.map((p) => (
+                    <Button 
+                        key={p}
+                        type="button" 
+                        variant="secondary" 
+                        size="sm"
+                        onClick={() => handlePercentagePay(p)}
+                    >
+                        {p}%
+                    </Button>
+                ))}
             </div>
             
             {paymentAmount > 0 && paymentAmount <= remainingPrincipal && (
