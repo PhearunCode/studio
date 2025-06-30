@@ -130,7 +130,7 @@ export const en = {
     searchPlaceholder: 'Search by customer name...',
     table: {
       customer: 'Customer',
-      phone: 'Phone',
+      phone: 'Phone / WhatsApp',
       telegramId: 'Telegram ID',
       idCardNumber: 'ID Card #',
       address: 'Address',
@@ -171,7 +171,7 @@ export const en = {
       nameLabel: 'Customer Name',
       namePlaceholder: 'Juan dela Cruz',
       phoneLabel: 'Phone Number',
-      phonePlaceholder: 'e.g. 1234567890',
+      phonePlaceholder: 'e.g. +639171234567 (include country code)',
       telegramLabel: 'Telegram Chat ID (Optional)',
       telegramPlaceholder: 'Get from @userinfobot',
       idCardLabel: 'ID Card Number',

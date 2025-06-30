@@ -26,6 +26,7 @@ import { TelegramChatDialog } from './telegram-chat-dialog';
 import { formatCurrency, getInitials } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from '@/contexts/language-context';
+import { WhatsAppIcon } from '@/components/icons/whatsapp-icon';
 
 interface CustomerTableProps {
   customers: Customer[];
@@ -128,7 +129,15 @@ export function CustomerTable({ customers }: CustomerTableProps) {
                   </div>
                 </div>
               </TableCell>
-              <TableCell>{customer.phone}</TableCell>
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  <a href={`tel:${customer.phone}`} className="hover:underline">{customer.phone}</a>
+                  <a href={`https://wa.me/${customer.phone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" title="Chat on WhatsApp">
+                      <WhatsAppIcon className="h-4 w-4 text-success hover:opacity-80" />
+                      <span className="sr-only">Chat on WhatsApp</span>
+                  </a>
+                </div>
+              </TableCell>
               <TableCell>
                  <div className="flex items-center gap-2">
                   <span>{customer.telegramChatId || '-'}</span>

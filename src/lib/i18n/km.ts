@@ -130,7 +130,7 @@ export const km = {
     searchPlaceholder: 'ស្វែងរកតាមឈ្មោះអតិថិជន...',
     table: {
       customer: 'អតិថិជន',
-      phone: 'ទូរស័ព្ទ',
+      phone: 'ទូរស័ព្ទ / WhatsApp',
       telegramId: 'លេខសម្គាល់ Telegram',
       idCardNumber: 'លេខអត្តសញ្ញាណប័ណ្ណ',
       address: 'អាសយដ្ឋាន',
@@ -171,7 +171,7 @@ export const km = {
       nameLabel: 'ឈ្មោះអតិថិជន',
       namePlaceholder: 'Juan dela Cruz',
       phoneLabel: 'លេខទូរសព្ទ',
-      phonePlaceholder: 'ឧ. 1234567890',
+      phonePlaceholder: 'ឧ. +៦៣៩១៧១២៣៤៥៦៧ (រួមបញ្ចូលលេខកូដប្រទេស)',
       telegramLabel: 'លេខសម្គាល់ Telegram (ស្រេចចិត្ត)',
       telegramPlaceholder: 'យកពី @userinfobot',
       idCardLabel: 'លេខអត្តសញ្ញាណប័ណ្ណ',
