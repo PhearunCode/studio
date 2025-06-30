@@ -67,42 +67,54 @@ export const getLoans = async (): Promise<Omit<Loan, 'documents'>[]> => {
       console.warn("Firebase not connected. Returning mock loan data.");
       return mockLoans;
   }
-  checkDbConnection();
-  const loansSnapshot = await db!.collection('loans').orderBy('loanDate', 'desc').get();
-  if (loansSnapshot.empty) {
-    return [];
-  }
-  const loans = loansSnapshot.docs.map(doc => {
-    const data = doc.data();
-    const loanDate = data.loanDate;
-    let serializableLoanDate: string;
-
-    if (loanDate && typeof loanDate.toDate === 'function') { 
-      serializableLoanDate = loanDate.toDate().toISOString().split('T')[0];
-    } else {
-      serializableLoanDate = String(loanDate || '');
+  
+  try {
+    checkDbConnection();
+    const loansSnapshot = await db!.collection('loans').orderBy('loanDate', 'desc').get();
+    if (loansSnapshot.empty) {
+      return [];
     }
-    
-    const verificationResult = data.verificationResult ? {
-        flags: data.verificationResult.flags || [],
-        summary: data.verificationResult.summary || ''
-    } : null;
+    const loans = loansSnapshot.docs.map(doc => {
+      const data = doc.data();
+      const loanDate = data.loanDate;
+      let serializableLoanDate: string;
 
-    return {
-      id: doc.id,
-      name: data.name || '',
-      amount: data.amount || 0,
-      currency: data.currency || 'KHR',
-      interestRate: data.interestRate || 0,
-      term: data.term || 0,
-      loanDate: serializableLoanDate,
-      address: data.address || '',
-      status: data.status || 'Pending',
-      verificationResult: verificationResult,
-      payments: data.payments || [],
-    };
-  });
-  return loans;
+      if (loanDate && typeof loanDate.toDate === 'function') { 
+        serializableLoanDate = loanDate.toDate().toISOString().split('T')[0];
+      } else {
+        serializableLoanDate = String(loanDate || '');
+      }
+      
+      const verificationResult = data.verificationResult ? {
+          flags: data.verificationResult.flags || [],
+          summary: data.verificationResult.summary || ''
+      } : null;
+
+      return {
+        id: doc.id,
+        name: data.name || '',
+        amount: data.amount || 0,
+        currency: data.currency || 'KHR',
+        interestRate: data.interestRate || 0,
+        term: data.term || 0,
+        loanDate: serializableLoanDate,
+        address: data.address || '',
+        status: data.status || 'Pending',
+        verificationResult: verificationResult,
+        payments: data.payments || [],
+      };
+    });
+    return loans;
+  } catch (error: any) {
+    if (error.message.includes('DECODER') || error.message.includes('unsupported')) {
+      const message = "Firebase connection failed due to a private key formatting issue. Falling back to mock data. Please check the Firebase setup page for instructions on how to fix your .env file.";
+      console.warn(message);
+      firebaseAdminError = new Error(message); // Set the flag for future calls
+      return mockLoans;
+    }
+    // Re-throw other errors
+    throw error;
+  }
 };
 
 export const getCustomers = async (): Promise<Customer[]> => {
@@ -123,46 +135,71 @@ export const getCustomers = async (): Promise<Customer[]> => {
         return Array.from(customerMap.values());
     }
 
-    checkDbConnection();
+    try {
+        checkDbConnection();
 
-    const customersSnapshot = await db!.collection('customers').orderBy('name').get();
-    const customers = customersSnapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-            id: doc.id,
-            name: data.name,
-            address: data.address,
-            phone: data.phone || '',
-            idCardNumber: data.idCardNumber || '',
-            telegramChatId: data.telegramChatId || '',
-            avatar: data.avatar || '',
-            totalLoans: 0,
-            totalLoanAmountKhr: 0,
-            totalLoanAmountUsd: 0,
-        } as Customer;
-    });
-    
-    if (customers.length === 0) {
-        return [];
-    }
-    
-    const customerMap = new Map(customers.map(c => [c.name, c]));
-    // This part can fail if getLoans fails, but the page will catch the error.
-    const loans = await getLoans(); 
-
-    loans.forEach(loan => {
-        if (customerMap.has(loan.name)) {
-            const customer = customerMap.get(loan.name)!;
-            customer.totalLoans += 1;
-            if (loan.currency === 'KHR') {
-                customer.totalLoanAmountKhr += loan.amount;
-            } else if (loan.currency === 'USD') {
-                customer.totalLoanAmountUsd += loan.amount;
-            }
+        const customersSnapshot = await db!.collection('customers').orderBy('name').get();
+        const customers = customersSnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                name: data.name,
+                address: data.address,
+                phone: data.phone || '',
+                idCardNumber: data.idCardNumber || '',
+                telegramChatId: data.telegramChatId || '',
+                avatar: data.avatar || '',
+                totalLoans: 0,
+                totalLoanAmountKhr: 0,
+                totalLoanAmountUsd: 0,
+            } as Customer;
+        });
+        
+        if (customers.length === 0) {
+            return [];
         }
-    });
+        
+        const customerMap = new Map(customers.map(c => [c.name, c]));
+        // This call to getLoans() is now protected by its own try/catch
+        const loans = await getLoans(); 
 
-    return Array.from(customerMap.values());
+        loans.forEach(loan => {
+            if (customerMap.has(loan.name)) {
+                const customer = customerMap.get(loan.name)!;
+                customer.totalLoans += 1;
+                if (loan.currency === 'KHR') {
+                    customer.totalLoanAmountKhr += loan.amount;
+                } else if (loan.currency === 'USD') {
+                    customer.totalLoanAmountUsd += loan.amount;
+                }
+            }
+        });
+
+        return Array.from(customerMap.values());
+    } catch (error: any) {
+        if (error.message.includes('DECODER') || error.message.includes('unsupported')) {
+            const message = "Firebase connection failed due to a private key formatting issue. Falling back to mock data. Please check the Firebase setup page for instructions on how to fix your .env file.";
+            console.warn(message);
+            firebaseAdminError = new Error(message); // Set the flag for future calls
+            
+            // Return mock customer data here as well
+            const customerMap = new Map(mockCustomers.map(c => [c.name, {...c}]));
+            mockLoans.forEach(loan => {
+                if(customerMap.has(loan.name)) {
+                    const customer = customerMap.get(loan.name)!;
+                    customer.totalLoans += 1;
+                    if (loan.currency === 'KHR') {
+                        customer.totalLoanAmountKhr += loan.amount;
+                    } else if (loan.currency === 'USD') {
+                        customer.totalLoanAmountUsd += loan.amount;
+                    }
+                }
+            });
+            return Array.from(customerMap.values());
+        }
+        // Re-throw other errors
+        throw error;
+    }
 };
 
 // Data mutation functions continue to throw errors so actions can report them.
@@ -372,3 +409,5 @@ export const recordPrincipalPayment = async (loanId: string, paymentAmount: numb
         });
     });
 };
+
+    
