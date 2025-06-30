@@ -20,6 +20,7 @@ import { Loader2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Loan } from '@/lib/types';
 import { useTranslation } from '@/contexts/language-context';
+import { ScrollArea } from '../ui/scroll-area';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -74,7 +75,7 @@ export function EditLoanForm({ loan, open, onOpenChange, children }: EditLoanFor
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       {children}
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{t('loanForm.editTitle')}</DialogTitle>
           <DialogDescription>
@@ -85,51 +86,54 @@ export function EditLoanForm({ loan, open, onOpenChange, children }: EditLoanFor
             key={loan?.id ?? 'edit'}
             ref={formRef} 
             action={formAction} 
-            className="space-y-4 py-4"
+            className="space-y-4"
         >
-            <input type="hidden" name="id" value={loan?.id ?? ''} />
+            <ScrollArea className="h-[60vh] pr-4">
+              <div className="space-y-4 pr-1">
+                <input type="hidden" name="id" value={loan?.id ?? ''} />
 
-            <div className="space-y-2">
-                <Label htmlFor="name">{t('loanForm.borrowerNameLabel')}</Label>
-                <Input id="name" name="name" defaultValue={loan?.name ?? ''} readOnly disabled />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <Label htmlFor="amount">{t('loanForm.amountLabel')}</Label>
-                    <Input id="amount" name="amount" type="number" placeholder={t('loanForm.amountPlaceholder')} required defaultValue={loan?.amount} />
+                    <Label htmlFor="name">{t('loanForm.borrowerNameLabel')}</Label>
+                    <Input id="name" name="name" defaultValue={loan?.name ?? ''} readOnly disabled />
                 </div>
-                <div className="space-y-2">
-                    <Label htmlFor="currency">{t('loanForm.currencyLabel')}</Label>
-                    <Select name="currency" required defaultValue={loan?.currency ?? 'KHR'}>
-                        <SelectTrigger id="currency">
-                            <SelectValue placeholder={t('loanForm.currencyPlaceholder')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="KHR">KHR (៛)</SelectItem>
-                            <SelectItem value="USD">USD ($)</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-            </div>
 
-            <div className="space-y-2">
-                <Label htmlFor="interestRate">{t('loanForm.interestRateLabel')}</Label>
-                <Input id="interestRate" name="interestRate" type="number" step="0.1" placeholder={t('loanForm.interestRatePlaceholder')} required defaultValue={loan?.interestRate} />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="term">{t('loanForm.termLabel')}</Label>
-                    <Input id="term" name="term" type="number" placeholder={t('loanForm.termPlaceholder')} required defaultValue={loan?.term} />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="amount">{t('loanForm.amountLabel')}</Label>
+                        <Input id="amount" name="amount" type="number" placeholder={t('loanForm.amountPlaceholder')} required defaultValue={loan?.amount} />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="currency">{t('loanForm.currencyLabel')}</Label>
+                        <Select name="currency" required defaultValue={loan?.currency ?? 'KHR'}>
+                            <SelectTrigger id="currency">
+                                <SelectValue placeholder={t('loanForm.currencyPlaceholder')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="KHR">KHR (៛)</SelectItem>
+                                <SelectItem value="USD">USD ($)</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
-                <div className="space-y-2">
-                    <Label htmlFor="loanDate">{t('loanForm.loanDateLabel')}</Label>
-                    <Input id="loanDate" name="loanDate" type="date" required defaultValue={loan?.loanDate} />
-                </div>
-            </div>
 
-          <DialogFooter>
+                <div className="space-y-2">
+                    <Label htmlFor="interestRate">{t('loanForm.interestRateLabel')}</Label>
+                    <Input id="interestRate" name="interestRate" type="number" step="0.1" placeholder={t('loanForm.interestRatePlaceholder')} required defaultValue={loan?.interestRate} />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="term">{t('loanForm.termLabel')}</Label>
+                        <Input id="term" name="term" type="number" placeholder={t('loanForm.termPlaceholder')} required defaultValue={loan?.term} />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="loanDate">{t('loanForm.loanDateLabel')}</Label>
+                        <Input id="loanDate" name="loanDate" type="date" required defaultValue={loan?.loanDate} />
+                    </div>
+                </div>
+              </div>
+            </ScrollArea>
+          <DialogFooter className="pt-4">
             <DialogClose asChild>
                 <Button variant="outline">{t('cancel')}</Button>
             </DialogClose>

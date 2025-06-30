@@ -22,6 +22,7 @@ import { VerificationResultDialog } from './verification-result-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Customer } from '@/lib/types';
 import { useTranslation } from '@/contexts/language-context';
+import { ScrollArea } from '../ui/scroll-area';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -96,7 +97,7 @@ export function LoanForm({ open, onOpenChange, children, customers }: LoanFormPr
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       {children && <DialogTrigger asChild>{children}</DialogTrigger>}
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{t('loanForm.newTitle')}</DialogTitle>
           <DialogDescription>
@@ -104,68 +105,72 @@ export function LoanForm({ open, onOpenChange, children, customers }: LoanFormPr
           </DialogDescription>
         </DialogHeader>
         <form ref={formRef} action={formAction} className="space-y-4">
-          <div className="space-y-2 col-span-2">
-            <Label htmlFor="name">{t('loanForm.borrowerNameLabel')}</Label>
-            <Select name="name" required onValueChange={handleCustomerSelect}>
-              <SelectTrigger id="name">
-                <SelectValue placeholder={t('loanForm.borrowerNamePlaceholder')} />
-              </SelectTrigger>
-              <SelectContent>
-                {customers.length > 0 ? customers.map((customer) => (
-                  <SelectItem key={customer.id} value={customer.name}>
-                    {customer.name}
-                  </SelectItem>
-                )) : (
-                  <div className="p-2 text-sm text-muted-foreground text-center">{t('loanForm.noCustomers')}</div>
-                )}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                  <Label htmlFor="amount">{t('loanForm.amountLabel')}</Label>
-                  <Input id="amount" name="amount" type="number" placeholder={t('loanForm.amountPlaceholder')} required />
+          <ScrollArea className="h-[60vh] pr-4">
+            <div className="space-y-4 pr-1">
+              <div className="space-y-2 col-span-2">
+                <Label htmlFor="name">{t('loanForm.borrowerNameLabel')}</Label>
+                <Select name="name" required onValueChange={handleCustomerSelect}>
+                  <SelectTrigger id="name">
+                    <SelectValue placeholder={t('loanForm.borrowerNamePlaceholder')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {customers.length > 0 ? customers.map((customer) => (
+                      <SelectItem key={customer.id} value={customer.name}>
+                        {customer.name}
+                      </SelectItem>
+                    )) : (
+                      <div className="p-2 text-sm text-muted-foreground text-center">{t('loanForm.noCustomers')}</div>
+                    )}
+                  </SelectContent>
+                </Select>
               </div>
-               <div className="space-y-2">
-                  <Label htmlFor="currency">{t('loanForm.currencyLabel')}</Label>
-                   <Select name="currency" required defaultValue="KHR">
-                       <SelectTrigger id="currency">
-                           <SelectValue placeholder={t('loanForm.currencyPlaceholder')} />
-                       </SelectTrigger>
-                       <SelectContent>
-                           <SelectItem value="KHR">KHR (៛)</SelectItem>
-                           <SelectItem value="USD">USD ($)</SelectItem>
-                       </SelectContent>
-                   </Select>
-               </div>
-          </div>
-          <div className="space-y-2">
-              <Label htmlFor="interestRate">{t('loanForm.interestRateLabel')}</Label>
-              <Input id="interestRate" name="interestRate" type="number" step="0.1" placeholder={t('loanForm.interestRatePlaceholder')} required />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-             <div className="space-y-2">
-                <Label htmlFor="term">{t('loanForm.termLabel')}</Label>
-                <Input id="term" name="term" type="number" placeholder={t('loanForm.termPlaceholder')} required />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                      <Label htmlFor="amount">{t('loanForm.amountLabel')}</Label>
+                      <Input id="amount" name="amount" type="number" placeholder={t('loanForm.amountPlaceholder')} required />
+                  </div>
+                  <div className="space-y-2">
+                      <Label htmlFor="currency">{t('loanForm.currencyLabel')}</Label>
+                      <Select name="currency" required defaultValue="KHR">
+                          <SelectTrigger id="currency">
+                              <SelectValue placeholder={t('loanForm.currencyPlaceholder')} />
+                          </SelectTrigger>
+                          <SelectContent>
+                              <SelectItem value="KHR">KHR (៛)</SelectItem>
+                              <SelectItem value="USD">USD ($)</SelectItem>
+                          </SelectContent>
+                      </Select>
+                  </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="loanDate">{t('loanForm.loanDateLabel')}</Label>
-                <Input id="loanDate" name="loanDate" type="date" required />
+                  <Label htmlFor="interestRate">{t('loanForm.interestRateLabel')}</Label>
+                  <Input id="interestRate" name="interestRate" type="number" step="0.1" placeholder={t('loanForm.interestRatePlaceholder')} required />
               </div>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="address">{t('loanForm.addressLabel')}</Label>
-            <Input 
-                id="address" 
-                name="address" 
-                placeholder={t('loanForm.addressPlaceholder')}
-                required 
-                key={selectedCustomer?.id ?? 'new-customer'}
-                defaultValue={selectedCustomer?.address ?? ''}
-                readOnly={!!selectedCustomer}
-            />
-          </div>
-          <DialogFooter>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <Label htmlFor="term">{t('loanForm.termLabel')}</Label>
+                    <Input id="term" name="term" type="number" placeholder={t('loanForm.termPlaceholder')} required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="loanDate">{t('loanForm.loanDateLabel')}</Label>
+                    <Input id="loanDate" name="loanDate" type="date" required />
+                  </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="address">{t('loanForm.addressLabel')}</Label>
+                <Input 
+                    id="address" 
+                    name="address" 
+                    placeholder={t('loanForm.addressPlaceholder')}
+                    required 
+                    key={selectedCustomer?.id ?? 'new-customer'}
+                    defaultValue={selectedCustomer?.address ?? ''}
+                    readOnly={!!selectedCustomer}
+                />
+              </div>
+            </div>
+          </ScrollArea>
+          <DialogFooter className="pt-4">
             <DialogClose asChild>
                 <Button variant="outline">{t('cancel')}</Button>
             </DialogClose>
