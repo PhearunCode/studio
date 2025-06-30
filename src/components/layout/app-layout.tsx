@@ -11,7 +11,6 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarTrigger,
   SidebarSeparator,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
@@ -25,13 +24,52 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { getInitials } from '@/lib/utils';
+import { getInitials, cn } from '@/lib/utils';
 import { ThemeToggle } from './theme-toggle';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase-client';
 import { useAuth } from '@/components/auth/auth-provider';
 import { useTranslation } from '@/contexts/language-context';
 import { LanguageSwitcher } from './language-switcher';
+import { useIsMobile } from '@/hooks/use-mobile';
+
+function BottomNavBar() {
+  const pathname = usePathname();
+  const { t } = useTranslation();
+
+  const navItems = [
+    { href: '/', label: t('sidebar.dashboard'), icon: LayoutDashboard },
+    { href: '/loans', label: t('sidebar.loans'), icon: Banknote },
+    { href: '/payments', label: t('sidebar.payments'), icon: CreditCard },
+    { href: '/borrowers', label: t('sidebar.borrowers'), icon: Users },
+    { href: '/settings', label: t('sidebar.settings'), icon: Settings },
+  ];
+
+  const isActive = (path: string) => pathname === path;
+
+  return (
+    <nav className="fixed bottom-0 left-0 right-0 z-40 mt-auto border-t bg-background/95 backdrop-blur-sm md:hidden">
+      <div className="mx-auto flex h-16 max-w-md items-center justify-around">
+        {navItems.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={cn(
+              'flex h-full w-full flex-col items-center justify-center gap-1 p-2 text-xs font-medium',
+              isActive(item.href)
+                ? 'text-primary'
+                : 'text-muted-foreground hover:text-primary'
+            )}
+          >
+            <item.icon className="h-5 w-5" />
+            <span>{item.label}</span>
+          </Link>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
 
 interface Profile {
   name: string;
@@ -45,6 +83,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
   const { user } = useAuth();
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
 
   const isActive = (path: string) => pathname === path;
   
@@ -91,6 +130,55 @@ export function AppLayout({ children }: { children: ReactNode }) {
       console.error('Failed to log out:', error);
     }
   };
+
+  if (isMobile) {
+    return (
+      <>
+        <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4">
+            <div className="flex items-center gap-2">
+                <div className="bg-primary text-primary-foreground p-2 rounded-lg">
+                    <Landmark className="h-6 w-6" />
+                </div>
+                <h1 className="text-xl font-semibold font-headline">LendEasy PH</h1>
+            </div>
+
+            <div className="flex-1" />
+            <LanguageSwitcher />
+            <ThemeToggle />
+            <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon"
+                className="overflow-hidden rounded-full"
+              >
+                <Avatar className="h-9 w-9">
+                  <AvatarImage src={displayProfile?.avatar || `https://avatar.vercel.sh/${displayProfile?.name}.png`} alt={displayProfile?.name ?? 'User'} />
+                  <AvatarFallback>
+                    {displayProfile ? getInitials(displayProfile.name) : <UserCircle className="h-6 w-6" />}
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>{displayProfile?.name ?? t('header.myAccount')}</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/settings">{t('header.settings')}</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>{t('header.support')}</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onSelect={handleLogout}>{t('header.logout')}</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </header>
+        <main className="flex-1 pb-20">
+          {children}
+        </main>
+        <BottomNavBar />
+      </>
+    );
+  }
 
   return (
     <SidebarProvider>
@@ -153,7 +241,6 @@ export function AppLayout({ children }: { children: ReactNode }) {
       </Sidebar>
       <SidebarInset>
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-md sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-          <SidebarTrigger className="md:hidden" />
           <div className="flex-1" />
           <LanguageSwitcher />
           <ThemeToggle />
