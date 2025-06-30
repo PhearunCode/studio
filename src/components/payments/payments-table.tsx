@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -33,12 +34,11 @@ export function PaymentsTable({ loans }: PaymentsTableProps) {
     return loans
       .filter(loan => loan.status === 'Approved' || loan.status === 'Paid')
       .map(loan => {
-        const monthlyPayment = calculateMonthlyPayment(loan.amount, loan.interestRate, loan.term);
-        const totalPaid = monthlyPayment * loan.term;
-        const totalInterest = totalPaid > loan.amount ? totalPaid - loan.amount : 0;
+        const monthlyInterest = calculateMonthlyPayment(loan.amount, loan.interestRate, loan.term);
+        const totalInterest = monthlyInterest * loan.term;
         return {
           ...loan,
-          monthlyPayment,
+          monthlyPayment: monthlyInterest, // This is now monthly interest
           totalInterest,
         };
       });
@@ -56,7 +56,7 @@ export function PaymentsTable({ loans }: PaymentsTableProps) {
           <TableRow>
             <TableHead>Borrower</TableHead>
             <TableHead>Payment Progress</TableHead>
-            <TableHead className="text-right">Monthly Payment</TableHead>
+            <TableHead className="text-right">Monthly Interest</TableHead>
             <TableHead className="text-right">Total Interest</TableHead>
             <TableHead className="text-center">Actions</TableHead>
           </TableRow>

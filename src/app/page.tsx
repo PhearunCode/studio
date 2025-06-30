@@ -35,9 +35,8 @@ export default async function DashboardPage() {
       return filteredLoans
         .filter(loan => loan.status === 'Approved' || loan.status === 'Paid')
         .reduce((acc, loan) => {
-            const monthlyPayment = calculateMonthlyPayment(loan.amount, loan.interestRate, loan.term);
-            const totalPaid = monthlyPayment * loan.term;
-            const totalInterest = totalPaid > loan.amount ? totalPaid - loan.amount : 0;
+            const monthlyInterest = calculateMonthlyPayment(loan.amount, loan.interestRate, loan.term);
+            const totalInterest = monthlyInterest * loan.term;
             return acc + totalInterest;
         }, 0);
   }

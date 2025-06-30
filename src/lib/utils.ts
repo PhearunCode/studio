@@ -18,21 +18,19 @@ export function formatCurrency(amount: number, currency: Currency = 'KHR') {
   return new Intl.NumberFormat(locale, options).format(amount);
 }
 
+// This now calculates the monthly interest payment.
 export function calculateMonthlyPayment(principal: number, interestRate: number, termMonths: number): number {
-  if (principal <= 0 || termMonths <= 0) {
+  if (principal <= 0) {
     return 0;
   }
    if (interestRate < 0) {
       interestRate = 0;
   }
 
-  // Interest is calculated monthly on the original principal (simple interest per month).
+  // Interest is calculated monthly on the original principal.
   const monthlyInterest = principal * (interestRate / 100);
-  const monthlyPrincipal = principal / termMonths;
   
-  const monthlyPayment = monthlyPrincipal + monthlyInterest;
-  
-  return monthlyPayment;
+  return monthlyInterest;
 }
 
 export function generatePaymentSchedule(principal: number, interestRate: number, termMonths: number, loanDateStr: string): Payment[] {
@@ -43,27 +41,25 @@ export function generatePaymentSchedule(principal: number, interestRate: number,
     interestRate = 0;
   }
 
-  // Interest is calculated monthly on the original principal.
   const monthlyInterest = principal * (interestRate / 100);
-  const monthlyPrincipal = principal / termMonths;
   
   const schedule: Payment[] = [];
-  let remainingBalance = principal;
   const startDate = new Date(loanDateStr + 'T00:00:00'); // Avoid timezone issues
 
   for (let i = 1; i <= termMonths; i++) {
-      // For the last month, adjust to ensure the balance is exactly zero.
-      const principalPaymentThisMonth = (i === termMonths) ? remainingBalance : monthlyPrincipal;
-      remainingBalance -= principalPaymentThisMonth;
-
       const dueDate = addMonths(startDate, i);
       const status: 'Upcoming' | 'Overdue' = isPast(dueDate) ? 'Overdue' : 'Upcoming';
+      
+      const isFinalPayment = i === termMonths;
+      const principalPaymentThisMonth = isFinalPayment ? principal : 0;
+      const monthlyPayment = principalPaymentThisMonth + monthlyInterest;
+      const remainingBalance = isFinalPayment ? 0 : principal;
 
       schedule.push({
           month: i,
           dueDate: formatISO(dueDate, { representation: 'date' }), // YYYY-MM-DD
           status: status,
-          monthlyPayment: principalPaymentThisMonth + monthlyInterest,
+          monthlyPayment: monthlyPayment,
           principalPayment: principalPaymentThisMonth,
           interestPayment: monthlyInterest,
           remainingBalance: remainingBalance,

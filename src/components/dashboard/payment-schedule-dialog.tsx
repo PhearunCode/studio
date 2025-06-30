@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -67,7 +68,7 @@ function MarkAsPaidButton({ loanId, month }: { loanId: string, month: number }) 
 
 export function PaymentScheduleDialog({ loan, open, onOpenChange }: PaymentScheduleDialogProps) {
   const schedule = loan?.payments ?? [];
-  const monthlyPayment = loan ? calculateMonthlyPayment(loan.amount, loan.interestRate, loan.term) : 0;
+  const monthlyInterestPayment = loan ? calculateMonthlyPayment(loan.amount, loan.interestRate, loan.term) : 0;
   
   if (!loan) return null;
 
@@ -91,8 +92,8 @@ export function PaymentScheduleDialog({ loan, open, onOpenChange }: PaymentSched
           <DialogTitle>Monthly Payment Schedule</DialogTitle>
           <DialogDescription>
             For a loan of {formatCurrency(loan.amount, loan.currency)} over {loan.term} months at {loan.interestRate}% interest.
-            The calculated monthly payment is{' '}
-            <span className="font-semibold text-foreground">{formatCurrency(monthlyPayment, loan.currency)}</span>.
+            This is an interest-only loan. The calculated monthly interest payment is{' '}
+            <span className="font-semibold text-foreground">{formatCurrency(monthlyInterestPayment, loan.currency)}</span>. The full principal is due with the final payment.
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-[60vh] rounded-md border">
