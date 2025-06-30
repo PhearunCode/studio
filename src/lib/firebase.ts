@@ -26,8 +26,9 @@ if (!getApps().length) {
         }),
       });
       console.log('Firebase Admin SDK initialized successfully.');
-    } catch (error) {
-      console.error('Firebase admin initialization error:', error, 'This often happens if the FIREBASE_PRIVATE_KEY in your .env file is not formatted correctly. Ensure it is the full key and wrapped in double quotes.');
+    } catch (error: any) {
+      console.error('Firebase admin initialization error:', error);
+       throw new Error(`Firebase admin initialization failed. This often happens if the FIREBASE_PRIVATE_KEY in your .env file is not formatted correctly. Please ensure it is the full key and wrapped in double quotes. Original error: ${error.message}`);
     }
   }
 }
@@ -80,9 +81,14 @@ export const getLoans = async (): Promise<Omit<Loan, 'documents'>[]> => {
       };
     });
     return loans;
-  } catch(error) {
+  } catch(error: any) {
+    if (error.message.includes('DECODER routines::unsupported') || error.message.includes('Error: 2 UNKNOWN')) {
+        throw new Error(
+            `Firebase authentication failed. The 'FIREBASE_PRIVATE_KEY' in your .env file is likely formatted incorrectly. Please ensure it's the full key and wrapped in double quotes. Original error: ${error.message}`
+        );
+    }
     console.error("Error fetching loans:", error);
-    // Return an empty array if there's an issue, e.g. permissions.
+    // Return an empty array for other errors, e.g. permissions.
     return [];
   }
 };
@@ -93,43 +99,53 @@ export const getCustomers = async (): Promise<Customer[]> => {
         return [];
     }
 
-    const customersSnapshot = await db.collection('customers').orderBy('name').get();
-    const customers = customersSnapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-            id: doc.id,
-            name: data.name,
-            address: data.address,
-            phone: data.phone || '',
-            idCardNumber: data.idCardNumber || '',
-            telegramChatId: data.telegramChatId || '',
-            avatar: data.avatar || '',
-            totalLoans: 0,
-            totalLoanAmountKhr: 0,
-            totalLoanAmountUsd: 0,
-        } as Customer;
-    });
-    
-    if (customers.length === 0) {
+    try {
+        const customersSnapshot = await db.collection('customers').orderBy('name').get();
+        const customers = customersSnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                name: data.name,
+                address: data.address,
+                phone: data.phone || '',
+                idCardNumber: data.idCardNumber || '',
+                telegramChatId: data.telegramChatId || '',
+                avatar: data.avatar || '',
+                totalLoans: 0,
+                totalLoanAmountKhr: 0,
+                totalLoanAmountUsd: 0,
+            } as Customer;
+        });
+        
+        if (customers.length === 0) {
+            return [];
+        }
+
+        const customerMap = new Map(customers.map(c => [c.name, c]));
+        const loans = await getLoans();
+
+        loans.forEach(loan => {
+            if (customerMap.has(loan.name)) {
+                const customer = customerMap.get(loan.name)!;
+                customer.totalLoans += 1;
+                if (loan.currency === 'KHR') {
+                    customer.totalLoanAmountKhr += loan.amount;
+                } else if (loan.currency === 'USD') {
+                    customer.totalLoanAmountUsd += loan.amount;
+                }
+            }
+        });
+
+        return Array.from(customerMap.values());
+    } catch(error: any) {
+        if (error.message.includes('DECODER routines::unsupported') || error.message.includes('Error: 2 UNKNOWN')) {
+            throw new Error(
+                `Firebase authentication failed. The 'FIREBASE_PRIVATE_KEY' in your .env file is likely formatted incorrectly. Please ensure it's the full key and wrapped in double quotes. Original error: ${error.message}`
+            );
+        }
+        console.error("Error fetching customers:", error);
         return [];
     }
-
-    const customerMap = new Map(customers.map(c => [c.name, c]));
-    const loans = await getLoans();
-
-    loans.forEach(loan => {
-        if (customerMap.has(loan.name)) {
-            const customer = customerMap.get(loan.name)!;
-            customer.totalLoans += 1;
-            if (loan.currency === 'KHR') {
-                customer.totalLoanAmountKhr += loan.amount;
-            } else if (loan.currency === 'USD') {
-                customer.totalLoanAmountUsd += loan.amount;
-            }
-        }
-    });
-
-    return Array.from(customerMap.values());
 };
 
 export const updateCustomer = async (id: string, data: z.infer<typeof customerSchema>) => {
