@@ -105,12 +105,10 @@ export function CustomerTable({ customers }: CustomerTableProps) {
         <TableHeader>
           <TableRow>
             <TableHead>{t('borrowersPage.table.customer')}</TableHead>
-            <TableHead>{t('borrowersPage.table.phone')}</TableHead>
-            <TableHead>{t('borrowersPage.table.telegramId')}</TableHead>
-            <TableHead>{t('borrowersPage.table.idCardNumber')}</TableHead>
-            <TableHead>{t('borrowersPage.table.address')}</TableHead>
-            <TableHead className="text-right">{t('borrowersPage.table.totalLoans')}</TableHead>
-            <TableHead className="text-right">{t('borrowersPage.table.totalLoanedAmount')}</TableHead>
+            <TableHead className="hidden sm:table-cell">{t('borrowersPage.table.phone')}</TableHead>
+            <TableHead className="hidden lg:table-cell">{t('borrowersPage.table.telegramId')}</TableHead>
+            <TableHead className="hidden md:table-cell text-right">{t('borrowersPage.table.totalLoans')}</TableHead>
+            <TableHead className="hidden lg:table-cell text-right">{t('borrowersPage.table.totalLoanedAmount')}</TableHead>
             <TableHead>
               <span className="sr-only">{t('actions')}</span>
             </TableHead>
@@ -132,7 +130,7 @@ export function CustomerTable({ customers }: CustomerTableProps) {
                   </div>
                 </div>
               </TableCell>
-              <TableCell>
+              <TableCell className="hidden sm:table-cell">
                 <div className="flex items-center gap-2">
                   <a href={`tel:${customer.phone}`} className="hover:underline">{customer.phone}</a>
                   <a href={`https://wa.me/${customer.phone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" title="Chat on WhatsApp">
@@ -141,7 +139,7 @@ export function CustomerTable({ customers }: CustomerTableProps) {
                   </a>
                 </div>
               </TableCell>
-              <TableCell>
+              <TableCell className="hidden lg:table-cell">
                  <div className="flex items-center gap-2">
                   <span>{customer.telegramChatId || '-'}</span>
                   {customer.telegramChatId && (
@@ -152,10 +150,8 @@ export function CustomerTable({ customers }: CustomerTableProps) {
                   )}
                 </div>
               </TableCell>
-              <TableCell>{customer.idCardNumber || '-'}</TableCell>
-              <TableCell>{customer.address}</TableCell>
-              <TableCell className="text-right">{customer.totalLoans}</TableCell>
-              <TableCell className="text-right">
+              <TableCell className="hidden md:table-cell text-right">{customer.totalLoans}</TableCell>
+              <TableCell className="hidden lg:table-cell text-right">
                 {formatTotalLoaned(customer)}
               </TableCell>
               <TableCell>

@@ -145,22 +145,23 @@ export function CustomerForm({ customer, open, onOpenChange, children }: Custome
             
             <div className="space-y-2">
                 <Label>{t('customerForm.profilePicLabel')}</Label>
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
                     <Avatar className="h-16 w-16">
                         <AvatarImage src={avatar || `https://avatar.vercel.sh/${name || 'user'}.png`} alt={name} />
                         <AvatarFallback>{getInitials(name)}</AvatarFallback>
                     </Avatar>
-                    <div className="flex-1 space-y-2">
+                    <div className="flex-1 space-y-2 w-full">
                         <Label htmlFor="avatar-url">{t('customerForm.avatarUrlLabel')}</Label>
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-col sm:flex-row items-center gap-2">
                             <Input
                                 id="avatar-url"
                                 placeholder={t('customerForm.avatarUrlPlaceholder')}
                                 value={avatar.startsWith('data:') ? 'Uploaded File' : avatar}
                                 onChange={(e) => setAvatar(e.target.value)}
                                 readOnly={avatar.startsWith('data:')}
+                                className="w-full"
                             />
-                            <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
+                            <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} className="w-full sm:w-auto">
                                 <Upload className="mr-2 h-4 w-4" />
                                 {t('settingsPage.upload')}
                             </Button>
