@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase-client';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
@@ -23,15 +23,10 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      toast({
-        title: 'Success',
-        description: 'Logged in successfully!',
-        className: 'bg-accent text-accent-foreground',
-      });
       router.push('/');
     } catch (error) {
       console.error('Login failed:', error);
-      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+      const errorMessage = 'Invalid email or password. Please try again.';
       toast({
         title: 'Login Failed',
         description: errorMessage,
@@ -43,20 +38,21 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
-       <div className="absolute top-8 left-8 flex items-center gap-2">
-            <div className="bg-primary text-primary-foreground p-2 rounded-lg">
-              <Landmark className="h-6 w-6" />
+    <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2">
+      <div className="flex items-center justify-center py-12">
+        <div className="mx-auto grid w-[350px] gap-6">
+          <div className="grid gap-4 text-center">
+             <div className="flex items-center justify-center gap-2">
+                <div className="bg-primary text-primary-foreground p-3 rounded-lg">
+                  <Landmark className="h-6 w-6" />
+                </div>
             </div>
-            <h1 className="text-xl font-semibold font-headline">LendEasy PH</h1>
-        </div>
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-2xl">Admin Login</CardTitle>
-          <CardDescription>Enter your credentials to access the dashboard.</CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSignIn}>
-          <CardContent className="grid gap-4">
+            <h1 className="text-3xl font-bold">LendEasy PH</h1>
+            <p className="text-balance text-muted-foreground">
+              Enter your credentials to access the admin dashboard
+            </p>
+          </div>
+          <form onSubmit={handleSignIn} className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -66,6 +62,7 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
               />
             </div>
             <div className="grid gap-2">
@@ -73,23 +70,30 @@ export default function LoginPage() {
               <Input
                 id="password"
                 type="password"
+                placeholder="••••••••"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading}
               />
             </div>
-          </CardContent>
-          <CardFooter>
-            <Button className="w-full" type="submit" disabled={isLoading}>
+            <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Sign In
             </Button>
-          </CardFooter>
-        </form>
-      </Card>
-       <footer className="absolute bottom-4 text-xs text-muted-foreground">
-        © {new Date().getFullYear()} LendEasy PH. All rights reserved.
-      </footer>
-    </main>
+          </form>
+        </div>
+      </div>
+      <div className="hidden bg-muted lg:block">
+        <Image
+          src="https://placehold.co/1080x1920.png"
+          alt="Abstract background"
+          data-ai-hint="finance abstract"
+          width="1080"
+          height="1920"
+          className="h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+        />
+      </div>
+    </div>
   );
 }
