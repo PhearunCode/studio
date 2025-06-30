@@ -25,8 +25,9 @@ import { useTransition } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { markPaymentAsPaidAction } from '@/lib/actions';
 import { Badge } from '@/components/ui/badge';
-import { Loader2 } from 'lucide-react';
+import { Loader2, FileDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import * as XLSX from 'xlsx';
 
 interface PaymentScheduleDialogProps {
   loan: Loan | null;
@@ -68,6 +69,36 @@ function MarkAsPaidButton({ loanId, month }: { loanId: string, month: number }) 
 
 export function PaymentScheduleDialog({ loan, open, onOpenChange }: PaymentScheduleDialogProps) {
   if (!loan) return null;
+
+  const handleExport = () => {
+    if (!loan || !loan.payments || loan.payments.length === 0) return;
+
+    // We use raw numbers for export to allow calculations in Excel.
+    const dataToExport = loan.payments.map(p => ({
+      'Month': p.month,
+      'Due Date': p.dueDate,
+      'Status': p.status,
+      'Principal Payment': p.principalPayment,
+      'Interest Payment': p.interestPayment,
+      'Total Payment': p.monthlyPayment,
+      'Remaining Balance': p.remainingBalance,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Payment Schedule');
+    
+    // Auto-adjust column widths
+    const columnWidths = Object.keys(dataToExport[0]).map(key => ({
+        wch: Math.max(
+            key.length, 
+            ...dataToExport.map(row => String(row[key as keyof typeof row]).length)
+        ) + 2, // +2 for a little padding
+    }));
+    worksheet['!cols'] = columnWidths;
+    
+    XLSX.writeFile(workbook, `Payment_Schedule_${loan.name.replace(/ /g, '_')}.xlsx`);
+  };
 
   const schedule = loan?.payments ?? [];
   const monthlyInterestPayment = loan.amount * (loan.interestRate / 100);
@@ -146,6 +177,10 @@ export function PaymentScheduleDialog({ loan, open, onOpenChange }: PaymentSched
           </Table>
         </ScrollArea>
         <DialogFooter>
+          <Button variant="secondary" onClick={handleExport} disabled={schedule.length === 0}>
+              <FileDown className="mr-2 h-4 w-4" />
+              Export to Excel
+          </Button>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
         </DialogFooter>
       </DialogContent>
