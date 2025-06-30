@@ -24,7 +24,7 @@ interface DashboardPageClientProps {
 export function DashboardPageClient({ loans, customers }: DashboardPageClientProps) {
   const { t } = useTranslation();
 
-  const activeLoans = loans.filter(loan => loan.status !== 'Rejected');
+  const activeLoans = loans.filter(loan => loan.status === 'Approved' || loan.status === 'Paid');
 
   const totalLoans = activeLoans.length;
   const khrLoans = activeLoans.filter(loan => loan.currency === 'KHR');

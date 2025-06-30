@@ -134,7 +134,7 @@ export const getCustomers = async (): Promise<Customer[]> => {
         const loans = await getLoans(); 
 
         loans.forEach(loan => {
-            if (customerMap.has(loan.name) && loan.status !== 'Rejected') {
+            if (customerMap.has(loan.name) && (loan.status === 'Approved' || loan.status === 'Paid')) {
                 const customer = customerMap.get(loan.name)!;
                 customer.totalLoans += 1;
                 if (loan.currency === 'KHR') {
