@@ -15,7 +15,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Landmark, LayoutDashboard, Users, UserCircle, Banknote, CreditCard, Send, Database } from 'lucide-react';
+import { Landmark, LayoutDashboard, Users, UserCircle, Banknote, CreditCard, Send } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -139,14 +139,6 @@ export function AppLayout({ children }: { children: ReactNode }) {
                     <Link href="/telegram">
                         <Send />
                         <span>Telegram</span>
-                    </Link>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Firebase" isActive={isActive('/firebase')} asChild>
-                    <Link href="/firebase">
-                        <Database />
-                        <span>Firebase</span>
                     </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
