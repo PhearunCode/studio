@@ -13,9 +13,10 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarTrigger,
+  SidebarSeparator,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Landmark, LayoutDashboard, Users, UserCircle, Banknote, CreditCard, Send } from 'lucide-react';
+import { Landmark, LayoutDashboard, Users, UserCircle, Banknote, CreditCard, Send, Info, Settings } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -134,6 +135,9 @@ export function AppLayout({ children }: { children: ReactNode }) {
                   </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
+          </SidebarMenu>
+          <SidebarSeparator />
+           <SidebarMenu>
             <SidebarMenuItem>
                 <SidebarMenuButton tooltip="Telegram" isActive={isActive('/telegram')} asChild>
                     <Link href="/telegram">
@@ -142,7 +146,23 @@ export function AppLayout({ children }: { children: ReactNode }) {
                     </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
-          </SidebarMenu>
+             <SidebarMenuItem>
+                <SidebarMenuButton tooltip="Firebase" isActive={isActive('/firebase')} asChild>
+                    <Link href="/firebase">
+                        <Info />
+                        <span>Firebase</span>
+                    </Link>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
+             <SidebarMenuItem>
+                <SidebarMenuButton tooltip="Settings" isActive={isActive('/settings')} asChild>
+                    <Link href="/settings">
+                        <Settings />
+                        <span>Settings</span>
+                    </Link>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
+           </SidebarMenu>
         </SidebarContent>
       </Sidebar>
       <SidebarInset>

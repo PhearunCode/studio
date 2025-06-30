@@ -42,129 +42,105 @@ if (!getApps().length) {
 }
 
 const createConnectionError = () => {
-    return new Error(
-        firebaseAdminError?.message || 
-        "Failed to connect to Firebase. This usually means the app's environment variables (FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY) are not set correctly. Please check your .env file and ensure they are present and valid."
-    );
+    const baseMessage = "Failed to connect to Firebase. This usually means the app's environment variables (FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY) are not set correctly. Please check your .env file and ensure they are present and valid.";
+    const specificMessage = firebaseAdminError?.message;
+    // If the specific message is about credentials not found, don't show the base message.
+    if (specificMessage && specificMessage.includes('credentials not found')) {
+      return new Error(specificMessage);
+    }
+    return new Error(specificMessage || baseMessage);
 }
 
-// Data fetching functions: Return empty arrays on error to prevent page crashes.
-const handleFetchError = (error: any, functionName: string): [] => {
-    if (error.message.includes('DECODER routines::unsupported') || error.message.includes('2 UNKNOWN')) {
-        const specificError = new Error(
-            `Firebase authentication failed during ${functionName}. The 'FIREBASE_PRIVATE_KEY' in your .env file is likely formatted incorrectly. Please ensure it's the full key and wrapped in double quotes.`
-        );
-        console.error(specificError.message);
-        firebaseAdminError = specificError; // Cache the error
-    } else {
-        console.error(`Error in ${functionName}:`, error);
-    }
-    return [];
-}
-
-export const getLoans = async (): Promise<Omit<Loan, 'documents'>[]> => {
-  if (!db || firebaseAdminError) {
-    if (firebaseAdminError) console.warn(firebaseAdminError.message);
-    return [];
-  }
-  try {
-    const loansSnapshot = await db.collection('loans').orderBy('loanDate', 'desc').get();
-    if (loansSnapshot.empty) {
-      return [];
-    }
-    const loans = loansSnapshot.docs.map(doc => {
-      const data = doc.data();
-      const loanDate = data.loanDate;
-      let serializableLoanDate: string;
-
-      if (loanDate && typeof loanDate.toDate === 'function') { 
-        serializableLoanDate = loanDate.toDate().toISOString().split('T')[0];
-      } else {
-        serializableLoanDate = String(loanDate || '');
-      }
-      
-      const verificationResult = data.verificationResult ? {
-          flags: data.verificationResult.flags || [],
-          summary: data.verificationResult.summary || ''
-      } : null;
-
-      return {
-        id: doc.id,
-        name: data.name || '',
-        amount: data.amount || 0,
-        currency: data.currency || 'KHR',
-        interestRate: data.interestRate || 0,
-        term: data.term || 0,
-        loanDate: serializableLoanDate,
-        address: data.address || '',
-        status: data.status || 'Pending',
-        verificationResult: verificationResult,
-        payments: data.payments || [],
-      };
-    });
-    return loans;
-  } catch(error: any) {
-    return handleFetchError(error, 'getLoans');
-  }
-};
-
-export const getCustomers = async (): Promise<Customer[]> => {
-    if (!db || firebaseAdminError) {
-        if (firebaseAdminError) console.warn(firebaseAdminError.message);
-        return [];
-    }
-
-    try {
-        const customersSnapshot = await db.collection('customers').orderBy('name').get();
-        const customers = customersSnapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-                id: doc.id,
-                name: data.name,
-                address: data.address,
-                phone: data.phone || '',
-                idCardNumber: data.idCardNumber || '',
-                telegramChatId: data.telegramChatId || '',
-                avatar: data.avatar || '',
-                totalLoans: 0,
-                totalLoanAmountKhr: 0,
-                totalLoanAmountUsd: 0,
-            } as Customer;
-        });
-        
-        if (customers.length === 0) {
-            return [];
-        }
-        
-        // This part can fail if getLoans fails, but getLoans will return [], so it's safe.
-        const customerMap = new Map(customers.map(c => [c.name, c]));
-        const loans = await getLoans(); 
-
-        loans.forEach(loan => {
-            if (customerMap.has(loan.name)) {
-                const customer = customerMap.get(loan.name)!;
-                customer.totalLoans += 1;
-                if (loan.currency === 'KHR') {
-                    customer.totalLoanAmountKhr += loan.amount;
-                } else if (loan.currency === 'USD') {
-                    customer.totalLoanAmountUsd += loan.amount;
-                }
-            }
-        });
-
-        return Array.from(customerMap.values());
-    } catch(error: any) {
-        return handleFetchError(error, 'getCustomers');
-    }
-};
-
-// Data mutation functions: Throw errors so actions can report them.
 const checkDbConnection = () => {
     if (!db || firebaseAdminError) {
         throw createConnectionError();
     }
 }
 
+// Data fetching functions now throw on connection error.
+export const getLoans = async (): Promise<Omit<Loan, 'documents'>[]> => {
+  checkDbConnection();
+  const loansSnapshot = await db!.collection('loans').orderBy('loanDate', 'desc').get();
+  if (loansSnapshot.empty) {
+    return [];
+  }
+  const loans = loansSnapshot.docs.map(doc => {
+    const data = doc.data();
+    const loanDate = data.loanDate;
+    let serializableLoanDate: string;
+
+    if (loanDate && typeof loanDate.toDate === 'function') { 
+      serializableLoanDate = loanDate.toDate().toISOString().split('T')[0];
+    } else {
+      serializableLoanDate = String(loanDate || '');
+    }
+    
+    const verificationResult = data.verificationResult ? {
+        flags: data.verificationResult.flags || [],
+        summary: data.verificationResult.summary || ''
+    } : null;
+
+    return {
+      id: doc.id,
+      name: data.name || '',
+      amount: data.amount || 0,
+      currency: data.currency || 'KHR',
+      interestRate: data.interestRate || 0,
+      term: data.term || 0,
+      loanDate: serializableLoanDate,
+      address: data.address || '',
+      status: data.status || 'Pending',
+      verificationResult: verificationResult,
+      payments: data.payments || [],
+    };
+  });
+  return loans;
+};
+
+export const getCustomers = async (): Promise<Customer[]> => {
+    checkDbConnection();
+
+    const customersSnapshot = await db!.collection('customers').orderBy('name').get();
+    const customers = customersSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+            id: doc.id,
+            name: data.name,
+            address: data.address,
+            phone: data.phone || '',
+            idCardNumber: data.idCardNumber || '',
+            telegramChatId: data.telegramChatId || '',
+            avatar: data.avatar || '',
+            totalLoans: 0,
+            totalLoanAmountKhr: 0,
+            totalLoanAmountUsd: 0,
+        } as Customer;
+    });
+    
+    if (customers.length === 0) {
+        return [];
+    }
+    
+    const customerMap = new Map(customers.map(c => [c.name, c]));
+    // This part can fail if getLoans fails, but the page will catch the error.
+    const loans = await getLoans(); 
+
+    loans.forEach(loan => {
+        if (customerMap.has(loan.name)) {
+            const customer = customerMap.get(loan.name)!;
+            customer.totalLoans += 1;
+            if (loan.currency === 'KHR') {
+                customer.totalLoanAmountKhr += loan.amount;
+            } else if (loan.currency === 'USD') {
+                customer.totalLoanAmountUsd += loan.amount;
+            }
+        }
+    });
+
+    return Array.from(customerMap.values());
+};
+
+// Data mutation functions continue to throw errors so actions can report them.
 export const updateCustomer = async (id: string, data: z.infer<typeof customerSchema>) => {
     checkDbConnection();
     const customerRef = db!.collection('customers').doc(id);
