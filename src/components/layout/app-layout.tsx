@@ -30,6 +30,8 @@ import { ThemeToggle } from './theme-toggle';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase-client';
 import { useAuth } from '@/components/auth/auth-provider';
+import { useTranslation } from '@/contexts/language-context';
+import { LanguageSwitcher } from './language-switcher';
 
 interface Profile {
   name: string;
@@ -42,6 +44,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   const isActive = (path: string) => pathname === path;
   
@@ -103,34 +106,34 @@ export function AppLayout({ children }: { children: ReactNode }) {
         <SidebarContent className="p-2">
           <SidebarMenu>
             <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Dashboard" isActive={isActive('/')} asChild>
+                <SidebarMenuButton tooltip={t('sidebar.dashboard')} isActive={isActive('/')} asChild>
                   <Link href="/">
                     <LayoutDashboard />
-                    <span>Dashboard</span>
+                    <span>{t('sidebar.dashboard')}</span>
                   </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Loans" isActive={isActive('/loans')} asChild>
+                <SidebarMenuButton tooltip={t('sidebar.loans')} isActive={isActive('/loans')} asChild>
                   <Link href="/loans">
                     <Banknote />
-                    <span>Loans</span>
+                    <span>{t('sidebar.loans')}</span>
                   </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Payments" isActive={isActive('/payments')} asChild>
+                <SidebarMenuButton tooltip={t('sidebar.payments')} isActive={isActive('/payments')} asChild>
                   <Link href="/payments">
                     <CreditCard />
-                    <span>Payments</span>
+                    <span>{t('sidebar.payments')}</span>
                   </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Borrowers" isActive={isActive('/borrowers')} asChild>
+                <SidebarMenuButton tooltip={t('sidebar.borrowers')} isActive={isActive('/borrowers')} asChild>
                   <Link href="/borrowers">
                     <Users />
-                    <span>Borrowers</span>
+                    <span>{t('sidebar.borrowers')}</span>
                   </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
@@ -138,10 +141,10 @@ export function AppLayout({ children }: { children: ReactNode }) {
           <SidebarSeparator />
            <SidebarMenu>
              <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Settings" isActive={isActive('/settings')} asChild>
+                <SidebarMenuButton tooltip={t('sidebar.settings')} isActive={isActive('/settings')} asChild>
                     <Link href="/settings">
                         <Settings />
-                        <span>Settings</span>
+                        <span>{t('sidebar.settings')}</span>
                     </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
@@ -152,6 +155,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-md sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
           <SidebarTrigger className="md:hidden" />
           <div className="flex-1" />
+          <LanguageSwitcher />
           <ThemeToggle />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -169,14 +173,14 @@ export function AppLayout({ children }: { children: ReactNode }) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>{displayProfile?.name ?? 'My Account'}</DropdownMenuLabel>
+              <DropdownMenuLabel>{displayProfile?.name ?? t('header.myAccount')}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href="/settings">Settings</Link>
+                <Link href="/settings">{t('header.settings')}</Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>Support</DropdownMenuItem>
+              <DropdownMenuItem>{t('header.support')}</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={handleLogout}>Logout</DropdownMenuItem>
+              <DropdownMenuItem onSelect={handleLogout}>{t('header.logout')}</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </header>

@@ -21,13 +21,15 @@ import { Loader2, Upload } from 'lucide-react';
 import type { Customer } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getInitials } from '@/lib/utils';
+import { useTranslation } from '@/contexts/language-context';
 
 function SubmitButton({ isEdit }: { isEdit: boolean }) {
   const { pending } = useFormStatus();
+  const { t } = useTranslation();
   return (
     <Button type="submit" disabled={pending}>
       {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-      {isEdit ? 'Save Changes' : 'Save'}
+      {isEdit ? t('save') : t('save')}
     </Button>
   );
 }
@@ -40,6 +42,7 @@ interface CustomerFormProps {
 }
 
 export function CustomerForm({ customer, open, onOpenChange, children }: CustomerFormProps) {
+  const { t } = useTranslation();
   const formRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -55,19 +58,19 @@ export function CustomerForm({ customer, open, onOpenChange, children }: Custome
 
     if (state.error) {
       toast({
-        title: 'Error',
+        title: t('toast.error'),
         description: state.message,
         variant: 'destructive',
       });
     } else {
       toast({
-        title: 'Success',
+        title: t('toast.success'),
         description: state.message,
         className: 'bg-accent text-accent-foreground',
       });
       onOpenChange(false);
     }
-  }, [state, toast, onOpenChange]);
+  }, [state, toast, onOpenChange, t]);
   
   useEffect(() => {
       if (open) {
@@ -101,9 +104,9 @@ export function CustomerForm({ customer, open, onOpenChange, children }: Custome
       {children && <DialogTrigger asChild>{children}</DialogTrigger>}
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{isEdit ? 'Edit Customer' : 'New Customer'}</DialogTitle>
+          <DialogTitle>{isEdit ? t('customerForm.editTitle') : t('customerForm.newTitle')}</DialogTitle>
           <DialogDescription>
-            {isEdit ? 'Update the details for this customer.' : 'Fill in the details below to create a new customer.'}
+            {isEdit ? t('customerForm.editDesc') : t('customerForm.newDesc')}
           </DialogDescription>
         </DialogHeader>
         <form 
@@ -116,46 +119,46 @@ export function CustomerForm({ customer, open, onOpenChange, children }: Custome
             <input type="hidden" name="avatar" value={avatar} />
             
             <div className="space-y-2">
-                <Label htmlFor="name">Customer Name</Label>
-                <Input id="name" name="name" placeholder="Juan dela Cruz" required defaultValue={customer?.name ?? ''} onChange={(e) => setName(e.target.value)} />
+                <Label htmlFor="name">{t('customerForm.nameLabel')}</Label>
+                <Input id="name" name="name" placeholder={t('customerForm.namePlaceholder')} required defaultValue={customer?.name ?? ''} onChange={(e) => setName(e.target.value)} />
             </div>
             <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input id="phone" name="phone" placeholder="09123456789" type="tel" required defaultValue={customer?.phone ?? ''} />
+                <Label htmlFor="phone">{t('customerForm.phoneLabel')}</Label>
+                <Input id="phone" name="phone" placeholder={t('customerForm.phonePlaceholder')} type="tel" required defaultValue={customer?.phone ?? ''} />
             </div>
              <div className="space-y-2">
-                <Label htmlFor="telegramChatId">Telegram Chat ID (Optional)</Label>
-                <Input id="telegramChatId" name="telegramChatId" placeholder="Get from @userinfobot" defaultValue={customer?.telegramChatId ?? ''} />
+                <Label htmlFor="telegramChatId">{t('customerForm.telegramLabel')}</Label>
+                <Input id="telegramChatId" name="telegramChatId" placeholder={t('customerForm.telegramPlaceholder')} defaultValue={customer?.telegramChatId ?? ''} />
             </div>
             <div className="space-y-2">
-                <Label htmlFor="idCardNumber">ID Card Number</Label>
-                <Input id="idCardNumber" name="idCardNumber" placeholder="1234-5678-9012" defaultValue={customer?.idCardNumber ?? ''} />
+                <Label htmlFor="idCardNumber">{t('customerForm.idCardLabel')}</Label>
+                <Input id="idCardNumber" name="idCardNumber" placeholder={t('customerForm.idCardPlaceholder')} defaultValue={customer?.idCardNumber ?? ''} />
             </div>
             <div className="space-y-2">
-                <Label htmlFor="address">Address</Label>
-                <Input id="address" name="address" placeholder="123 Rizal St, Manila" required defaultValue={customer?.address ?? ''} />
+                <Label htmlFor="address">{t('customerForm.addressLabel')}</Label>
+                <Input id="address" name="address" placeholder={t('customerForm.addressPlaceholder')} required defaultValue={customer?.address ?? ''} />
             </div>
             
             <div className="space-y-2">
-                <Label>Profile Picture</Label>
+                <Label>{t('customerForm.profilePicLabel')}</Label>
                 <div className="flex items-center gap-4">
                     <Avatar className="h-16 w-16">
                         <AvatarImage src={avatar || `https://avatar.vercel.sh/${name || 'user'}.png`} alt={name} />
                         <AvatarFallback>{getInitials(name)}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1 space-y-2">
-                        <Label htmlFor="avatar-url">URL or Upload</Label>
+                        <Label htmlFor="avatar-url">{t('customerForm.avatarUrlLabel')}</Label>
                         <div className="flex items-center gap-2">
                             <Input
                                 id="avatar-url"
-                                placeholder="https://example.com/avatar.png"
+                                placeholder={t('customerForm.avatarUrlPlaceholder')}
                                 value={avatar.startsWith('data:') ? 'Uploaded File' : avatar}
                                 onChange={(e) => setAvatar(e.target.value)}
                                 readOnly={avatar.startsWith('data:')}
                             />
                             <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
                                 <Upload className="mr-2 h-4 w-4" />
-                                Upload
+                                {t('settingsPage.upload')}
                             </Button>
                             <input
                                 type="file"
@@ -171,7 +174,7 @@ export function CustomerForm({ customer, open, onOpenChange, children }: Custome
 
             <DialogFooter className="pt-4">
                 <DialogClose asChild>
-                    <Button variant="outline">Cancel</Button>
+                    <Button variant="outline">{t('cancel')}</Button>
                 </DialogClose>
                 <SubmitButton isEdit={isEdit} />
             </DialogFooter>

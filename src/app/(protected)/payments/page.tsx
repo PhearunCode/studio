@@ -1,47 +1,15 @@
-
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { getLoans, isFirebaseConnected } from "@/lib/firebase";
-import { PaymentsTable } from "@/components/payments/payments-table";
-import { SendRemindersButton } from "@/components/payments/send-reminders-button";
 import { FirebaseSetupInstructions } from "@/components/layout/firebase-setup-instructions";
+import { PaymentsPageClient } from "@/components/payments/payments-page-client";
 
 export default async function PaymentsPage() {
-  const connected = isFirebaseConnected();
-  
-  if (!connected) {
-    return (
-      <FirebaseSetupInstructions />
-    );
-  }
+    const connected = isFirebaseConnected();
 
-  const loans = await getLoans();
+    if (!connected) {
+        return <FirebaseSetupInstructions />;
+    }
 
-  return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Payments</h2>
-        <div className="flex items-center space-x-2">
-          <SendRemindersButton />
-        </div>
-      </div>
+    const loans = await getLoans();
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Payment Overview</CardTitle>
-          <CardDescription>
-            An overview of monthly payments for all active loans.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <PaymentsTable loans={loans} />
-        </CardContent>
-      </Card>
-    </div>
-  );
+    return <PaymentsPageClient loans={loans} />;
 }

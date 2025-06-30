@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -28,6 +27,7 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, FileDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import * as XLSX from 'xlsx';
+import { useTranslation } from '@/contexts/language-context';
 
 interface PaymentScheduleDialogProps {
   loan: Loan | null;
@@ -47,14 +47,15 @@ const formatDate = (dateString: string) => {
 function MarkAsPaidButton({ loanId, month }: { loanId: string, month: number }) {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const handleClick = () => {
     startTransition(async () => {
       const result = await markPaymentAsPaidAction(loanId, month);
       if (result?.error) {
-        toast({ title: 'Error', description: result.message, variant: 'destructive' });
+        toast({ title: t('toast.error'), description: result.message, variant: 'destructive' });
       } else {
-        toast({ title: 'Success', description: result.message, className: 'bg-accent text-accent-foreground' });
+        toast({ title: t('toast.success'), description: result.message, className: 'bg-accent text-accent-foreground' });
       }
     });
   };
@@ -62,12 +63,13 @@ function MarkAsPaidButton({ loanId, month }: { loanId: string, month: number }) 
   return (
     <Button size="sm" onClick={handleClick} disabled={isPending}>
       {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-      Mark as Paid
+      {t('paymentScheduleDialog.markAsPaid')}
     </Button>
   );
 }
 
 export function PaymentScheduleDialog({ loan, open, onOpenChange }: PaymentScheduleDialogProps) {
+  const { t } = useTranslation();
   if (!loan) return null;
 
   const handleExport = () => {
@@ -120,26 +122,28 @@ export function PaymentScheduleDialog({ loan, open, onOpenChange }: PaymentSched
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-4xl">
         <DialogHeader>
-          <DialogTitle>Monthly Payment Schedule</DialogTitle>
+          <DialogTitle>{t('paymentScheduleDialog.title')}</DialogTitle>
           <DialogDescription>
-            For a loan of {formatCurrency(loan.amount, loan.currency)} over {loan.term} months at {loan.interestRate}% interest.
-            The borrower pays a fixed interest of{' '}
-            <span className="font-semibold text-foreground">{formatCurrency(monthlyInterestPayment, loan.currency)}</span> each month.
-            The full principal amount is due with the final payment.
+            {t('paymentScheduleDialog.desc')
+                .replace('{amount}', formatCurrency(loan.amount, loan.currency))
+                .replace('{term}', loan.term.toString())
+                .replace('{interestRate}', loan.interestRate.toString())
+                .replace('{monthlyInterest}', formatCurrency(monthlyInterestPayment, loan.currency))
+            }
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-[60vh] rounded-md border">
           <Table>
             <TableHeader className="sticky top-0 bg-background">
               <TableRow>
-                <TableHead className="w-[80px]">Month</TableHead>
-                <TableHead>Due Date</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Principal</TableHead>
-                <TableHead className="text-right">Interest</TableHead>
-                <TableHead className="text-right">Total Payment</TableHead>
-                <TableHead className="text-right">Remaining Balance</TableHead>
-                <TableHead className="text-center">Action</TableHead>
+                <TableHead className="w-[80px]">{t('paymentScheduleDialog.table.month')}</TableHead>
+                <TableHead>{t('paymentScheduleDialog.table.dueDate')}</TableHead>
+                <TableHead>{t('paymentScheduleDialog.table.status')}</TableHead>
+                <TableHead className="text-right">{t('paymentScheduleDialog.table.principal')}</TableHead>
+                <TableHead className="text-right">{t('paymentScheduleDialog.table.interest')}</TableHead>
+                <TableHead className="text-right">{t('paymentScheduleDialog.table.totalPayment')}</TableHead>
+                <TableHead className="text-right">{t('paymentScheduleDialog.table.remainingBalance')}</TableHead>
+                <TableHead className="text-center">{t('paymentScheduleDialog.table.action')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -169,7 +173,7 @@ export function PaymentScheduleDialog({ loan, open, onOpenChange }: PaymentSched
               ) : (
                 <TableRow>
                     <TableCell colSpan={8} className="h-24 text-center">
-                        This loan has not been approved yet. A payment schedule will be generated upon approval.
+                        {t('paymentScheduleDialog.noSchedule')}
                     </TableCell>
                 </TableRow>
               )}
@@ -179,9 +183,9 @@ export function PaymentScheduleDialog({ loan, open, onOpenChange }: PaymentSched
         <DialogFooter>
           <Button variant="secondary" onClick={handleExport} disabled={schedule.length === 0}>
               <FileDown className="mr-2 h-4 w-4" />
-              Export to Excel
+              {t('paymentScheduleDialog.exportToExcel')}
           </Button>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>{t('close')}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

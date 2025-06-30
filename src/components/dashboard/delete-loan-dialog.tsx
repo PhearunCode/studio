@@ -17,13 +17,15 @@ import { deleteLoanAction } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import type { Loan } from '@/lib/types';
+import { useTranslation } from '@/contexts/language-context';
 
 function DeleteButton() {
     const { pending } = useFormStatus();
+    const { t } = useTranslation();
     return (
         <Button type="submit" variant="destructive" disabled={pending}>
             {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Delete
+            {t('delete')}
         </Button>
     );
 }
@@ -36,6 +38,7 @@ interface DeleteLoanDialogProps {
 
 export function DeleteLoanDialog({ loan, open, onOpenChange }: DeleteLoanDialogProps) {
   const { toast } = useToast();
+  const { t } = useTranslation();
   
   const deleteActionWithId = deleteLoanAction.bind(null, loan?.id ?? '');
   const [state, formAction] = useActionState(deleteActionWithId, null);
@@ -44,19 +47,19 @@ export function DeleteLoanDialog({ loan, open, onOpenChange }: DeleteLoanDialogP
     if (!state) return;
     if (state.error) {
         toast({
-            title: 'Error',
+            title: t('toast.error'),
             description: state.message,
             variant: 'destructive',
         });
     } else {
         toast({
-            title: 'Success',
+            title: t('toast.success'),
             description: state.message,
             className: 'bg-accent text-accent-foreground',
         });
         onOpenChange(false);
     }
-  }, [state, onOpenChange, toast]);
+  }, [state, onOpenChange, toast, t]);
 
   if (!loan) return null;
 
@@ -65,15 +68,14 @@ export function DeleteLoanDialog({ loan, open, onOpenChange }: DeleteLoanDialogP
       <AlertDialogContent>
         <form action={formAction}>
             <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogTitle>{t('deleteDialog.title')}</AlertDialogTitle>
             <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the loan record for{' '}
-                <span className="font-semibold text-foreground">{loan.name}</span>.
+                {t('deleteDialog.loanDesc', 'This action cannot be undone. This will permanently delete the loan record for {name}.').replace('{name}', loan.name)}
             </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter className="mt-4">
                 <AlertDialogCancel asChild>
-                    <Button variant="outline" type="button">Cancel</Button>
+                    <Button variant="outline" type="button">{t('cancel')}</Button>
                 </AlertDialogCancel>
                 <AlertDialogAction asChild>
                     <DeleteButton />

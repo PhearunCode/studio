@@ -24,12 +24,14 @@ import { CustomerForm } from './customer-form';
 import { DeleteCustomerDialog } from './delete-customer-dialog';
 import { formatCurrency, getInitials } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
+import { useTranslation } from '@/contexts/language-context';
 
 interface CustomerTableProps {
   customers: Customer[];
 }
 
 export function CustomerTable({ customers }: CustomerTableProps) {
+  const { t } = useTranslation();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -79,7 +81,7 @@ export function CustomerTable({ customers }: CustomerTableProps) {
       />
       <div className="py-4">
         <Input
-          placeholder="Search by customer name..."
+          placeholder={t('borrowersPage.searchPlaceholder')}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="max-w-sm"
@@ -88,15 +90,15 @@ export function CustomerTable({ customers }: CustomerTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Customer</TableHead>
-            <TableHead>Phone</TableHead>
-            <TableHead>Telegram ID</TableHead>
-            <TableHead>ID Card #</TableHead>
-            <TableHead>Address</TableHead>
-            <TableHead className="text-right">Total Loans</TableHead>
-            <TableHead className="text-right">Total Loaned Amount</TableHead>
+            <TableHead>{t('borrowersPage.table.customer')}</TableHead>
+            <TableHead>{t('borrowersPage.table.phone')}</TableHead>
+            <TableHead>{t('borrowersPage.table.telegramId')}</TableHead>
+            <TableHead>{t('borrowersPage.table.idCardNumber')}</TableHead>
+            <TableHead>{t('borrowersPage.table.address')}</TableHead>
+            <TableHead className="text-right">{t('borrowersPage.table.totalLoans')}</TableHead>
+            <TableHead className="text-right">{t('borrowersPage.table.totalLoanedAmount')}</TableHead>
             <TableHead>
-              <span className="sr-only">Actions</span>
+              <span className="sr-only">{t('actions')}</span>
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -131,12 +133,12 @@ export function CustomerTable({ customers }: CustomerTableProps) {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                    <DropdownMenuLabel>{t('actions')}</DropdownMenuLabel>
                     <DropdownMenuItem onSelect={() => handleEdit(customer)}>
-                      Edit Customer
+                      {t('borrowersPage.actions.editCustomer')}
                     </DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => handleDelete(customer)} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
-                      Delete Customer
+                      {t('borrowersPage.actions.deleteCustomer')}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

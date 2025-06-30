@@ -21,13 +21,15 @@ import type { Loan } from '@/lib/types';
 import { formatCurrency } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Info } from 'lucide-react';
+import { useTranslation } from '@/contexts/language-context';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
+  const { t } = useTranslation();
   return (
     <Button type="submit" disabled={pending}>
       {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-      Record Payment
+      {t('principalPaymentForm.recordPaymentButton')}
     </Button>
   );
 }
@@ -41,6 +43,7 @@ interface PrincipalPaymentDialogProps {
 export function PrincipalPaymentDialog({ loan, open, onOpenChange }: PrincipalPaymentDialogProps) {
   const formRef = useRef<HTMLFormElement>(null);
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [amount, setAmount] = useState('');
 
   const [state, formAction] = useActionState(recordPrincipalPaymentAction, null);
@@ -50,19 +53,19 @@ export function PrincipalPaymentDialog({ loan, open, onOpenChange }: PrincipalPa
 
     if (state.error) {
       toast({
-        title: 'Error',
+        title: t('toast.error'),
         description: state.message,
         variant: 'destructive',
       });
     } else {
       toast({
-        title: 'Success',
+        title: t('toast.success'),
         description: state.message,
         className: 'bg-accent text-accent-foreground',
       });
       onOpenChange(false);
     }
-  }, [state, toast, onOpenChange]);
+  }, [state, toast, onOpenChange, t]);
   
   useEffect(() => {
       if (open) {
@@ -89,10 +92,12 @@ export function PrincipalPaymentDialog({ loan, open, onOpenChange }: PrincipalPa
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Make Principal Payment</DialogTitle>
+          <DialogTitle>{t('principalPaymentForm.title')}</DialogTitle>
           <DialogDescription>
-            Record a payment towards the principal amount for {loan.name}.
-            The current remaining principal is {formatCurrency(remainingPrincipal, loan.currency)}.
+            {t('principalPaymentForm.desc')
+                .replace('{name}', loan.name)
+                .replace('{amount}', formatCurrency(remainingPrincipal, loan.currency))
+            }
           </DialogDescription>
         </DialogHeader>
         <form 
@@ -104,12 +109,12 @@ export function PrincipalPaymentDialog({ loan, open, onOpenChange }: PrincipalPa
             <input type="hidden" name="loanId" value={loan.id} />
             
             <div className="space-y-2">
-                <Label htmlFor="amount">Payment Amount</Label>
+                <Label htmlFor="amount">{t('principalPaymentForm.paymentAmountLabel')}</Label>
                 <Input 
                     id="amount" 
                     name="amount" 
                     type="number" 
-                    placeholder="Enter amount" 
+                    placeholder={t('principalPaymentForm.paymentAmountPlaceholder')}
                     required 
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
@@ -132,25 +137,28 @@ export function PrincipalPaymentDialog({ loan, open, onOpenChange }: PrincipalPa
             {paymentAmount > 0 && paymentAmount <= remainingPrincipal && (
                  <Alert>
                     <Info className="h-4 w-4" />
-                    <AlertTitle>Payment Summary</AlertTitle>
+                    <AlertTitle>{t('principalPaymentForm.summaryTitle')}</AlertTitle>
                     <AlertDescription>
-                        A payment of {formatCurrency(paymentAmount, loan.currency)} will be recorded. The new remaining principal will be <span className="font-semibold">{formatCurrency(newPrincipal, loan.currency)}</span>. Future interest payments will be recalculated.
+                        {t('principalPaymentForm.summaryDesc')
+                            .replace('{paymentAmount}', formatCurrency(paymentAmount, loan.currency))
+                            .replace('{newPrincipal}', formatCurrency(newPrincipal, loan.currency))
+                        }
                     </AlertDescription>
                 </Alert>
             )}
              {paymentAmount > remainingPrincipal && (
                  <Alert variant="destructive">
                     <Info className="h-4 w-4" />
-                    <AlertTitle>Overpayment</AlertTitle>
+                    <AlertTitle>{t('principalPaymentForm.overpaymentTitle')}</AlertTitle>
                     <AlertDescription>
-                        The payment amount cannot exceed the remaining principal.
+                        {t('principalPaymentForm.overpaymentDesc')}
                     </AlertDescription>
                 </Alert>
             )}
 
             <DialogFooter className="pt-4">
                 <DialogClose asChild>
-                    <Button variant="outline">Cancel</Button>
+                    <Button variant="outline">{t('cancel')}</Button>
                 </DialogClose>
                 <SubmitButton />
             </DialogFooter>

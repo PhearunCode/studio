@@ -29,12 +29,14 @@ import { EditLoanForm } from './edit-loan-form';
 import { PaymentScheduleDialog } from './payment-schedule-dialog';
 import { PrincipalPaymentDialog } from './principal-payment-dialog';
 import { Input } from '@/components/ui/input';
+import { useTranslation } from '@/contexts/language-context';
 
 interface LoanTableProps {
   loans: Loan[];
 }
 
 export function LoanTable({ loans }: LoanTableProps) {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -49,13 +51,13 @@ export function LoanTable({ loans }: LoanTableProps) {
       const result = await updateLoanStatusAction(loanId, status);
       if (result?.error) {
         toast({
-          title: 'Error',
+          title: t('toast.error'),
           description: result.message,
           variant: 'destructive',
         });
       } else {
         toast({
-          title: 'Success',
+          title: t('toast.success'),
           description: result.message,
           className: 'bg-accent text-accent-foreground',
         });
@@ -139,7 +141,7 @@ export function LoanTable({ loans }: LoanTableProps) {
       />
       <div className="py-4">
         <Input
-          placeholder="Search by borrower name..."
+          placeholder={t('loansPage.searchPlaceholder')}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="max-w-sm"
@@ -148,14 +150,14 @@ export function LoanTable({ loans }: LoanTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Borrower</TableHead>
-            <TableHead>Principal</TableHead>
-            <TableHead>Interest</TableHead>
-            <TableHead>Term</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Status</TableHead>
+            <TableHead>{t('loansPage.table.borrower')}</TableHead>
+            <TableHead>{t('loansPage.table.principal')}</TableHead>
+            <TableHead>{t('loansPage.table.interest')}</TableHead>
+            <TableHead>{t('loansPage.table.term')}</TableHead>
+            <TableHead>{t('loansPage.table.date')}</TableHead>
+            <TableHead>{t('loansPage.table.status')}</TableHead>
             <TableHead>
-              <span className="sr-only">Actions</span>
+              <span className="sr-only">{t('actions')}</span>
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -183,34 +185,34 @@ export function LoanTable({ loans }: LoanTableProps) {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                    <DropdownMenuLabel>{t('actions')}</DropdownMenuLabel>
                     <DropdownMenuItem onSelect={() => handleViewPayments(loan)}>
-                        View Payments
+                        {t('loansPage.actions.viewPayments')}
                     </DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => handlePrincipalPayment(loan)} disabled={loan.status !== 'Approved'}>
-                        Make Principal Payment
+                        {t('loansPage.actions.makePrincipalPayment')}
                     </DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => handleEdit(loan)}>
-                      Edit Loan
+                      {t('loansPage.actions.editLoan')}
                     </DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => handleDelete(loan)} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
-                      Delete Loan
+                      {t('loansPage.actions.deleteLoan')}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuLabel>Change Status</DropdownMenuLabel>
+                    <DropdownMenuLabel>{t('loansPage.actions.changeStatus')}</DropdownMenuLabel>
                     {loan.status !== 'Approved' && (
                       <DropdownMenuItem onSelect={() => handleStatusChange(loan.id, 'Approved')}>
-                        Approve
+                        {t('loansPage.actions.approve')}
                       </DropdownMenuItem>
                     )}
                     {loan.status !== 'Rejected' && (
                       <DropdownMenuItem onSelect={() => handleStatusChange(loan.id, 'Rejected')}>
-                        Reject
+                        {t('loansPage.actions.reject')}
                       </DropdownMenuItem>
                     )}
                     {loan.status !== 'Pending' && (
                         <DropdownMenuItem onSelect={() => handleStatusChange(loan.id, 'Pending')}>
-                            Set as Pending
+                            {t('loansPage.actions.setAsPending')}
                         </DropdownMenuItem>
                     )}
                   </DropdownMenuContent>

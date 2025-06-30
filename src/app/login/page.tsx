@@ -10,10 +10,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Landmark } from 'lucide-react';
+import { useTranslation } from '@/contexts/language-context';
 
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -26,10 +28,9 @@ export default function LoginPage() {
       router.push('/');
     } catch (error) {
       console.error('Login failed:', error);
-      const errorMessage = 'Invalid email or password. Please try again.';
       toast({
-        title: 'Login Failed',
-        description: errorMessage,
+        title: t('toast.loginFailedTitle'),
+        description: t('toast.loginFailedDescription'),
         variant: 'destructive',
       });
     } finally {
@@ -47,14 +48,14 @@ export default function LoginPage() {
                   <Landmark className="h-6 w-6" />
                 </div>
             </div>
-            <h1 className="text-3xl font-bold">LendEasy PH</h1>
+            <h1 className="text-3xl font-bold">{t('loginPage.title')}</h1>
             <p className="text-balance text-muted-foreground">
-              Enter your credentials to access the admin dashboard
+              {t('loginPage.subtitle')}
             </p>
           </div>
           <form onSubmit={handleSignIn} className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('loginPage.emailLabel')}</Label>
               <Input
                 id="email"
                 type="email"
@@ -66,7 +67,7 @@ export default function LoginPage() {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t('loginPage.passwordLabel')}</Label>
               <Input
                 id="password"
                 type="password"
@@ -79,7 +80,7 @@ export default function LoginPage() {
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Sign In
+              {t('loginPage.signInButton')}
             </Button>
           </form>
         </div>

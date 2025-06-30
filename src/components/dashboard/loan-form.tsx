@@ -21,13 +21,15 @@ import { Loader2 } from 'lucide-react';
 import { VerificationResultDialog } from './verification-result-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Customer } from '@/lib/types';
+import { useTranslation } from '@/contexts/language-context';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
+  const { t } = useTranslation();
   return (
     <Button type="submit" disabled={pending}>
       {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-      Save
+      {t('save')}
     </Button>
   );
 }
@@ -42,6 +44,7 @@ interface LoanFormProps {
 export function LoanForm({ open, onOpenChange, children, customers }: LoanFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const [verificationResult, setVerificationResult] = useState<{flags: string[], summary: string} | null>(null);
   const [isVerificationDialogOpen, setVerificationDialogOpen] = useState(false);
@@ -65,13 +68,13 @@ export function LoanForm({ open, onOpenChange, children, customers }: LoanFormPr
 
     if (state.error) {
       toast({
-        title: 'Error',
+        title: t('toast.error'),
         description: state.message,
         variant: 'destructive',
       });
     } else {
       toast({
-        title: 'Success',
+        title: t('toast.success'),
         description: state.message,
         className: 'bg-accent text-accent-foreground'
       });
@@ -81,7 +84,7 @@ export function LoanForm({ open, onOpenChange, children, customers }: LoanFormPr
       }
       onOpenChange(false);
     }
-  }, [state, toast, onOpenChange]);
+  }, [state, toast, onOpenChange, t]);
 
   useEffect(() => {
     if (!open) {
@@ -95,17 +98,17 @@ export function LoanForm({ open, onOpenChange, children, customers }: LoanFormPr
       {children && <DialogTrigger asChild>{children}</DialogTrigger>}
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>New Loan</DialogTitle>
+          <DialogTitle>{t('loanForm.newTitle')}</DialogTitle>
           <DialogDescription>
-            Fill in the details below to create a new loan for an existing customer.
+            {t('loanForm.newDesc')}
           </DialogDescription>
         </DialogHeader>
         <form ref={formRef} action={formAction} className="space-y-4">
           <div className="space-y-2 col-span-2">
-            <Label htmlFor="name">Borrower Name</Label>
+            <Label htmlFor="name">{t('loanForm.borrowerNameLabel')}</Label>
             <Select name="name" required onValueChange={handleCustomerSelect}>
               <SelectTrigger id="name">
-                <SelectValue placeholder="Select an existing customer" />
+                <SelectValue placeholder={t('loanForm.borrowerNamePlaceholder')} />
               </SelectTrigger>
               <SelectContent>
                 {customers.length > 0 ? customers.map((customer) => (
@@ -113,21 +116,21 @@ export function LoanForm({ open, onOpenChange, children, customers }: LoanFormPr
                     {customer.name}
                   </SelectItem>
                 )) : (
-                  <div className="p-2 text-sm text-muted-foreground text-center">Please add a customer first.</div>
+                  <div className="p-2 text-sm text-muted-foreground text-center">{t('loanForm.noCustomers')}</div>
                 )}
               </SelectContent>
             </Select>
           </div>
           <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                  <Label htmlFor="amount">Amount</Label>
-                  <Input id="amount" name="amount" type="number" placeholder="50000" required />
+                  <Label htmlFor="amount">{t('loanForm.amountLabel')}</Label>
+                  <Input id="amount" name="amount" type="number" placeholder={t('loanForm.amountPlaceholder')} required />
               </div>
                <div className="space-y-2">
-                  <Label htmlFor="currency">Currency</Label>
+                  <Label htmlFor="currency">{t('loanForm.currencyLabel')}</Label>
                    <Select name="currency" required defaultValue="KHR">
                        <SelectTrigger id="currency">
-                           <SelectValue placeholder="Select currency" />
+                           <SelectValue placeholder={t('loanForm.currencyPlaceholder')} />
                        </SelectTrigger>
                        <SelectContent>
                            <SelectItem value="KHR">KHR (៛)</SelectItem>
@@ -137,25 +140,25 @@ export function LoanForm({ open, onOpenChange, children, customers }: LoanFormPr
                </div>
           </div>
           <div className="space-y-2">
-              <Label htmlFor="interestRate">Interest Rate (%)</Label>
-              <Input id="interestRate" name="interestRate" type="number" step="0.1" placeholder="5.5" required />
+              <Label htmlFor="interestRate">{t('loanForm.interestRateLabel')}</Label>
+              <Input id="interestRate" name="interestRate" type="number" step="0.1" placeholder={t('loanForm.interestRatePlaceholder')} required />
           </div>
           <div className="grid grid-cols-2 gap-4">
              <div className="space-y-2">
-                <Label htmlFor="term">Term (Months)</Label>
-                <Input id="term" name="term" type="number" placeholder="36" required />
+                <Label htmlFor="term">{t('loanForm.termLabel')}</Label>
+                <Input id="term" name="term" type="number" placeholder={t('loanForm.termPlaceholder')} required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="loanDate">Loan Date</Label>
+                <Label htmlFor="loanDate">{t('loanForm.loanDateLabel')}</Label>
                 <Input id="loanDate" name="loanDate" type="date" required />
               </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="address">Address</Label>
+            <Label htmlFor="address">{t('loanForm.addressLabel')}</Label>
             <Input 
                 id="address" 
                 name="address" 
-                placeholder="Address is auto-filled from customer" 
+                placeholder={t('loanForm.addressPlaceholder')}
                 required 
                 key={selectedCustomer?.id ?? 'new-customer'}
                 defaultValue={selectedCustomer?.address ?? ''}
@@ -164,7 +167,7 @@ export function LoanForm({ open, onOpenChange, children, customers }: LoanFormPr
           </div>
           <DialogFooter>
             <DialogClose asChild>
-                <Button variant="outline">Cancel</Button>
+                <Button variant="outline">{t('cancel')}</Button>
             </DialogClose>
             <SubmitButton />
           </DialogFooter>

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, type FormEvent, useRef } from 'react';
@@ -9,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Loader2, Upload } from 'lucide-react';
 import { getInitials } from '@/lib/utils';
+import { useTranslation } from '@/contexts/language-context';
 
 interface Profile {
   name: string;
@@ -19,6 +19,7 @@ interface Profile {
 const STORAGE_KEY = 'user-profile';
 
 export function ProfileForm() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [profile, setProfile] = useState<Profile>({ name: '', email: '', avatar: '' });
   const [isLoading, setIsLoading] = useState(false);
@@ -47,14 +48,14 @@ export function ProfileForm() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
       toast({
-        title: 'Success!',
+        title: t('toast.success'),
         description: 'Your profile has been updated.',
         className: 'bg-accent text-accent-foreground',
       });
       window.dispatchEvent(new Event('profile-updated'));
     } catch (error) {
       toast({
-        title: 'Error',
+        title: t('toast.error'),
         description: 'Failed to save your profile.',
         variant: 'destructive',
       });
@@ -89,7 +90,7 @@ export function ProfileForm() {
           <AvatarFallback>{getInitials(profile.name)}</AvatarFallback>
         </Avatar>
         <div className="flex-1 space-y-2">
-            <Label htmlFor="avatar">Avatar URL or Upload</Label>
+            <Label htmlFor="avatar">{t('settingsPage.avatarLabel')}</Label>
             <div className="flex items-center gap-2">
                 <Input
                     id="avatar"
@@ -100,7 +101,7 @@ export function ProfileForm() {
                 />
                 <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
                     <Upload className="mr-2 h-4 w-4" />
-                    Upload
+                    {t('settingsPage.upload')}
                 </Button>
                 <input
                     type="file"
@@ -113,7 +114,7 @@ export function ProfileForm() {
         </div>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="name">Full Name</Label>
+        <Label htmlFor="name">{t('settingsPage.fullNameLabel')}</Label>
         <Input
           id="name"
           name="name"
@@ -123,7 +124,7 @@ export function ProfileForm() {
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="email">Email Address</Label>
+        <Label htmlFor="email">{t('settingsPage.emailAddressLabel')}</Label>
         <Input
           id="email"
           name="email"
@@ -136,7 +137,7 @@ export function ProfileForm() {
       <div className="flex justify-end">
         <Button type="submit" disabled={isLoading}>
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Save Changes
+          {t('settingsPage.saveChanges')}
         </Button>
       </div>
     </form>

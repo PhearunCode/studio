@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -17,12 +16,14 @@ import { PaymentScheduleDialog } from '@/components/dashboard/payment-schedule-d
 import { Eye } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
+import { useTranslation } from '@/contexts/language-context';
 
 interface PaymentsTableProps {
   loans: Loan[];
 }
 
 export function PaymentsTable({ loans }: PaymentsTableProps) {
+  const { t } = useTranslation();
   const [isPaymentScheduleOpen, setIsPaymentScheduleOpen] = useState(false);
   const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -64,7 +65,7 @@ export function PaymentsTable({ loans }: PaymentsTableProps) {
       />
       <div className="py-4">
         <Input
-          placeholder="Search by borrower name..."
+          placeholder={t('borrowersPage.searchPlaceholder')}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="max-w-sm"
@@ -73,11 +74,11 @@ export function PaymentsTable({ loans }: PaymentsTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Borrower</TableHead>
-            <TableHead>Payment Progress</TableHead>
-            <TableHead className="text-right">Monthly Interest</TableHead>
-            <TableHead className="text-right">Total Interest</TableHead>
-            <TableHead className="text-center">Actions</TableHead>
+            <TableHead>{t('paymentsPage.table.borrower')}</TableHead>
+            <TableHead>{t('paymentsPage.table.paymentProgress')}</TableHead>
+            <TableHead className="text-right">{t('paymentsPage.table.monthlyInterest')}</TableHead>
+            <TableHead className="text-right">{t('paymentsPage.table.totalInterest')}</TableHead>
+            <TableHead className="text-center">{t('actions')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -95,12 +96,12 @@ export function PaymentsTable({ loans }: PaymentsTableProps) {
                             <div className="flex-1">
                                 <Progress value={progress} className="h-2" />
                             </div>
-                            <span className="text-xs text-muted-foreground w-20 text-right">
-                                {paidCount} / {totalCount} paid
+                            <span className="text-xs text-muted-foreground w-24 text-right">
+                                {paidCount} / {totalCount} {t('paymentsPage.paid')}
                             </span>
                         </div>
                     ) : (
-                        <span className="text-xs text-muted-foreground">No schedule generated</span>
+                        <span className="text-xs text-muted-foreground">{t('paymentsPage.noSchedule')}</span>
                     )}
                 </TableCell>
                 <TableCell className="text-right font-medium">
@@ -112,7 +113,7 @@ export function PaymentsTable({ loans }: PaymentsTableProps) {
                 <TableCell className="text-center">
                     <Button variant="ghost" size="icon" onClick={() => handleViewPayments(loan)}>
                         <Eye className="h-4 w-4" />
-                        <span className="sr-only">View Payment Schedule</span>
+                        <span className="sr-only">{t('paymentsPage.viewSchedule')}</span>
                     </Button>
                 </TableCell>
                 </TableRow>

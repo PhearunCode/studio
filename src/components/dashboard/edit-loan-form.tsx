@@ -19,13 +19,15 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Loan } from '@/lib/types';
+import { useTranslation } from '@/contexts/language-context';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
+  const { t } = useTranslation();
   return (
     <Button type="submit" disabled={pending}>
       {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-      Save Changes
+      {t('settingsPage.saveChanges')}
     </Button>
   );
 }
@@ -40,6 +42,7 @@ interface EditLoanFormProps {
 export function EditLoanForm({ loan, open, onOpenChange, children }: EditLoanFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const [state, formAction] = useActionState(updateLoanAction, null);
 
@@ -48,19 +51,19 @@ export function EditLoanForm({ loan, open, onOpenChange, children }: EditLoanFor
 
     if (state.error) {
       toast({
-        title: 'Error',
+        title: t('toast.error'),
         description: state.message,
         variant: 'destructive',
       });
     } else {
       toast({
-        title: 'Success',
+        title: t('toast.success'),
         description: state.message,
         className: 'bg-accent text-accent-foreground',
       });
       onOpenChange(false);
     }
-  }, [state, toast, onOpenChange]);
+  }, [state, toast, onOpenChange, t]);
   
   useEffect(() => {
       if (!open) {
@@ -73,9 +76,9 @@ export function EditLoanForm({ loan, open, onOpenChange, children }: EditLoanFor
       {children}
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Edit Loan</DialogTitle>
+          <DialogTitle>{t('loanForm.editTitle')}</DialogTitle>
           <DialogDescription>
-            Update the details for this loan. Customer name and address cannot be changed.
+            {t('loanForm.editDesc')}
           </DialogDescription>
         </DialogHeader>
         <form 
@@ -87,20 +90,20 @@ export function EditLoanForm({ loan, open, onOpenChange, children }: EditLoanFor
             <input type="hidden" name="id" value={loan?.id ?? ''} />
 
             <div className="space-y-2">
-                <Label htmlFor="name">Customer Name</Label>
+                <Label htmlFor="name">{t('loanForm.borrowerNameLabel')}</Label>
                 <Input id="name" name="name" defaultValue={loan?.name ?? ''} readOnly disabled />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <Label htmlFor="amount">Amount</Label>
-                    <Input id="amount" name="amount" type="number" placeholder="50000" required defaultValue={loan?.amount} />
+                    <Label htmlFor="amount">{t('loanForm.amountLabel')}</Label>
+                    <Input id="amount" name="amount" type="number" placeholder={t('loanForm.amountPlaceholder')} required defaultValue={loan?.amount} />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="currency">Currency</Label>
+                    <Label htmlFor="currency">{t('loanForm.currencyLabel')}</Label>
                     <Select name="currency" required defaultValue={loan?.currency ?? 'KHR'}>
                         <SelectTrigger id="currency">
-                            <SelectValue placeholder="Select currency" />
+                            <SelectValue placeholder={t('loanForm.currencyPlaceholder')} />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="KHR">KHR (៛)</SelectItem>
@@ -111,24 +114,24 @@ export function EditLoanForm({ loan, open, onOpenChange, children }: EditLoanFor
             </div>
 
             <div className="space-y-2">
-                <Label htmlFor="interestRate">Interest Rate (%)</Label>
-                <Input id="interestRate" name="interestRate" type="number" step="0.1" placeholder="5.5" required defaultValue={loan?.interestRate} />
+                <Label htmlFor="interestRate">{t('loanForm.interestRateLabel')}</Label>
+                <Input id="interestRate" name="interestRate" type="number" step="0.1" placeholder={t('loanForm.interestRatePlaceholder')} required defaultValue={loan?.interestRate} />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <Label htmlFor="term">Term (Months)</Label>
-                    <Input id="term" name="term" type="number" placeholder="36" required defaultValue={loan?.term} />
+                    <Label htmlFor="term">{t('loanForm.termLabel')}</Label>
+                    <Input id="term" name="term" type="number" placeholder={t('loanForm.termPlaceholder')} required defaultValue={loan?.term} />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="loanDate">Loan Date</Label>
+                    <Label htmlFor="loanDate">{t('loanForm.loanDateLabel')}</Label>
                     <Input id="loanDate" name="loanDate" type="date" required defaultValue={loan?.loanDate} />
                 </div>
             </div>
 
           <DialogFooter>
             <DialogClose asChild>
-                <Button variant="outline">Cancel</Button>
+                <Button variant="outline">{t('cancel')}</Button>
             </DialogClose>
             <SubmitButton />
           </DialogFooter>
