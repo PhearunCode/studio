@@ -37,7 +37,7 @@ export function LoansPageClient({ loans, customers }: LoansPageClientProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <LoanTable loans={loans} />
+          <LoanTable loans={loans} customers={customers} />
         </CardContent>
       </Card>
     </div>

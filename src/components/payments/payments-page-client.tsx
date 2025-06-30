@@ -10,13 +10,14 @@ import {
 import { PaymentsTable } from "@/components/payments/payments-table";
 import { SendRemindersButton } from "@/components/payments/send-reminders-button";
 import { useTranslation } from "@/contexts/language-context";
-import { type Loan } from "@/lib/types";
+import { type Loan, type Customer } from "@/lib/types";
 
 interface PaymentsPageClientProps {
     loans: Loan[];
+    customers: Customer[];
 }
 
-export function PaymentsPageClient({ loans }: PaymentsPageClientProps) {
+export function PaymentsPageClient({ loans, customers }: PaymentsPageClientProps) {
   const { t } = useTranslation();
 
   return (
@@ -36,7 +37,7 @@ export function PaymentsPageClient({ loans }: PaymentsPageClientProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <PaymentsTable loans={loans} />
+          <PaymentsTable loans={loans} customers={customers} />
         </CardContent>
       </Card>
     </div>

@@ -19,8 +19,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal } from 'lucide-react';
-import { type Loan } from '@/lib/types';
-import { formatCurrency } from '@/lib/utils';
+import { type Loan, type Customer } from '@/lib/types';
+import { formatCurrency, getInitials } from '@/lib/utils';
 import { useState, useTransition, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { updateLoanStatusAction } from '@/lib/actions';
@@ -30,12 +30,14 @@ import { PaymentScheduleDialog } from './payment-schedule-dialog';
 import { PrincipalPaymentDialog } from './principal-payment-dialog';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from '@/contexts/language-context';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface LoanTableProps {
   loans: Loan[];
+  customers: Customer[];
 }
 
-export function LoanTable({ loans }: LoanTableProps) {
+export function LoanTable({ loans, customers }: LoanTableProps) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
@@ -45,6 +47,10 @@ export function LoanTable({ loans }: LoanTableProps) {
   const [isPrincipalPaymentOpen, setIsPrincipalPaymentOpen] = useState(false);
   const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+
+  const customerMap = useMemo(() => {
+    return new Map(customers.map(c => [c.name, c]));
+  }, [customers]);
 
   const handleStatusChange = (loanId: string, status: Loan['status']) => {
     startTransition(async () => {
@@ -162,9 +168,19 @@ export function LoanTable({ loans }: LoanTableProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredLoans.map((loan) => (
+          {filteredLoans.map((loan) => {
+            const customer = customerMap.get(loan.name);
+            return (
             <TableRow key={loan.id}>
-              <TableCell className="font-medium">{loan.name}</TableCell>
+              <TableCell>
+                <div className="flex items-center gap-3">
+                  <Avatar>
+                    <AvatarImage src={customer?.avatar || `https://avatar.vercel.sh/${loan.name}.png`} alt={loan.name} />
+                    <AvatarFallback>{getInitials(loan.name)}</AvatarFallback>
+                  </Avatar>
+                  <span className="font-medium">{loan.name}</span>
+                </div>
+              </TableCell>
               <TableCell>
                 {formatCurrency(loan.amount, loan.currency)}
               </TableCell>
@@ -217,7 +233,7 @@ export function LoanTable({ loans }: LoanTableProps) {
                 </DropdownMenu>
               </TableCell>
             </TableRow>
-          ))}
+          )})}
         </TableBody>
       </Table>
     </>

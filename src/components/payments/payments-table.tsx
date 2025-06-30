@@ -10,23 +10,29 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { type Loan } from '@/lib/types';
-import { calculateMonthlyPayment, formatCurrency } from '@/lib/utils';
+import { type Loan, type Customer } from '@/lib/types';
+import { calculateMonthlyPayment, formatCurrency, getInitials } from '@/lib/utils';
 import { PaymentScheduleDialog } from '@/components/dashboard/payment-schedule-dialog';
 import { Eye } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from '@/contexts/language-context';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface PaymentsTableProps {
   loans: Loan[];
+  customers: Customer[];
 }
 
-export function PaymentsTable({ loans }: PaymentsTableProps) {
+export function PaymentsTable({ loans, customers }: PaymentsTableProps) {
   const { t } = useTranslation();
   const [isPaymentScheduleOpen, setIsPaymentScheduleOpen] = useState(false);
   const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+
+  const customerMap = useMemo(() => {
+    return new Map(customers.map(c => [c.name, c]));
+  }, [customers]);
 
   const handleViewPayments = (loan: Loan) => {
     setSelectedLoan(loan);
@@ -86,10 +92,19 @@ export function PaymentsTable({ loans }: PaymentsTableProps) {
             const paidCount = loan.payments?.filter(p => p.status === 'Paid').length ?? 0;
             const totalCount = loan.payments?.length ?? 0;
             const progress = totalCount > 0 ? (paidCount / totalCount) * 100 : 0;
+            const customer = customerMap.get(loan.name);
 
             return (
                 <TableRow key={loan.id}>
-                <TableCell className="font-medium">{loan.name}</TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-3">
+                    <Avatar>
+                      <AvatarImage src={customer?.avatar || `https://avatar.vercel.sh/${loan.name}.png`} alt={loan.name} />
+                      <AvatarFallback>{getInitials(loan.name)}</AvatarFallback>
+                    </Avatar>
+                    <span className="font-medium">{loan.name}</span>
+                  </div>
+                </TableCell>
                 <TableCell>
                     {totalCount > 0 ? (
                         <div className="flex items-center gap-2">
