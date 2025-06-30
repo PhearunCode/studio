@@ -5,6 +5,8 @@ import { getFirestore } from 'firebase-admin/firestore';
 import { type Loan, type Customer, type Payment, type Currency, customerSchema } from './types';
 import { generatePaymentSchedule } from './utils';
 import { z } from 'zod';
+import { mockCustomers, mockLoans } from './mock-data';
+
 
 let db: admin.firestore.Firestore | null = null;
 let firebaseAdminError: Error | null = null;
@@ -51,14 +53,20 @@ const createConnectionError = () => {
     return new Error(specificMessage || baseMessage);
 }
 
+export const isFirebaseConnected = () => !firebaseAdminError;
+
 const checkDbConnection = () => {
-    if (!db || firebaseAdminError) {
+    if (!isFirebaseConnected() || !db) {
         throw createConnectionError();
     }
 }
 
-// Data fetching functions now throw on connection error.
+// Data fetching functions now fall back to mock data.
 export const getLoans = async (): Promise<Omit<Loan, 'documents'>[]> => {
+  if (!isFirebaseConnected()) {
+      console.warn("Firebase not connected. Returning mock loan data.");
+      return mockLoans;
+  }
   checkDbConnection();
   const loansSnapshot = await db!.collection('loans').orderBy('loanDate', 'desc').get();
   if (loansSnapshot.empty) {
@@ -98,6 +106,23 @@ export const getLoans = async (): Promise<Omit<Loan, 'documents'>[]> => {
 };
 
 export const getCustomers = async (): Promise<Customer[]> => {
+    if (!isFirebaseConnected()) {
+        console.warn("Firebase not connected. Returning mock customer data.");
+        const customerMap = new Map(mockCustomers.map(c => [c.name, {...c}]));
+        mockLoans.forEach(loan => {
+            if(customerMap.has(loan.name)) {
+                const customer = customerMap.get(loan.name)!;
+                customer.totalLoans += 1;
+                if (loan.currency === 'KHR') {
+                    customer.totalLoanAmountKhr += loan.amount;
+                } else if (loan.currency === 'USD') {
+                    customer.totalLoanAmountUsd += loan.amount;
+                }
+            }
+        });
+        return Array.from(customerMap.values());
+    }
+
     checkDbConnection();
 
     const customersSnapshot = await db!.collection('customers').orderBy('name').get();
