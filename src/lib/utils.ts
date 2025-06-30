@@ -19,55 +19,60 @@ export function formatCurrency(amount: number, currency: Currency = 'KHR') {
 }
 
 export function calculateMonthlyPayment(principal: number, annualRate: number, termMonths: number): number {
-  if (principal <= 0 || annualRate < 0 || termMonths <= 0) {
+  if (principal <= 0 || termMonths <= 0) {
     return 0;
   }
-  const monthlyRate = annualRate / 100 / 12;
-  if (monthlyRate === 0) {
-    return principal / termMonths;
+   if (annualRate < 0) {
+      annualRate = 0;
   }
-  const monthlyPayment =
-    principal *
-    (monthlyRate * Math.pow(1 + monthlyRate, termMonths)) /
-    (Math.pow(1 + monthlyRate, termMonths) - 1);
 
+  const termYears = termMonths / 12;
+  const totalInterest = principal * (annualRate / 100) * termYears;
+  const totalRepayable = principal + totalInterest;
+  const monthlyPayment = totalRepayable / termMonths;
+  
   return monthlyPayment;
 }
 
 export function generatePaymentSchedule(principal: number, annualRate: number, termMonths: number, loanDateStr: string): Payment[] {
-  if (principal <= 0 || annualRate < 0 || termMonths <= 0) {
+  if (principal <= 0 || termMonths <= 0) {
     return [];
   }
-  
-  const monthlyPayment = calculateMonthlyPayment(principal, annualRate, termMonths);
-  const monthlyRate = annualRate / 100 / 12;
-  
+  if (annualRate < 0) {
+      annualRate = 0;
+  }
+
+  const termYears = termMonths / 12;
+  const totalInterest = principal * (annualRate / 100) * termYears;
+  const monthlyPayment = (principal + totalInterest) / termMonths;
+
+  const monthlyInterest = totalInterest / termMonths;
+  const monthlyPrincipal = principal / termMonths;
+
   const schedule: Payment[] = [];
   let remainingBalance = principal;
   const startDate = new Date(loanDateStr + 'T00:00:00'); // Avoid timezone issues
 
   for (let i = 1; i <= termMonths; i++) {
-    const interestPayment = remainingBalance * monthlyRate;
-    const principalPayment = monthlyPayment - interestPayment;
-    remainingBalance -= principalPayment;
-    
-    // Ensure last payment clears balance exactly
-    if (i === termMonths && remainingBalance > -1 && remainingBalance < 1) {
-        remainingBalance = 0;
-    }
+      remainingBalance -= monthlyPrincipal;
 
-    const dueDate = addMonths(startDate, i);
-    const status: 'Upcoming' | 'Overdue' = isPast(dueDate) ? 'Overdue' : 'Upcoming';
+      // Ensure last payment clears balance exactly
+      if (i === termMonths) {
+          remainingBalance = 0;
+      }
 
-    schedule.push({
-      month: i,
-      dueDate: formatISO(dueDate, { representation: 'date' }), // YYYY-MM-DD
-      status: status,
-      monthlyPayment: monthlyPayment,
-      principalPayment: principalPayment,
-      interestPayment: interestPayment,
-      remainingBalance: remainingBalance,
-    });
+      const dueDate = addMonths(startDate, i);
+      const status: 'Upcoming' | 'Overdue' = isPast(dueDate) ? 'Overdue' : 'Upcoming';
+
+      schedule.push({
+          month: i,
+          dueDate: formatISO(dueDate, { representation: 'date' }), // YYYY-MM-DD
+          status: status,
+          monthlyPayment: monthlyPayment,
+          principalPayment: monthlyPrincipal,
+          interestPayment: monthlyInterest,
+          remainingBalance: remainingBalance,
+      });
   }
 
   return schedule;
