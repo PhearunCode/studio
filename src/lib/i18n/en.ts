@@ -8,6 +8,7 @@ export const en = {
   new: 'New',
   search: 'Search',
   close: 'Close',
+  viewDetails: 'View Details',
   
   // Sidebar
   sidebar: {

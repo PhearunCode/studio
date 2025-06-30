@@ -8,6 +8,7 @@ export const km = {
   new: 'ថ្មី',
   search: 'ស្វែងរក',
   close: 'បិទ',
+  viewDetails: 'មើល​ព័ត៌មាន​លម្អិត',
 
   // Sidebar
   sidebar: {

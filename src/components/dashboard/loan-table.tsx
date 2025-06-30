@@ -28,6 +28,7 @@ import { DeleteLoanDialog } from './delete-loan-dialog';
 import { EditLoanForm } from './edit-loan-form';
 import { PaymentScheduleDialog } from './payment-schedule-dialog';
 import { PrincipalPaymentDialog } from './principal-payment-dialog';
+import { LoanDetailsDialog } from './loan-details-dialog';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from '@/contexts/language-context';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -46,6 +47,7 @@ export function LoanTable({ loans, customers }: LoanTableProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isPaymentScheduleOpen, setIsPaymentScheduleOpen] = useState(false);
   const [isPrincipalPaymentOpen, setIsPrincipalPaymentOpen] = useState(false);
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -92,8 +94,14 @@ export function LoanTable({ loans, customers }: LoanTableProps) {
     setIsPrincipalPaymentOpen(true);
   };
 
+  const handleViewDetails = (loan: Loan) => {
+    setSelectedLoan(loan);
+    setIsDetailsDialogOpen(true);
+  };
+
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    // Add T00:00:00 to treat the date as local time and avoid timezone shifts
+    return new Date(dateString + 'T00:00:00').toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -145,6 +153,12 @@ export function LoanTable({ loans, customers }: LoanTableProps) {
         open={isPrincipalPaymentOpen}
         onOpenChange={setIsPrincipalPaymentOpen}
         loan={selectedLoan}
+      />
+      <LoanDetailsDialog
+        open={isDetailsDialogOpen}
+        onOpenChange={setIsDetailsDialogOpen}
+        loan={selectedLoan}
+        customer={selectedLoan ? customerMap.get(selectedLoan.name) : undefined}
       />
       <div className="py-4">
         <Input
@@ -203,6 +217,10 @@ export function LoanTable({ loans, customers }: LoanTableProps) {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuLabel>{t('actions')}</DropdownMenuLabel>
+                    <DropdownMenuItem onSelect={() => handleViewDetails(loan)} className="md:hidden">
+                      {t('viewDetails')}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator className="md:hidden" />
                     <DropdownMenuItem onSelect={() => handleViewPayments(loan)}>
                         {t('loansPage.actions.viewPayments')}
                     </DropdownMenuItem>

@@ -15,6 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal, MessageSquare } from 'lucide-react';
@@ -23,6 +24,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CustomerForm } from './customer-form';
 import { DeleteCustomerDialog } from './delete-customer-dialog';
 import { TelegramChatDialog } from './telegram-chat-dialog';
+import { CustomerDetailsDialog } from './customer-details-dialog';
 import { formatCurrency, getInitials } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from '@/contexts/language-context';
@@ -38,6 +40,7 @@ export function CustomerTable({ customers }: CustomerTableProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isChatDialogOpen, setIsChatDialogOpen] = useState(false);
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -54,6 +57,11 @@ export function CustomerTable({ customers }: CustomerTableProps) {
   const handleChat = (customer: Customer) => {
     setSelectedCustomer(customer);
     setIsChatDialogOpen(true);
+  };
+  
+  const handleViewDetails = (customer: Customer) => {
+    setSelectedCustomer(customer);
+    setIsDetailsDialogOpen(true);
   };
 
   const formatTotalLoaned = (customer: Customer) => {
@@ -91,6 +99,11 @@ export function CustomerTable({ customers }: CustomerTableProps) {
       <TelegramChatDialog
         open={isChatDialogOpen}
         onOpenChange={setIsChatDialogOpen}
+        customer={selectedCustomer}
+      />
+      <CustomerDetailsDialog
+        open={isDetailsDialogOpen}
+        onOpenChange={setIsDetailsDialogOpen}
         customer={selectedCustomer}
       />
       <div className="py-4">
@@ -164,6 +177,10 @@ export function CustomerTable({ customers }: CustomerTableProps) {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuLabel>{t('actions')}</DropdownMenuLabel>
+                    <DropdownMenuItem onSelect={() => handleViewDetails(customer)} className="md:hidden"> 
+                      {t('viewDetails')}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator className="md:hidden" />
                     <DropdownMenuItem onSelect={() => handleEdit(customer)}>
                       {t('borrowersPage.actions.editCustomer')}
                     </DropdownMenuItem>
