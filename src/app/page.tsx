@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/card";
 import { CustomerTable } from "@/components/customers/customer-table";
 import { CustomerFormWrapper } from "@/components/customers/customer-form-wrapper";
+import { OverviewChart } from "@/components/dashboard/overview-chart";
 
 export default async function DashboardPage() {
   const loans: Loan[] = await getLoans();
@@ -43,6 +44,37 @@ export default async function DashboardPage() {
 
   const totalInterestEarnedKhr = calculateTotalInterest(khrLoans);
   const totalInterestEarnedUsd = calculateTotalInterest(usdLoans);
+  
+  // Data processing for the overview chart
+  const monthlyData: { [key: string]: { KHR: number; USD: number } } = {};
+  const monthLabels: {key: string, name: string}[] = [];
+  const today = new Date();
+  
+  for (let i = 11; i >= 0; i--) {
+      const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+      const key = d.toISOString().slice(0, 7); // YYYY-MM
+      const name = d.toLocaleString('en-US', { month: 'short', year: '2-digit' });
+      monthLabels.push({key, name});
+      monthlyData[key] = { KHR: 0, USD: 0 };
+  }
+
+  loans.forEach(loan => {
+    const key = loan.loanDate.slice(0, 7); // YYYY-MM
+    if (monthlyData[key]) {
+        if (loan.currency === 'KHR') {
+          monthlyData[key].KHR += loan.amount;
+        } else if (loan.currency === 'USD') {
+          monthlyData[key].USD += loan.amount;
+        }
+    }
+  });
+
+  const chartData = monthLabels.map(label => ({
+    name: label.name,
+    KHR: monthlyData[label.key].KHR,
+    USD: monthlyData[label.key].USD,
+  }));
+
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -102,6 +134,18 @@ export default async function DashboardPage() {
             />
         )}
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Monthly Loan Overview</CardTitle>
+          <CardDescription>
+            Total loan amounts disbursed over the last 12 months.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <OverviewChart data={chartData} />
+        </CardContent>
+      </Card>
 
       <div className="space-y-4">
         <Card>
