@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Terminal } from "lucide-react";
+import { Terminal, AlertTriangle } from "lucide-react";
 
 export default function FirebasePage() {
   const envExample = `
@@ -24,8 +24,11 @@ NEXT_PUBLIC_FIREBASE_APP_ID=YOUR_APP_ID
 # Firebase Admin SDK (for Server)
 FIREBASE_PROJECT_ID=YOUR_PROJECT_ID
 FIREBASE_CLIENT_EMAIL=YOUR_CLIENT_EMAIL
-# Make sure to wrap the private key in quotes if it contains special characters
-FIREBASE_PRIVATE_KEY="YOUR_PRIVATE_KEY"
+
+# IMPORTANT: Format your private key exactly like this.
+# It must be on a single line, wrapped in double quotes,
+# with all newline characters replaced by \\n.
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\\nYOUR_MULTI_LINE_KEY_HERE\\n-----END PRIVATE KEY-----\\n"
   `.trim();
 
   return (
@@ -74,6 +77,13 @@ FIREBASE_PRIVATE_KEY="YOUR_PRIVATE_KEY"
             <p className="text-muted-foreground">
               Open the <code>.env</code> file in your project and add the values you collected in the previous steps.
             </p>
+            <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Important: Private Key Formatting</AlertTitle>
+                <AlertDescription>
+                    The `FIREBASE_PRIVATE_KEY` is the most common source of errors. It must be pasted onto a single line and enclosed in double quotes (`"`). The newline characters from the original file must be replaced with `\n`.
+                </AlertDescription>
+            </Alert>
             <Alert>
                 <Terminal className="h-4 w-4" />
                 <AlertTitle>File: .env</AlertTitle>
@@ -90,7 +100,7 @@ FIREBASE_PRIVATE_KEY="YOUR_PRIVATE_KEY"
            <div className="space-y-2">
             <h3 className="font-semibold">5. Restart Your Server</h3>
             <p className="text-muted-foreground">
-              After updating the <code>.env</code> file, you must restart the application server for the changes to take effect.
+              After updating the <code>.env</code> file, you must restart the application server for the changes to take effect. Stop the server (Ctrl+C) and run `npm run dev` again.
             </p>
           </div>
         </CardContent>
