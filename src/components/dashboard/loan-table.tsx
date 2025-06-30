@@ -20,7 +20,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal } from 'lucide-react';
 import { type Loan } from '@/lib/types';
-import { cn, formatCurrency } from '@/lib/utils';
+import { formatCurrency } from '@/lib/utils';
 import { useState, useTransition, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { updateLoanStatusAction } from '@/lib/actions';
@@ -93,16 +93,16 @@ export function LoanTable({ loans }: LoanTableProps) {
     });
   };
 
-  const getStatusVariant = (status: Loan['status']): "default" | "secondary" | "destructive" | "outline" => {
+  const getStatusVariant = (status: Loan['status']): "success" | "warning" | "destructive" | "secondary" | "outline" => {
     switch(status) {
         case 'Approved':
-            return 'default';
-        case 'Paid':
-            return 'secondary';
+            return 'success';
         case 'Pending':
-            return 'outline';
+            return 'warning';
         case 'Rejected':
             return 'destructive';
+        case 'Paid':
+            return 'secondary';
         default:
             return 'outline';
     }
@@ -172,9 +172,7 @@ export function LoanTable({ loans }: LoanTableProps) {
               <TableCell>{loan.term} mo</TableCell>
               <TableCell>{formatDate(loan.loanDate)}</TableCell>
               <TableCell>
-                <Badge variant={getStatusVariant(loan.status)} className={cn(
-                  getStatusVariant(loan.status) === 'default' && 'bg-accent text-accent-foreground',
-                )}>{loan.status}</Badge>
+                <Badge variant={getStatusVariant(loan.status)}>{loan.status}</Badge>
               </TableCell>
               <TableCell>
                 <DropdownMenu>
