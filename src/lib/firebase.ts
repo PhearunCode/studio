@@ -1,3 +1,4 @@
+
 import admin from 'firebase-admin';
 import { getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
@@ -9,7 +10,7 @@ import { z } from 'zod';
 if (!getApps().length) {
   const serviceAccount = {
     projectId: process.env.FIREBASE_PROJECT_ID,
-    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+    privateKey: process.env.FIREBASE_PRIVATE_KEY,
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
   };
 
@@ -18,11 +19,15 @@ if (!getApps().length) {
   } else {
     try {
       admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
+        credential: admin.credential.cert({
+            ...serviceAccount,
+            // The private key from the .env file must be formatted correctly with newlines
+            privateKey: serviceAccount.privateKey.replace(/\\n/g, '\n'),
+        }),
       });
       console.log('Firebase Admin SDK initialized successfully.');
     } catch (error) {
-      console.error('Firebase admin initialization error:', error);
+      console.error('Firebase admin initialization error:', error, 'This often happens if the FIREBASE_PRIVATE_KEY in your .env file is not formatted correctly. Ensure it is the full key and wrapped in double quotes.');
     }
   }
 }
