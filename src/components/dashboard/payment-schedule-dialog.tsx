@@ -107,12 +107,12 @@ export function PaymentScheduleDialog({ loan, open, onOpenChange }: PaymentSched
   const schedule = loan?.payments ?? [];
   const monthlyInterestPayment = loan.amount * (loan.interestRate / 100);
   
-  const getStatusVariant = (status: Payment['status']): "default" | "secondary" | "destructive" | "outline" => {
+  const getStatusVariant = (status: Payment['status']): "success" | "warning" | "destructive" | "outline" => {
     switch(status) {
         case 'Paid':
-            return 'default';
+            return 'success';
         case 'Upcoming':
-            return 'outline';
+            return 'warning';
         case 'Overdue':
             return 'destructive';
         default:
@@ -143,7 +143,7 @@ export function PaymentScheduleDialog({ loan, open, onOpenChange }: PaymentSched
                         <div key={entry.month} className="rounded-lg border bg-card text-card-foreground p-4 space-y-4">
                             <div className="flex justify-between items-center">
                                 <div className="font-bold">{t('paymentScheduleDialog.table.month')} {entry.month}</div>
-                                <Badge variant={getStatusVariant(entry.status)} className={cn(entry.status === 'Paid' && 'bg-accent text-accent-foreground')}>
+                                <Badge variant={getStatusVariant(entry.status)}>
                                     {entry.status}
                                 </Badge>
                             </div>
@@ -201,9 +201,7 @@ export function PaymentScheduleDialog({ loan, open, onOpenChange }: PaymentSched
                         <TableCell className="font-medium">{entry.month}</TableCell>
                         <TableCell>{formatDate(entry.dueDate)}</TableCell>
                         <TableCell>
-                            <Badge variant={getStatusVariant(entry.status)} className={cn(
-                                entry.status === 'Paid' && 'bg-accent text-accent-foreground'
-                            )}>
+                            <Badge variant={getStatusVariant(entry.status)}>
                                 {entry.status}
                             </Badge>
                         </TableCell>
