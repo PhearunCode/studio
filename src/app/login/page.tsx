@@ -24,13 +24,24 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
     try {
+      if (!auth) {
+        throw new Error("Firebase is not configured on the client. Please complete the setup in your .env file.");
+      }
       await signInWithEmailAndPassword(auth, email, password);
       router.push('/');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login failed:', error);
+
+      let description = t('toast.loginFailedDescription');
+      if (error.message?.includes("Firebase is not configured")) {
+          description = error.message;
+      } else if (error.code === 'auth/invalid-credential') {
+          description = 'Invalid email or password. Please check your credentials and try again.';
+      }
+
       toast({
         title: t('toast.loginFailedTitle'),
-        description: t('toast.loginFailedDescription'),
+        description,
         variant: 'destructive',
       });
     } finally {

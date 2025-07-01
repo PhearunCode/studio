@@ -20,6 +20,8 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+const publicPages = ['/login', '/view-loan'];
+
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -61,11 +63,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     if (loading || !auth) return;
 
-    const isAuthPage = pathname === '/login';
+    const isPublicPage = publicPages.includes(pathname);
     
-    if (!user && !isAuthPage) {
+    if (!user && !isPublicPage) {
       router.push('/login');
-    } else if (user && isAuthPage) {
+    } else if (user && pathname === '/login') { // Only redirect from /login page
       router.push('/');
     }
   }, [user, loading, pathname, router]);
@@ -79,10 +81,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
      );
   }
 
-  const isAuthPage = pathname === '/login';
-  // Prevent flash of login page for authenticated users or content for unauthenticated users
-  // This helps avoid showing the wrong layout while the redirect is in progress.
-  if ((!user && !isAuthPage && auth) || (user && isAuthPage)) {
+  const isPublicPage = publicPages.includes(pathname);
+  // Prevent flash of content during redirects.
+  if ((!user && !isPublicPage && auth) || (user && pathname === '/login')) {
     return (
         <div className="flex h-screen w-full items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin" />
