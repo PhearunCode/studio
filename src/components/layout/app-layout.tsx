@@ -48,7 +48,7 @@ function BottomNavBar() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 mt-auto border-t bg-background/95 backdrop-blur-sm md:hidden">
-      <div className="mx-auto flex h-16 max-w-md items-center justify-around">
+      <div className="mx-auto flex h-16 items-center justify-around">
         {navItems.map((item) => (
           <Link
             key={item.href}

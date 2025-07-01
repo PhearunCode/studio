@@ -168,9 +168,9 @@ export function CustomerDetailsDialog({ customer, open, onOpenChange }: Customer
                       <TableHeader>
                         <TableRow>
                           <TableHead>Amount</TableHead>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Term</TableHead>
-                          <TableHead>Interest</TableHead>
+                          <TableHead className="hidden sm:table-cell">Date</TableHead>
+                          <TableHead className="hidden md:table-cell">Term</TableHead>
+                          <TableHead className="hidden md:table-cell">Interest</TableHead>
                           <TableHead>Status</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -178,9 +178,9 @@ export function CustomerDetailsDialog({ customer, open, onOpenChange }: Customer
                         {customer.loans.map(loan => (
                           <TableRow key={loan.id}>
                             <TableCell>{formatCurrency(loan.amount, loan.currency)}</TableCell>
-                            <TableCell>{formatDate(loan.loanDate)}</TableCell>
-                            <TableCell>{loan.term} mo</TableCell>
-                            <TableCell>{loan.interestRate}%</TableCell>
+                            <TableCell className="hidden sm:table-cell">{formatDate(loan.loanDate)}</TableCell>
+                            <TableCell className="hidden md:table-cell">{loan.term} mo</TableCell>
+                            <TableCell className="hidden md:table-cell">{loan.interestRate}%</TableCell>
                             <TableCell>
                               <Badge variant={getStatusVariant(loan.status)}>{loan.status}</Badge>
                             </TableCell>
