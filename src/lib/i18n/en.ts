@@ -95,6 +95,7 @@ export const en = {
     },
     actions: {
       viewPayments: 'View Payments',
+      sendTelegramDetails: 'Send Details via Telegram',
       makePrincipalPayment: 'Make Principal Payment',
       editLoan: 'Edit Loan',
       deleteLoan: 'Delete Loan',

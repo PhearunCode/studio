@@ -476,6 +476,58 @@ export async function sendManualTelegramMessageAction(
   }
 }
 
+export async function sendLoanDetailsToTelegramAction(loanId: string): Promise<FormState> {
+    try {
+        if (!loanId) {
+            throw new Error('Loan ID is required.');
+        }
+
+        const loans = await getLoans();
+        const loan = loans.find(l => l.id === loanId);
+        if (!loan) {
+            throw new Error('Loan not found.');
+        }
+
+        const customers = await getCustomers();
+        const customer = customers.find(c => c.name === loan.name);
+
+        if (!customer) {
+            throw new Error(`Customer "${loan.name}" not found.`);
+        }
+
+        if (!customer.telegramChatId) {
+            throw new Error(`Customer "${loan.name}" does not have a Telegram Chat ID configured.`);
+        }
+
+        const paidCount = loan.payments?.filter(p => p.status === 'Paid').length ?? 0;
+        const totalCount = loan.payments?.length ?? 0;
+        
+        const message = `
+*Loan Details for ${loan.name}*
+-----------------------------------
+*Status:* ${loan.status}
+*Principal:* ${formatCurrency(loan.amount, loan.currency)}
+*Interest Rate:* ${loan.interestRate}%
+*Term:* ${loan.term} months
+*Payments Made:* ${paidCount} / ${totalCount}
+-----------------------------------
+This is a summary of your loan. For more details, please contact us.
+        `.trim();
+
+        await sendTelegramNotification(message, customer.telegramChatId);
+
+        return { message: `Loan details sent successfully to ${customer.name}.` };
+
+    } catch (error) {
+        console.error('Error sending loan details:', error);
+        const message = error instanceof Error ? error.message : 'An unexpected error occurred.';
+        return {
+            message,
+            error: true,
+        };
+    }
+}
+
 export async function checkIsAdminAction(uid: string): Promise<boolean> {
     try {
         return await isUserAdmin(uid);

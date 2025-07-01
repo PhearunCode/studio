@@ -95,6 +95,7 @@ export const km = {
     },
     actions: {
       viewPayments: 'មើលការទូទាត់',
+      sendTelegramDetails: 'ផ្ញើព័ត៌មានលម្អិតតាម Telegram',
       makePrincipalPayment: 'ធ្វើការទូទាត់ប្រាក់ដើម',
       editLoan: 'កែសម្រួលកម្ចី',
       deleteLoan: 'លុបកម្ចី',

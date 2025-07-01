@@ -18,12 +18,12 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal, MessageSquare } from 'lucide-react';
 import { type Loan, type Customer } from '@/lib/types';
 import { formatCurrency, getInitials } from '@/lib/utils';
 import { useState, useTransition, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { updateLoanStatusAction } from '@/lib/actions';
+import { updateLoanStatusAction, sendLoanDetailsToTelegramAction } from '@/lib/actions';
 import { DeleteLoanDialog } from './delete-loan-dialog';
 import { EditLoanForm } from './edit-loan-form';
 import { PaymentScheduleDialog } from './payment-schedule-dialog';
@@ -43,6 +43,7 @@ export function LoanTable({ loans, customers }: LoanTableProps) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
+  const [isSendingTelegram, startTelegramTransition] = useTransition();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isPaymentScheduleOpen, setIsPaymentScheduleOpen] = useState(false);
@@ -71,6 +72,25 @@ export function LoanTable({ loans, customers }: LoanTableProps) {
           className: 'bg-accent text-accent-foreground',
         });
       }
+    });
+  };
+
+  const handleSendTelegramDetails = (loan: Loan) => {
+    startTelegramTransition(async () => {
+        const result = await sendLoanDetailsToTelegramAction(loan.id);
+        if (result?.error) {
+            toast({
+              title: t('toast.error'),
+              description: result.message,
+              variant: 'destructive',
+            });
+        } else {
+            toast({
+              title: t('toast.success'),
+              description: result.message,
+              className: 'bg-accent text-accent-foreground',
+            });
+        }
     });
   };
 
@@ -210,7 +230,7 @@ export function LoanTable({ loans, customers }: LoanTableProps) {
               <TableCell onClick={(e) => e.stopPropagation()}>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button aria-haspopup="true" size="icon" variant="ghost" disabled={isPending}>
+                    <Button aria-haspopup="true" size="icon" variant="ghost" disabled={isPending || isSendingTelegram}>
                       <MoreHorizontal className="h-4 w-4" />
                       <span className="sr-only">Toggle menu</span>
                     </Button>
@@ -223,6 +243,13 @@ export function LoanTable({ loans, customers }: LoanTableProps) {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onSelect={() => handleViewPayments(loan)}>
                         {t('loansPage.actions.viewPayments')}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                        onSelect={() => handleSendTelegramDetails(loan)} 
+                        disabled={!customer?.telegramChatId}
+                    >
+                        <MessageSquare className="mr-2 h-4 w-4" />
+                        {t('loansPage.actions.sendTelegramDetails')}
                     </DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => handlePrincipalPayment(loan)} disabled={loan.status !== 'Approved'}>
                         {t('loansPage.actions.makePrincipalPayment')}
