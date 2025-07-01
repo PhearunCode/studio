@@ -444,3 +444,54 @@ export const getUsers = async (): Promise<AppUser[]> => {
         throw error;
     }
 }
+
+export const getLoansByCustomerPhone = async (phone: string): Promise<{ loans: Loan[], customer: Customer | null }> => {
+    checkDbConnection();
+    const customerQuery = await db!.collection('customers').where('phone', '==', phone).limit(1).get();
+
+    if (customerQuery.empty) {
+        return { loans: [], customer: null };
+    }
+
+    const customerDoc = customerQuery.docs[0];
+    const customerData = customerDoc.data() as Omit<Customer, 'id'>;
+    const customer = { ...customerData, id: customerDoc.id } as Customer;
+    
+    const loansSnapshot = await db!.collection('loans').where('name', '==', customer.name).orderBy('loanDate', 'desc').get();
+    if (loansSnapshot.empty) {
+        return { loans: [], customer: customer };
+    }
+
+    const loans = loansSnapshot.docs.map(doc => {
+      const data = doc.data();
+      const loanDate = data.loanDate;
+      let serializableLoanDate: string;
+
+      if (loanDate && typeof loanDate.toDate === 'function') { 
+        serializableLoanDate = loanDate.toDate().toISOString().split('T')[0];
+      } else {
+        serializableLoanDate = String(loanDate || '');
+      }
+      
+      const verificationResult = data.verificationResult ? {
+          flags: data.verificationResult.flags || [],
+          summary: data.verificationResult.summary || ''
+      } : null;
+
+      return {
+        id: doc.id,
+        name: data.name || '',
+        amount: data.amount || 0,
+        currency: data.currency || 'KHR',
+        interestRate: data.interestRate || 0,
+        term: data.term || 0,
+        loanDate: serializableLoanDate,
+        address: data.address || '',
+        status: data.status || 'Pending',
+        verificationResult: verificationResult,
+        payments: data.payments || [],
+      } as Loan;
+    });
+    
+    return { loans, customer };
+};

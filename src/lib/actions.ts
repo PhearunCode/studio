@@ -2,7 +2,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { addLoan, addCustomer, updateCustomer, deleteCustomer, getLoans, getCustomers, updateLoanStatus, deleteLoan, updateLoan, markPaymentAsPaid, recordPrincipalPayment, isUserAdmin, getUsers } from './firebase';
+import { addLoan, addCustomer, updateCustomer, deleteCustomer, getLoans, getCustomers, updateLoanStatus, deleteLoan, updateLoan, markPaymentAsPaid, recordPrincipalPayment, isUserAdmin, getUsers, getLoansByCustomerPhone } from './firebase';
 import { verifyLoanApplication } from '@/ai/flows/verify-loan-application';
 import { loanSchema, customerSchema, updateLoanSchema, principalPaymentSchema, telegramMessageSchema, type FormState, type Loan, type Currency, type AppUser } from '@/lib/types';
 import { sendTelegramNotification } from './telegram';
@@ -554,4 +554,32 @@ export async function getUsersAction(): Promise<AppUser[]> {
         console.error("Error in getUsersAction:", error);
         return [];
     }
+}
+
+export async function getLoanHistoryAction(
+  prevState: any,
+  formData: FormData
+): Promise<{ loans?: Loan[]; customerName?: string; error?: string }> {
+  try {
+    const phone = formData.get('phone') as string;
+    if (!phone) {
+      return { error: 'Phone number is required.' };
+    }
+
+    const { loans, customer } = await getLoansByCustomerPhone(phone);
+
+    if (!customer) {
+      return { error: 'No customer found with that phone number.' };
+    }
+
+    if (loans.length === 0) {
+      return { customerName: customer.name, loans: [] };
+    }
+
+    return { loans, customerName: customer.name };
+  } catch (error) {
+    console.error('Error fetching loan history:', error);
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred.';
+    return { error: message };
+  }
 }
