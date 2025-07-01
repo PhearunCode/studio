@@ -32,6 +32,7 @@ import { useAuth } from '@/components/auth/auth-provider';
 import { useTranslation } from '@/contexts/language-context';
 import { LanguageSwitcher } from './language-switcher';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { CambodiaClock } from './cambodia-clock';
 
 function BottomNavBar() {
   const pathname = usePathname();
@@ -242,6 +243,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
       <SidebarInset>
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-md sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
           <div className="flex-1" />
+          <CambodiaClock />
           <LanguageSwitcher />
           <ThemeToggle />
           <DropdownMenu>
