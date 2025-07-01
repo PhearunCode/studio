@@ -121,7 +121,7 @@ export function CustomerTable({ customers }: CustomerTableProps) {
             <TableHead>{t('borrowersPage.table.phone')}</TableHead>
             <TableHead className="hidden lg:table-cell">{t('borrowersPage.table.telegramId')}</TableHead>
             <TableHead className="hidden md:table-cell text-right">{t('borrowersPage.table.totalLoans')}</TableHead>
-            <TableHead className="hidden lg:table-cell text-right">{t('borrowersPage.table.totalLoanedAmount')}</TableHead>
+            <TableHead className="hidden xl:table-cell text-right">{t('borrowersPage.table.totalLoanedAmount')}</TableHead>
             <TableHead>
               <span className="sr-only">{t('actions')}</span>
             </TableHead>
@@ -164,7 +164,7 @@ export function CustomerTable({ customers }: CustomerTableProps) {
                 </div>
               </TableCell>
               <TableCell className="hidden md:table-cell text-right">{customer.totalLoans}</TableCell>
-              <TableCell className="hidden lg:table-cell text-right">
+              <TableCell className="hidden xl:table-cell text-right">
                 {formatTotalLoaned(customer)}
               </TableCell>
               <TableCell>

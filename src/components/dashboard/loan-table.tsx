@@ -193,9 +193,9 @@ export function LoanTable({ loans, customers }: LoanTableProps) {
           <TableRow>
             <TableHead>{t('loansPage.table.borrower')}</TableHead>
             <TableHead>{t('loansPage.table.principal')}</TableHead>
-            <TableHead className="hidden sm:table-cell">{t('loansPage.table.interest')}</TableHead>
-            <TableHead className="hidden md:table-cell">{t('loansPage.table.term')}</TableHead>
-            <TableHead className="hidden lg:table-cell">{t('loansPage.table.date')}</TableHead>
+            <TableHead className="hidden md:table-cell">{t('loansPage.table.interest')}</TableHead>
+            <TableHead className="hidden lg:table-cell">{t('loansPage.table.term')}</TableHead>
+            <TableHead className="hidden xl:table-cell">{t('loansPage.table.date')}</TableHead>
             <TableHead>{t('loansPage.table.status')}</TableHead>
             <TableHead>
               <span className="sr-only">{t('actions')}</span>
@@ -221,9 +221,9 @@ export function LoanTable({ loans, customers }: LoanTableProps) {
               <TableCell>
                 {formatCurrency(loan.amount, loan.currency)}
               </TableCell>
-              <TableCell className="hidden sm:table-cell">{loan.interestRate}%</TableCell>
-              <TableCell className="hidden md:table-cell">{loan.term} mo</TableCell>
-              <TableCell className="hidden lg:table-cell">{formatDate(loan.loanDate)}</TableCell>
+              <TableCell className="hidden md:table-cell">{loan.interestRate}%</TableCell>
+              <TableCell className="hidden lg:table-cell">{loan.term} mo</TableCell>
+              <TableCell className="hidden xl:table-cell">{formatDate(loan.loanDate)}</TableCell>
               <TableCell>
                 <Badge variant={getStatusVariant(loan.status)}>{loan.status}</Badge>
               </TableCell>

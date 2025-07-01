@@ -105,8 +105,8 @@ export function PaymentsTable({ loans, customers }: PaymentsTableProps) {
           <TableRow>
             <TableHead>{t('paymentsPage.table.borrower')}</TableHead>
             <TableHead>{t('paymentsPage.table.paymentProgress')}</TableHead>
-            <TableHead className="text-right hidden md:table-cell">{t('paymentsPage.table.monthlyInterest')}</TableHead>
-            <TableHead className="text-right hidden lg:table-cell">{t('paymentsPage.table.totalInterest')}</TableHead>
+            <TableHead className="text-right hidden sm:table-cell">{t('paymentsPage.table.monthlyInterest')}</TableHead>
+            <TableHead className="text-right hidden xl:table-cell">{t('paymentsPage.table.totalInterest')}</TableHead>
             <TableHead className="text-center">{t('actions')}</TableHead>
           </TableRow>
         </TableHeader>
@@ -144,10 +144,10 @@ export function PaymentsTable({ loans, customers }: PaymentsTableProps) {
                         <span className="text-xs text-muted-foreground">{t('paymentsPage.noSchedule')}</span>
                     )}
                 </TableCell>
-                <TableCell className="text-right font-medium hidden md:table-cell">
+                <TableCell className="text-right font-medium hidden sm:table-cell">
                     {formatCurrency(loan.monthlyInterestPayment, loan.currency)}
                 </TableCell>
-                <TableCell className="text-right font-medium text-destructive hidden lg:table-cell">
+                <TableCell className="text-right font-medium text-destructive hidden xl:table-cell">
                     {formatCurrency(loan.totalInterest, loan.currency)}
                 </TableCell>
                 <TableCell className="text-center">
