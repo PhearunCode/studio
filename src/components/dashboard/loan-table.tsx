@@ -186,7 +186,7 @@ export function LoanTable({ loans, customers }: LoanTableProps) {
           {filteredLoans.map((loan) => {
             const customer = customerMap.get(loan.name);
             return (
-            <TableRow key={loan.id}>
+            <TableRow key={loan.id} className="cursor-pointer" onClick={() => handleViewDetails(loan)}>
               <TableCell>
                 <div className="flex items-center gap-3">
                   <CustomerProfilePopover customer={customer}>
@@ -207,7 +207,7 @@ export function LoanTable({ loans, customers }: LoanTableProps) {
               <TableCell>
                 <Badge variant={getStatusVariant(loan.status)}>{loan.status}</Badge>
               </TableCell>
-              <TableCell>
+              <TableCell onClick={(e) => e.stopPropagation()}>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button aria-haspopup="true" size="icon" variant="ghost" disabled={isPending}>

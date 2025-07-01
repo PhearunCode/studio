@@ -39,6 +39,7 @@ export interface Customer {
   totalLoans: number;
   totalLoanAmountKhr: number;
   totalLoanAmountUsd: number;
+  loans?: Loan[];
 }
 
 // Helper functions for validation

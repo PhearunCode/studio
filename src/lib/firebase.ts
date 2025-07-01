@@ -124,6 +124,7 @@ export const getCustomers = async (): Promise<Customer[]> => {
                 totalLoans: 0,
                 totalLoanAmountKhr: 0,
                 totalLoanAmountUsd: 0,
+                loans: [], // Initialize loans array
             } as Customer;
         });
         
@@ -135,13 +136,17 @@ export const getCustomers = async (): Promise<Customer[]> => {
         const loans = await getLoans(); 
 
         loans.forEach(loan => {
-            if (customerMap.has(loan.name) && (loan.status === 'Approved' || loan.status === 'Paid')) {
+            if (customerMap.has(loan.name)) {
                 const customer = customerMap.get(loan.name)!;
-                customer.totalLoans += 1;
-                if (loan.currency === 'KHR') {
-                    customer.totalLoanAmountKhr += loan.amount;
-                } else if (loan.currency === 'USD') {
-                    customer.totalLoanAmountUsd += loan.amount;
+                customer.loans?.push(loan);
+
+                if (loan.status === 'Approved' || loan.status === 'Paid') {
+                    customer.totalLoans += 1;
+                    if (loan.currency === 'KHR') {
+                        customer.totalLoanAmountKhr += loan.amount;
+                    } else if (loan.currency === 'USD') {
+                        customer.totalLoanAmountUsd += loan.amount;
+                    }
                 }
             }
         });
