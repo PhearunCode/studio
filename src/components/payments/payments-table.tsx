@@ -29,6 +29,8 @@ import { Input } from '@/components/ui/input';
 import { useTranslation } from '@/contexts/language-context';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CustomerProfilePopover } from '../customers/customer-profile-popover';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
 
 interface PaymentsTableProps {
   loans: Loan[];
@@ -41,6 +43,7 @@ export function PaymentsTable({ loans, customers }: PaymentsTableProps) {
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const isMobile = useIsMobile();
 
   const customerMap = useMemo(() => {
     return new Map(customers.map(c => [c.name, c]));
@@ -79,7 +82,7 @@ export function PaymentsTable({ loans, customers }: PaymentsTableProps) {
     );
   }, [loansWithPayments, searchTerm]);
 
-  return (
+  const dialogs = (
     <>
       <PaymentScheduleDialog
         open={isPaymentScheduleOpen}
@@ -92,14 +95,99 @@ export function PaymentsTable({ loans, customers }: PaymentsTableProps) {
         loan={selectedLoan}
         customer={selectedLoan ? customerMap.get(selectedLoan.name) : undefined}
       />
-      <div className="py-4">
-        <Input
-          placeholder={t('borrowersPage.searchPlaceholder')}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
-        />
-      </div>
+    </>
+  );
+
+  const searchBar = (
+    <div className="py-4">
+      <Input
+        placeholder={t('borrowersPage.searchPlaceholder')}
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className={isMobile ? "w-full" : "max-w-sm"}
+      />
+    </div>
+  );
+
+  if (isMobile) {
+    return (
+      <>
+        {dialogs}
+        {searchBar}
+        <div className="space-y-4">
+          {filteredLoans.map((loan) => {
+            const paidCount = loan.payments?.filter(p => p.status === 'Paid').length ?? 0;
+            const totalCount = loan.payments?.length ?? 0;
+            const progress = totalCount > 0 ? (paidCount / totalCount) * 100 : 0;
+            const customer = customerMap.get(loan.name);
+
+            return (
+              <Card key={loan.id} className="cursor-pointer" onClick={() => handleViewDetails(loan)}>
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <CustomerProfilePopover customer={customer}>
+                        <Avatar>
+                          <AvatarImage src={customer?.avatar || `https://avatar.vercel.sh/${loan.name}.png`} alt={loan.name} />
+                          <AvatarFallback>{getInitials(loan.name)}</AvatarFallback>
+                        </Avatar>
+                      </CustomerProfilePopover>
+                      <div>
+                        <CardTitle className="text-base">{loan.name}</CardTitle>
+                        <CardDescription>{formatCurrency(loan.amount, loan.currency)}</CardDescription>
+                      </div>
+                    </div>
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button aria-haspopup="true" size="icon" variant="ghost">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Toggle menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>{t('actions')}</DropdownMenuLabel>
+                          <DropdownMenuItem onSelect={() => handleViewDetails(loan)}>
+                            {t('viewDetails')}
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onSelect={() => handleViewPayments(loan)}>
+                              {t('loansPage.actions.viewPayments')}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="grid gap-2 text-sm">
+                  {totalCount > 0 ? (
+                      <div className="space-y-2">
+                        <Progress value={progress} className="h-2" />
+                        <div className="flex justify-between text-xs text-muted-foreground">
+                            <span>{t('paymentsPage.table.paymentProgress')}</span>
+                            <span>{paidCount} / {totalCount} {t('paymentsPage.paid')}</span>
+                        </div>
+                      </div>
+                  ) : (
+                      <span className="text-xs text-muted-foreground">{t('paymentsPage.noSchedule')}</span>
+                  )}
+                  <div className="flex justify-between text-muted-foreground">
+                      <span>{t('paymentsPage.table.monthlyInterest')}</span>
+                      <span className="font-medium text-foreground">{formatCurrency(loan.monthlyInterestPayment, loan.currency)}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      {dialogs}
+      {searchBar}
       <Table>
         <TableHeader>
           <TableRow>

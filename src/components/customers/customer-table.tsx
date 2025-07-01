@@ -30,6 +30,8 @@ import { Input } from '@/components/ui/input';
 import { useTranslation } from '@/contexts/language-context';
 import { WhatsAppIcon } from '@/components/icons/whatsapp-icon';
 import { CustomerProfilePopover } from './customer-profile-popover';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
 
 interface CustomerTableProps {
   customers: Customer[];
@@ -43,6 +45,7 @@ export function CustomerTable({ customers }: CustomerTableProps) {
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const isMobile = useIsMobile();
 
   const handleEdit = (customer: Customer) => {
     setSelectedCustomer(customer);
@@ -83,8 +86,7 @@ export function CustomerTable({ customers }: CustomerTableProps) {
     );
   }, [customers, searchTerm]);
 
-
-  return (
+  const dialogs = (
     <>
       <CustomerForm
         open={isEditDialogOpen}
@@ -106,14 +108,88 @@ export function CustomerTable({ customers }: CustomerTableProps) {
         onOpenChange={setIsDetailsDialogOpen}
         customer={selectedCustomer}
       />
-      <div className="py-4">
-        <Input
-          placeholder={t('borrowersPage.searchPlaceholder')}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
-        />
-      </div>
+    </>
+  );
+
+  const searchBar = (
+    <div className="py-4">
+      <Input
+        placeholder={t('borrowersPage.searchPlaceholder')}
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className={isMobile ? "w-full" : "max-w-sm"}
+      />
+    </div>
+  );
+
+  if (isMobile) {
+    return (
+      <>
+        {dialogs}
+        {searchBar}
+        <div className="space-y-4">
+          {filteredCustomers.map((customer) => (
+            <Card key={customer.id} className="cursor-pointer" onClick={() => handleViewDetails(customer)}>
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <CustomerProfilePopover customer={customer}>
+                      <Avatar>
+                        <AvatarImage src={customer.avatar || `https://avatar.vercel.sh/${customer.name}.png`} alt={customer.name} />
+                        <AvatarFallback>{getInitials(customer.name)}</AvatarFallback>
+                      </Avatar>
+                    </CustomerProfilePopover>
+                    <div>
+                      <CardTitle className="text-base">{customer.name}</CardTitle>
+                      <CardDescription>{customer.phone}</CardDescription>
+                    </div>
+                  </div>
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button aria-haspopup="true" size="icon" variant="ghost">
+                          <MoreHorizontal className="h-4 w-4" />
+                          <span className="sr-only">Toggle menu</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>{t('actions')}</DropdownMenuLabel>
+                        <DropdownMenuItem onSelect={() => handleViewDetails(customer)}>
+                          {t('viewDetails')}
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onSelect={() => handleEdit(customer)}>
+                          {t('borrowersPage.actions.editCustomer')}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => handleDelete(customer)} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+                          {t('borrowersPage.actions.deleteCustomer')}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="grid gap-2 text-sm">
+                 <div className="flex justify-between text-muted-foreground">
+                    <span>{t('borrowersPage.table.totalLoans')}</span>
+                    <span>{customer.totalLoans}</span>
+                </div>
+                <div className="flex justify-between text-muted-foreground">
+                    <span>{t('borrowersPage.table.totalLoanedAmount')}</span>
+                    <span className="font-medium text-foreground">{formatTotalLoaned(customer)}</span>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      {dialogs}
+      {searchBar}
       <Table>
         <TableHeader>
           <TableRow>
