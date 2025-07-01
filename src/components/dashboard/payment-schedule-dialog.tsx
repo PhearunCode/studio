@@ -134,18 +134,17 @@ export function PaymentScheduleDialog({ loan, open, onOpenChange }: PaymentSched
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-[60vh] rounded-md border">
-           {/* Desktop Table View */}
-          <div className="hidden sm:block">
+          <div>
             <Table>
                 <TableHeader className="sticky top-0 bg-background">
                 <TableRow>
                     <TableHead className="w-[80px]">{t('paymentScheduleDialog.table.month')}</TableHead>
                     <TableHead>{t('paymentScheduleDialog.table.dueDate')}</TableHead>
                     <TableHead>{t('paymentScheduleDialog.table.status')}</TableHead>
-                    <TableHead className="text-right hidden md:table-cell">{t('paymentScheduleDialog.table.principal')}</TableHead>
+                    <TableHead className="text-right">{t('paymentScheduleDialog.table.principal')}</TableHead>
                     <TableHead className="text-right">{t('paymentScheduleDialog.table.interest')}</TableHead>
                     <TableHead className="text-right">{t('paymentScheduleDialog.table.totalPayment')}</TableHead>
-                    <TableHead className="text-right hidden md:table-cell">{t('paymentScheduleDialog.table.remainingBalance')}</TableHead>
+                    <TableHead className="text-right">{t('paymentScheduleDialog.table.remainingBalance')}</TableHead>
                     <TableHead className="text-center">{t('paymentScheduleDialog.table.action')}</TableHead>
                 </TableRow>
                 </TableHeader>
@@ -162,10 +161,10 @@ export function PaymentScheduleDialog({ loan, open, onOpenChange }: PaymentSched
                                 {entry.status}
                             </Badge>
                         </TableCell>
-                        <TableCell className="text-right hidden md:table-cell">{formatCurrency(entry.principalPayment, loan.currency)}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(entry.principalPayment, loan.currency)}</TableCell>
                         <TableCell className="text-right">{formatCurrency(entry.interestPayment, loan.currency)}</TableCell>
                         <TableCell className="text-right font-medium">{formatCurrency(entry.monthlyPayment, loan.currency)}</TableCell>
-                        <TableCell className="text-right hidden md:table-cell">{formatCurrency(entry.remainingBalance, loan.currency)}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(entry.remainingBalance, loan.currency)}</TableCell>
                         <TableCell className="text-center w-[150px]">
                             {entry.status !== 'Paid' && loan.status === 'Approved' && (
                                 <MarkAsPaidButton loanId={loan.id} month={entry.month} />
@@ -182,49 +181,6 @@ export function PaymentScheduleDialog({ loan, open, onOpenChange }: PaymentSched
                 )}
                 </TableBody>
             </Table>
-          </div>
-          {/* Mobile Card View */}
-          <div className="sm:hidden">
-            {schedule.length > 0 ? (
-                schedule.map((entry) => (
-                    <div key={entry.month} className="border-b p-4 space-y-3">
-                        <div className="flex justify-between items-center">
-                            <div className="font-bold">Month {entry.month}</div>
-                            <Badge variant={getStatusVariant(entry.status)} className={cn(entry.status === 'Paid' && 'bg-accent text-accent-foreground')}>
-                                {entry.status}
-                            </Badge>
-                        </div>
-                        <div className="text-sm text-muted-foreground">Due: {formatDate(entry.dueDate)}</div>
-                        
-                        <div className="flex justify-between items-center text-sm">
-                            <span className="text-muted-foreground">Total Payment:</span>
-                            <span className="font-medium">{formatCurrency(entry.monthlyPayment, loan.currency)}</span>
-                        </div>
-                        <div className="flex justify-between items-center text-sm">
-                            <span className="text-muted-foreground">Interest:</span>
-                            <span>{formatCurrency(entry.interestPayment, loan.currency)}</span>
-                        </div>
-                        <div className="flex justify-between items-center text-sm">
-                            <span className="text-muted-foreground">Principal:</span>
-                            <span>{formatCurrency(entry.principalPayment, loan.currency)}</span>
-                        </div>
-                        <div className="flex justify-between items-center text-sm">
-                            <span className="text-muted-foreground">Balance:</span>
-                            <span>{formatCurrency(entry.remainingBalance, loan.currency)}</span>
-                        </div>
-
-                        {entry.status !== 'Paid' && loan.status === 'Approved' && (
-                            <div className="pt-2">
-                                <MarkAsPaidButton loanId={loan.id} month={entry.month} />
-                            </div>
-                        )}
-                    </div>
-                ))
-            ) : (
-              <div className="flex items-center justify-center h-24 text-center">
-                {t('paymentScheduleDialog.noSchedule')}
-              </div>
-            )}
           </div>
         </ScrollArea>
         <DialogFooter>
