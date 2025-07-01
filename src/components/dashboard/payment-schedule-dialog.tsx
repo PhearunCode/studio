@@ -167,7 +167,7 @@ export function PaymentScheduleDialog({ loan, open, onOpenChange }: PaymentSched
                         <TableCell className="text-right font-medium">{formatCurrency(entry.monthlyPayment, loan.currency)}</TableCell>
                         <TableCell className="text-right hidden md:table-cell">{formatCurrency(entry.remainingBalance, loan.currency)}</TableCell>
                         <TableCell className="text-center w-[150px]">
-                            {entry.status !== 'Paid' && loan.status === 'Approved' && loan.currency !== 'KHR' && (
+                            {entry.status !== 'Paid' && loan.status === 'Approved' && (
                                 <MarkAsPaidButton loanId={loan.id} month={entry.month} />
                             )}
                         </TableCell>
@@ -213,7 +213,7 @@ export function PaymentScheduleDialog({ loan, open, onOpenChange }: PaymentSched
                             <span>{formatCurrency(entry.remainingBalance, loan.currency)}</span>
                         </div>
 
-                        {entry.status !== 'Paid' && loan.status === 'Approved' && loan.currency !== 'KHR' && (
+                        {entry.status !== 'Paid' && loan.status === 'Approved' && (
                             <div className="pt-2">
                                 <MarkAsPaidButton loanId={loan.id} month={entry.month} />
                             </div>
