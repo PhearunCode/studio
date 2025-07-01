@@ -2,7 +2,7 @@
 import admin from 'firebase-admin';
 import { getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
-import { type Loan, type Customer, type Payment, type Currency, customerSchema } from './types';
+import { type Loan, type Customer, type Payment, type Currency, type AppUser, customerSchema } from './types';
 import { generatePaymentSchedule } from './utils';
 import { z } from 'zod';
 
@@ -396,3 +396,51 @@ export const isUserAdmin = async (uid: string): Promise<boolean> => {
         return false;
     }
 };
+
+export const getUsers = async (): Promise<AppUser[]> => {
+    checkDbConnection();
+    if (!admin.apps.length) {
+        return [];
+    }
+    
+    try {
+        const usersSnapshot = await db!.collection('users').get();
+        if (usersSnapshot.empty) {
+            return [];
+        }
+
+        const usersList = await Promise.all(
+            usersSnapshot.docs.map(async (doc) => {
+                const uid = doc.id;
+                const role = doc.data().role || 'user';
+                
+                try {
+                    const userRecord = await admin.auth().getUser(uid);
+                    return {
+                        uid: userRecord.uid,
+                        email: userRecord.email,
+                        displayName: userRecord.displayName,
+                        photoURL: userRecord.photoURL,
+                        role: role,
+                    };
+                } catch (error) {
+                    console.error(`Error fetching user data for UID ${uid}:`, error);
+                    // Return user with info from firestore even if auth user is not found
+                    return {
+                        uid: uid,
+                        email: `UID: ${uid}`,
+                        displayName: 'Unknown User',
+                        photoURL: '',
+                        role: role
+                    };
+                }
+            })
+        );
+        
+        return usersList;
+
+    } catch (error) {
+        console.error("Error fetching users:", error);
+        throw error;
+    }
+}

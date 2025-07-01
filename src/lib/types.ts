@@ -42,6 +42,14 @@ export interface Customer {
   loans?: Loan[];
 }
 
+export interface AppUser {
+  uid: string;
+  email: string | undefined;
+  displayName: string | undefined;
+  photoURL: string | undefined;
+  role: string;
+}
+
 // Helper functions for validation
 const isValidDate = (date: string) => !isNaN(Date.parse(date));
 

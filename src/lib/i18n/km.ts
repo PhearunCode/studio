@@ -156,6 +156,10 @@ export const km = {
     fullNameLabel: 'ឈ្មោះ​ពេញ',
     emailAddressLabel: 'អាសយដ្ឋានអ៊ីមែល',
     saveChanges: 'រក្សាទុកការផ្លាស់ប្តូរ',
+    profileTab: 'ប្រវត្តិរូប',
+    usersTab: 'អ្នកប្រើប្រាស់',
+    userManagementTitle: 'ការគ្រប់គ្រងអ្នកប្រើប្រាស់',
+    userManagementDesc: 'មើល និងគ្រប់គ្រងអ្នកប្រើប្រាស់ដែលមានសិទ្ធិចូលប្រើផ្ទាំងគ្រប់គ្រង។',
   },
   
   // Generic Dialogs

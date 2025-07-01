@@ -1,9 +1,9 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { addLoan, addCustomer, updateCustomer, deleteCustomer, getLoans, getCustomers, updateLoanStatus, deleteLoan, updateLoan, markPaymentAsPaid, recordPrincipalPayment, isUserAdmin } from './firebase';
+import { addLoan, addCustomer, updateCustomer, deleteCustomer, getLoans, getCustomers, updateLoanStatus, deleteLoan, updateLoan, markPaymentAsPaid, recordPrincipalPayment, isUserAdmin, getUsers } from './firebase';
 import { verifyLoanApplication } from '@/ai/flows/verify-loan-application';
-import { loanSchema, customerSchema, updateLoanSchema, principalPaymentSchema, telegramMessageSchema, type FormState, type Loan, type Currency } from '@/lib/types';
+import { loanSchema, customerSchema, updateLoanSchema, principalPaymentSchema, telegramMessageSchema, type FormState, type Loan, type Currency, type AppUser } from '@/lib/types';
 import { sendTelegramNotification } from './telegram';
 import { formatCurrency } from './utils';
 import { addDays, formatISO } from 'date-fns';
@@ -534,5 +534,14 @@ export async function checkIsAdminAction(uid: string): Promise<boolean> {
     } catch (error) {
         console.error("Error in checkIsAdminAction:", error);
         return false;
+    }
+}
+
+export async function getUsersAction(): Promise<AppUser[]> {
+    try {
+        return await getUsers();
+    } catch (error) {
+        console.error("Error in getUsersAction:", error);
+        return [];
     }
 }

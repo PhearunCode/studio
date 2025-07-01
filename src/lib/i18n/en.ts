@@ -156,6 +156,10 @@ export const en = {
     fullNameLabel: 'Full Name',
     emailAddressLabel: 'Email Address',
     saveChanges: 'Save Changes',
+    profileTab: 'Profile',
+    usersTab: 'Users',
+    userManagementTitle: 'User Management',
+    userManagementDesc: 'View and manage users with access to the admin panel.',
   },
 
   // Generic Dialogs
