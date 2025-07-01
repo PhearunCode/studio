@@ -142,10 +142,10 @@ export function PaymentScheduleDialog({ loan, open, onOpenChange }: PaymentSched
                     <TableHead className="w-[80px]">{t('paymentScheduleDialog.table.month')}</TableHead>
                     <TableHead>{t('paymentScheduleDialog.table.dueDate')}</TableHead>
                     <TableHead>{t('paymentScheduleDialog.table.status')}</TableHead>
-                    <TableHead className="text-right hidden md:table-cell">{t('paymentScheduleDialog.table.principal')}</TableHead>
-                    <TableHead className="text-right hidden sm:table-cell">{t('paymentScheduleDialog.table.interest')}</TableHead>
+                    <TableHead className="text-right hidden sm:table-cell">{t('paymentScheduleDialog.table.principal')}</TableHead>
+                    <TableHead className="text-right">{t('paymentScheduleDialog.table.interest')}</TableHead>
                     <TableHead className="text-right">{t('paymentScheduleDialog.table.totalPayment')}</TableHead>
-                    <TableHead className="text-right hidden lg:table-cell">{t('paymentScheduleDialog.table.remainingBalance')}</TableHead>
+                    <TableHead className="text-right hidden md:table-cell">{t('paymentScheduleDialog.table.remainingBalance')}</TableHead>
                     <TableHead className="text-center">{t('paymentScheduleDialog.table.action')}</TableHead>
                 </TableRow>
                 </TableHeader>
@@ -162,10 +162,10 @@ export function PaymentScheduleDialog({ loan, open, onOpenChange }: PaymentSched
                                 {entry.status}
                             </Badge>
                         </TableCell>
-                        <TableCell className="text-right hidden md:table-cell">{formatCurrency(entry.principalPayment, loan.currency)}</TableCell>
-                        <TableCell className="text-right hidden sm:table-cell">{formatCurrency(entry.interestPayment, loan.currency)}</TableCell>
+                        <TableCell className="text-right hidden sm:table-cell">{formatCurrency(entry.principalPayment, loan.currency)}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(entry.interestPayment, loan.currency)}</TableCell>
                         <TableCell className="text-right font-medium">{formatCurrency(entry.monthlyPayment, loan.currency)}</TableCell>
-                        <TableCell className="text-right hidden lg:table-cell">{formatCurrency(entry.remainingBalance, loan.currency)}</TableCell>
+                        <TableCell className="text-right hidden md:table-cell">{formatCurrency(entry.remainingBalance, loan.currency)}</TableCell>
                         <TableCell className="text-center w-[150px]">
                             {entry.status !== 'Paid' && loan.status === 'Approved' && (
                                 <MarkAsPaidButton loanId={loan.id} month={entry.month} />
