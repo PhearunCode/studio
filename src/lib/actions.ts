@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { addLoan, addCustomer, updateCustomer, deleteCustomer, getLoans, getCustomers, updateLoanStatus, deleteLoan, updateLoan, markPaymentAsPaid, recordPrincipalPayment } from './firebase';
+import { addLoan, addCustomer, updateCustomer, deleteCustomer, getLoans, getCustomers, updateLoanStatus, deleteLoan, updateLoan, markPaymentAsPaid, recordPrincipalPayment, isUserAdmin } from './firebase';
 import { verifyLoanApplication } from '@/ai/flows/verify-loan-application';
 import { loanSchema, customerSchema, updateLoanSchema, principalPaymentSchema, telegramMessageSchema, type FormState, type Loan, type Currency } from '@/lib/types';
 import { sendTelegramNotification } from './telegram';
@@ -474,4 +474,13 @@ export async function sendManualTelegramMessageAction(
       error: true
     };
   }
+}
+
+export async function checkIsAdminAction(uid: string): Promise<boolean> {
+    try {
+        return await isUserAdmin(uid);
+    } catch (error) {
+        console.error("Error in checkIsAdminAction:", error);
+        return false;
+    }
 }

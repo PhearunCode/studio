@@ -366,3 +366,19 @@ export const recordPrincipalPayment = async (loanId: string, paymentAmount: numb
         });
     });
 };
+
+export const isUserAdmin = async (uid: string): Promise<boolean> => {
+    checkDbConnection();
+    try {
+        const userDoc = await db!.collection('users').doc(uid).get();
+        if (!userDoc.exists) {
+            console.warn(`Admin check failed: User document not found for UID: ${uid}`);
+            return false;
+        }
+        const userData = userDoc.data();
+        return userData?.role === 'admin';
+    } catch (error) {
+        console.error(`Error checking admin status for UID: ${uid}`, error);
+        return false;
+    }
+};
