@@ -1,4 +1,4 @@
-import type {Metadata} from 'next';
+import type {Metadata, Viewport} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from '@/components/layout/theme-provider';
@@ -8,6 +8,13 @@ import { LanguageProvider } from '@/contexts/language-context';
 export const metadata: Metadata = {
   title: 'LendEasy PH',
   description: 'A comprehensive loan management system.',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default async function RootLayout({
