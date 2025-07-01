@@ -86,7 +86,7 @@ export default function ViewLoanPage() {
                   <Landmark className="h-6 w-6" />
                 </div>
             </div>
-            <h1 className="text-3xl font-bold">Customer Loan Portal</h1>
+            <h1 className="text-2xl font-bold md:text-3xl">Customer Loan Portal</h1>
             <p className="text-muted-foreground">Enter your phone number to view your loan history.</p>
         </div>
         
@@ -129,7 +129,7 @@ export default function ViewLoanPage() {
         {state && (state.loans || state.customerName) && !state.error && (
             <div className="space-y-4">
                 <Separator />
-                <h2 className="text-2xl font-semibold text-center">Loan History for {state.customerName}</h2>
+                <h2 className="text-xl font-semibold text-center md:text-2xl">Loan History for {state.customerName}</h2>
                 {state.loans && state.loans.length > 0 ? (
                     <div className="space-y-4">
                         {state.loans.map(loan => <LoanCard key={loan.id} loan={loan} />)}

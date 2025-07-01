@@ -23,7 +23,7 @@ export function LoansPageClient({ loans, customers }: LoansPageClientProps) {
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">{t('loansPage.title')}</h2>
+        <h2 className="text-2xl font-bold tracking-tight md:text-3xl">{t('loansPage.title')}</h2>
         <div className="flex items-center space-x-2">
           <LoanFormWrapper customers={customers} />
         </div>

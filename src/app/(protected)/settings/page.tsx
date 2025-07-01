@@ -22,7 +22,7 @@ export default function SettingsPage() {
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <h2 className="text-3xl font-bold tracking-tight">{t('settingsPage.title')}</h2>
+      <h2 className="text-2xl font-bold tracking-tight md:text-3xl">{t('settingsPage.title')}</h2>
 
       <Tabs defaultValue="profile" className="space-y-4">
         <TabsList>
