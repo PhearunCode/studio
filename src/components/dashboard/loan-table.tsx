@@ -33,6 +33,8 @@ import { Input } from '@/components/ui/input';
 import { useTranslation } from '@/contexts/language-context';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CustomerProfilePopover } from '../customers/customer-profile-popover';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
 
 interface LoanTableProps {
   loans: Loan[];
@@ -51,6 +53,7 @@ export function LoanTable({ loans, customers }: LoanTableProps) {
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const isMobile = useIsMobile();
 
   const customerMap = useMemo(() => {
     return new Map(customers.map(c => [c.name, c]));
@@ -152,7 +155,7 @@ export function LoanTable({ loans, customers }: LoanTableProps) {
     );
   }, [loans, searchTerm]);
 
-  return (
+  const dialogs = (
     <>
       <EditLoanForm
         open={isEditDialogOpen}
@@ -180,14 +183,125 @@ export function LoanTable({ loans, customers }: LoanTableProps) {
         loan={selectedLoan}
         customer={selectedLoan ? customerMap.get(selectedLoan.name) : undefined}
       />
-      <div className="py-4">
-        <Input
-          placeholder={t('loansPage.searchPlaceholder')}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
-        />
-      </div>
+    </>
+  );
+
+  const searchBar = (
+    <div className="py-4">
+      <Input
+        placeholder={t('loansPage.searchPlaceholder')}
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className={isMobile ? "w-full" : "max-w-sm"}
+      />
+    </div>
+  );
+  
+  if (isMobile) {
+    return (
+        <>
+            {dialogs}
+            {searchBar}
+            <div className="space-y-4">
+                {filteredLoans.map((loan) => {
+                    const customer = customerMap.get(loan.name);
+                    return (
+                        <Card key={loan.id} className="cursor-pointer" onClick={() => handleViewDetails(loan)}>
+                            <CardHeader>
+                                <div className="flex items-start justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <CustomerProfilePopover customer={customer}>
+                                            <Avatar>
+                                                <AvatarImage src={customer?.avatar || `https://avatar.vercel.sh/${loan.name}.png`} alt={loan.name} />
+                                                <AvatarFallback>{getInitials(loan.name)}</AvatarFallback>
+                                            </Avatar>
+                                        </CustomerProfilePopover>
+                                        <div>
+                                            <CardTitle className="text-base">{loan.name}</CardTitle>
+                                            <CardDescription>{formatDate(loan.loanDate)}</CardDescription>
+                                        </div>
+                                    </div>
+                                    <div onClick={(e) => e.stopPropagation()}>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button aria-haspopup="true" size="icon" variant="ghost" disabled={isPending || isSendingTelegram}>
+                                                    <MoreHorizontal className="h-4 w-4" />
+                                                    <span className="sr-only">Toggle menu</span>
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuLabel>{t('actions')}</DropdownMenuLabel>
+                                                <DropdownMenuItem onSelect={() => handleViewDetails(loan)}>
+                                                    {t('viewDetails')}
+                                                </DropdownMenuItem>
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuItem onSelect={() => handleViewPayments(loan)}>
+                                                    {t('loansPage.actions.viewPayments')}
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem 
+                                                    onSelect={() => handleSendTelegramDetails(loan)} 
+                                                    disabled={!customer?.telegramChatId}
+                                                >
+                                                    <MessageSquare className="mr-2 h-4 w-4" />
+                                                    {t('loansPage.actions.sendTelegramDetails')}
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onSelect={() => handlePrincipalPayment(loan)} disabled={loan.status !== 'Approved'}>
+                                                    {t('loansPage.actions.makePrincipalPayment')}
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onSelect={() => handleEdit(loan)}>
+                                                    {t('loansPage.actions.editLoan')}
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onSelect={() => handleDelete(loan)} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+                                                    {t('loansPage.actions.deleteLoan')}
+                                                </DropdownMenuItem>
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuLabel>{t('loansPage.actions.changeStatus')}</DropdownMenuLabel>
+                                                {loan.status !== 'Approved' && (
+                                                <DropdownMenuItem onSelect={() => handleStatusChange(loan.id, 'Approved')}>
+                                                    {t('loansPage.actions.approve')}
+                                                </DropdownMenuItem>
+                                                )}
+                                                {loan.status !== 'Rejected' && (
+                                                <DropdownMenuItem onSelect={() => handleStatusChange(loan.id, 'Rejected')}>
+                                                    {t('loansPage.actions.reject')}
+                                                </DropdownMenuItem>
+                                                )}
+                                                {loan.status !== 'Pending' && (
+                                                    <DropdownMenuItem onSelect={() => handleStatusChange(loan.id, 'Pending')}>
+                                                        {t('loansPage.actions.setAsPending')}
+                                                    </DropdownMenuItem>
+                                                )}
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="grid gap-2 text-sm">
+                                <div className="flex justify-between items-center">
+                                    <span className="font-semibold text-lg">{formatCurrency(loan.amount, loan.currency)}</span>
+                                    <Badge variant={getStatusVariant(loan.status)} className="text-xs">{loan.status}</Badge>
+                                </div>
+                                <div className="flex justify-between text-muted-foreground">
+                                    <span>Interest</span>
+                                    <span>{loan.interestRate}%</span>
+                                </div>
+                                <div className="flex justify-between text-muted-foreground">
+                                    <span>Term</span>
+                                    <span>{loan.term} months</span>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    );
+                })}
+            </div>
+        </>
+    );
+  }
+
+  return (
+    <>
+      {dialogs}
+      {searchBar}
       <Table>
         <TableHeader>
           <TableRow>
