@@ -142,7 +142,7 @@ export function PaymentScheduleDialog({ loan, open, onOpenChange }: PaymentSched
                     <TableHead className="w-[80px]">{t('paymentScheduleDialog.table.month')}</TableHead>
                     <TableHead>{t('paymentScheduleDialog.table.dueDate')}</TableHead>
                     <TableHead>{t('paymentScheduleDialog.table.status')}</TableHead>
-                    <TableHead className="text-right hidden sm:table-cell">{t('paymentScheduleDialog.table.principal')}</TableHead>
+                    <TableHead className="text-right hidden md:table-cell">{t('paymentScheduleDialog.table.principal')}</TableHead>
                     <TableHead className="text-right">{t('paymentScheduleDialog.table.interest')}</TableHead>
                     <TableHead className="text-right">{t('paymentScheduleDialog.table.totalPayment')}</TableHead>
                     <TableHead className="text-right hidden md:table-cell">{t('paymentScheduleDialog.table.remainingBalance')}</TableHead>
@@ -162,12 +162,12 @@ export function PaymentScheduleDialog({ loan, open, onOpenChange }: PaymentSched
                                 {entry.status}
                             </Badge>
                         </TableCell>
-                        <TableCell className="text-right hidden sm:table-cell">{formatCurrency(entry.principalPayment, loan.currency)}</TableCell>
+                        <TableCell className="text-right hidden md:table-cell">{formatCurrency(entry.principalPayment, loan.currency)}</TableCell>
                         <TableCell className="text-right">{formatCurrency(entry.interestPayment, loan.currency)}</TableCell>
                         <TableCell className="text-right font-medium">{formatCurrency(entry.monthlyPayment, loan.currency)}</TableCell>
                         <TableCell className="text-right hidden md:table-cell">{formatCurrency(entry.remainingBalance, loan.currency)}</TableCell>
                         <TableCell className="text-center w-[150px]">
-                            {entry.status !== 'Paid' && loan.status === 'Approved' && (
+                            {entry.status !== 'Paid' && loan.status === 'Approved' && loan.currency !== 'KHR' && (
                                 <MarkAsPaidButton loanId={loan.id} month={entry.month} />
                             )}
                         </TableCell>
@@ -213,7 +213,7 @@ export function PaymentScheduleDialog({ loan, open, onOpenChange }: PaymentSched
                             <span>{formatCurrency(entry.remainingBalance, loan.currency)}</span>
                         </div>
 
-                        {entry.status !== 'Paid' && loan.status === 'Approved' && (
+                        {entry.status !== 'Paid' && loan.status === 'Approved' && loan.currency !== 'KHR' && (
                             <div className="pt-2">
                                 <MarkAsPaidButton loanId={loan.id} month={entry.month} />
                             </div>
