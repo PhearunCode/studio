@@ -50,8 +50,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2">
-      <div className="flex items-center justify-center py-12">
+    <div className="w-full h-screen lg:grid lg:grid-cols-2">
+      <div className="flex h-full items-center justify-center p-6">
         <div className="mx-auto grid w-[350px] gap-6">
           <div className="grid gap-4 text-center">
              <div className="flex items-center justify-center gap-2">
