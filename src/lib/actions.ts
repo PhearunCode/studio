@@ -1,3 +1,4 @@
+
 'use server';
 
 import { revalidatePath } from 'next/cache';
@@ -174,6 +175,15 @@ export async function saveCustomerAction(
         await updateCustomer(id, validatedFields.data);
     } else {
         await addCustomer(validatedFields.data);
+        if (validatedFields.data.telegramChatId) {
+            try {
+                const welcomeMessage = 'សូមស្វាគមន៍មកកាន់កម្ចីជាមួយ LendEasy PH';
+                await sendTelegramNotification(welcomeMessage, validatedFields.data.telegramChatId);
+            } catch (telegramError) {
+                console.warn('Failed to send welcome message to new customer:', (telegramError as Error).message);
+                // Don't block the main success response if telegram fails
+            }
+        }
     }
 
     revalidatePath('/customers');
