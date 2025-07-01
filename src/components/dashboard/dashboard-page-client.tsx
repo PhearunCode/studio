@@ -14,6 +14,7 @@ import {
 import { CustomerTable } from "@/components/customers/customer-table";
 import { CustomerFormWrapper } from "@/components/customers/customer-form-wrapper";
 import { useTranslation } from "@/contexts/language-context";
+import { OverviewChart } from "./overview-chart";
 
 interface DashboardPageClientProps {
   loans: Loan[];
@@ -49,6 +50,36 @@ export function DashboardPageClient({ loans, customers }: DashboardPageClientPro
 
   const totalInterestEarnedKhr = calculateTotalInterest(khrLoans);
   const totalInterestEarnedUsd = calculateTotalInterest(usdLoans);
+
+  const overviewData = Array.from({ length: 12 }, (_, i) => {
+    const d = new Date();
+    d.setMonth(d.getMonth() - i);
+    return {
+      name: d.toLocaleString('en-US', { month: 'short' }),
+      year: d.getFullYear(),
+      month: d.getMonth(),
+      KHR: 0,
+      USD: 0,
+    };
+  }).reverse();
+
+  activeLoans.forEach(loan => {
+    // Add T00:00:00 to treat date as local, preventing timezone shifts
+    const loanDate = new Date(loan.loanDate + 'T00:00:00');
+    const loanMonth = loanDate.getMonth();
+    const loanYear = loanDate.getFullYear();
+    
+    const monthData = overviewData.find(d => d.month === loanMonth && d.year === loanYear);
+    
+    if (monthData) {
+        if (loan.currency === 'KHR') {
+            monthData.KHR += loan.amount;
+        } else if (loan.currency === 'USD') {
+            monthData.USD += loan.amount;
+        }
+    }
+  });
+
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -110,6 +141,16 @@ export function DashboardPageClient({ loans, customers }: DashboardPageClientPro
       </div>
 
       <div className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('dashboard.monthlyLoanOverview')}</CardTitle>
+            <CardDescription>{t('dashboard.monthlyLoanOverviewDesc')}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <OverviewChart data={overviewData} />
+          </CardContent>
+        </Card>
+        
         <Card>
           <CardHeader className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
