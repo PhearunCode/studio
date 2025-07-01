@@ -27,7 +27,7 @@ export function CambodiaClock() {
   });
 
   return (
-    <div className="hidden items-center gap-2 rounded-md border bg-background px-3 py-1.5 md:flex">
+    <div className="hidden items-center gap-2 rounded-md border bg-background px-3 py-1.5 lg:flex">
       <Clock className="h-4 w-4 text-muted-foreground" />
       <div className="text-sm">
         <span className="font-medium text-foreground">{formattedTime}</span>
