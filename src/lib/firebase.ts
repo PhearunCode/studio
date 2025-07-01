@@ -370,6 +370,15 @@ export const recordPrincipalPayment = async (loanId: string, paymentAmount: numb
 export const isUserAdmin = async (uid: string): Promise<boolean> => {
     checkDbConnection();
     try {
+        const usersCollection = await db!.collection('users').limit(1).get();
+        // If there are no users with the 'admin' role configured, allow any authenticated user.
+        // This helps with initial setup. For production, it's strongly recommended to
+        // create a 'users' collection and assign the 'admin' role to specific users.
+        if (usersCollection.empty) {
+            console.warn("No users found in 'users' collection. Granting admin access to all authenticated users. Please configure admin users in Firestore for production environments.");
+            return true;
+        }
+
         const userDoc = await db!.collection('users').doc(uid).get();
         if (!userDoc.exists) {
             console.warn(`Admin check failed: User document not found for UID: ${uid}`);
