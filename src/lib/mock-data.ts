@@ -78,7 +78,7 @@ export const mockCustomers: Customer[] = [
         address: '123 Rizal St, Manila',
         phone: '09171234567',
         idCardNumber: '1111-2222-3333',
-        telegramChatId: '123456789',
+        telegramChatId: '7587114547',
         avatar: 'https://placehold.co/100x100.png',
         totalLoans: 0,
         totalLoanAmountKhr: 0,
