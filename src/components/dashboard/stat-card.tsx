@@ -24,7 +24,7 @@ export function StatCard({ title, value, icon, description, className, onClick }
         {icon}
       </CardHeader>
       <CardContent>
-        <div className="text-xl font-bold md:text-2xl">{value}</div>
+        <div className="text-lg font-bold sm:text-xl md:text-2xl">{value}</div>
         {description && <p className="text-xs opacity-80">{description}</p>}
       </CardContent>
     </Card>
