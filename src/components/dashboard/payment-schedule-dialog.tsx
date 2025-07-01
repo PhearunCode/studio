@@ -134,54 +134,50 @@ export function PaymentScheduleDialog({ loan, open, onOpenChange }: PaymentSched
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-[60vh] rounded-md border">
-          <div>
-            <Table>
-                <TableHeader className="sticky top-0 bg-background">
-                <TableRow>
-                    <TableHead className="w-[80px]">{t('paymentScheduleDialog.table.month')}</TableHead>
-                    <TableHead>{t('paymentScheduleDialog.table.dueDate')}</TableHead>
-                    <TableHead>{t('paymentScheduleDialog.table.status')}</TableHead>
-                    <TableHead className="text-right">{t('paymentScheduleDialog.table.principal')}</TableHead>
-                    <TableHead className="text-right">{t('paymentScheduleDialog.table.interest')}</TableHead>
-                    <TableHead className="text-right">{t('paymentScheduleDialog.table.totalPayment')}</TableHead>
-                    <TableHead className="text-right">{t('paymentScheduleDialog.table.remainingBalance')}</TableHead>
-                    <TableHead className="text-center">{t('paymentScheduleDialog.table.action')}</TableHead>
+          <Table>
+            <TableHeader className="sticky top-0 bg-background">
+              <TableRow>
+                <TableHead className="w-[80px]">{t('paymentScheduleDialog.table.month')}</TableHead>
+                <TableHead className="hidden sm:table-cell">{t('paymentScheduleDialog.table.dueDate')}</TableHead>
+                <TableHead>{t('paymentScheduleDialog.table.status')}</TableHead>
+                <TableHead className="text-right hidden md:table-cell">{t('paymentScheduleDialog.table.interest')}</TableHead>
+                <TableHead className="text-right">{t('paymentScheduleDialog.table.totalPayment')}</TableHead>
+                <TableHead className="text-right hidden lg:table-cell">{t('paymentScheduleDialog.table.remainingBalance')}</TableHead>
+                <TableHead className="text-center">{t('paymentScheduleDialog.table.action')}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+            {schedule.length > 0 ? (
+                schedule.map((entry) => (
+                <TableRow key={entry.month}>
+                    <TableCell className="font-medium">{entry.month}</TableCell>
+                    <TableCell className="hidden sm:table-cell">{formatDate(entry.dueDate)}</TableCell>
+                    <TableCell>
+                        <Badge variant={getStatusVariant(entry.status)} className={cn(
+                            entry.status === 'Paid' && 'bg-accent text-accent-foreground'
+                        )}>
+                            {entry.status}
+                        </Badge>
+                    </TableCell>
+                    <TableCell className="text-right hidden md:table-cell">{formatCurrency(entry.interestPayment, loan.currency)}</TableCell>
+                    <TableCell className="text-right font-medium">{formatCurrency(entry.monthlyPayment, loan.currency)}</TableCell>
+                    <TableCell className="text-right hidden lg:table-cell">{formatCurrency(entry.remainingBalance, loan.currency)}</TableCell>
+                    <TableCell className="text-center w-[150px]">
+                        {entry.status !== 'Paid' && loan.status === 'Approved' && (
+                            <MarkAsPaidButton loanId={loan.id} month={entry.month} />
+                        )}
+                    </TableCell>
                 </TableRow>
-                </TableHeader>
-                <TableBody>
-                {schedule.length > 0 ? (
-                    schedule.map((entry) => (
-                    <TableRow key={entry.month}>
-                        <TableCell className="font-medium">{entry.month}</TableCell>
-                        <TableCell>{formatDate(entry.dueDate)}</TableCell>
-                        <TableCell>
-                            <Badge variant={getStatusVariant(entry.status)} className={cn(
-                                entry.status === 'Paid' && 'bg-accent text-accent-foreground'
-                            )}>
-                                {entry.status}
-                            </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">{formatCurrency(entry.principalPayment, loan.currency)}</TableCell>
-                        <TableCell className="text-right">{formatCurrency(entry.interestPayment, loan.currency)}</TableCell>
-                        <TableCell className="text-right font-medium">{formatCurrency(entry.monthlyPayment, loan.currency)}</TableCell>
-                        <TableCell className="text-right">{formatCurrency(entry.remainingBalance, loan.currency)}</TableCell>
-                        <TableCell className="text-center w-[150px]">
-                            {entry.status !== 'Paid' && loan.status === 'Approved' && (
-                                <MarkAsPaidButton loanId={loan.id} month={entry.month} />
-                            )}
-                        </TableCell>
-                    </TableRow>
-                    ))
-                ) : (
-                    <TableRow>
-                        <TableCell colSpan={8} className="h-24 text-center">
-                            {t('paymentScheduleDialog.noSchedule')}
-                        </TableCell>
-                    </TableRow>
-                )}
-                </TableBody>
-            </Table>
-          </div>
+                ))
+            ) : (
+                <TableRow>
+                    <TableCell colSpan={7} className="h-24 text-center">
+                        {t('paymentScheduleDialog.noSchedule')}
+                    </TableCell>
+                </TableRow>
+            )}
+            </TableBody>
+          </Table>
         </ScrollArea>
         <DialogFooter>
           <Button variant="secondary" onClick={handleExport} disabled={schedule.length === 0}>
