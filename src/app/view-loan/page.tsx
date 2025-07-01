@@ -117,9 +117,9 @@ export default function ViewLoanPage() {
                 <CardFooter className="flex flex-col gap-4">
                     <SubmitButton />
                      <Button variant="link" asChild className="text-muted-foreground">
-                        <Link href="/login">
+                        <Link href="/">
                             <ArrowLeft className="mr-2 h-4 w-4"/>
-                            Back to Admin Login
+                            Back to Dashboard
                         </Link>
                     </Button>
                 </CardFooter>

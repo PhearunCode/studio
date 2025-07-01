@@ -1,7 +1,7 @@
 'use client';
 import { ReactNode, useState, useEffect } from 'react';
 import Link from "next/link";
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import {
   SidebarProvider,
   Sidebar,
@@ -26,8 +26,6 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getInitials, cn } from '@/lib/utils';
 import { ThemeToggle } from './theme-toggle';
-import { signOut } from 'firebase/auth';
-import { auth } from '@/lib/firebase-client';
 import { useAuth } from '@/components/auth/auth-provider';
 import { useTranslation } from '@/contexts/language-context';
 import { LanguageSwitcher } from './language-switcher';
@@ -81,7 +79,6 @@ const STORAGE_KEY = 'user-profile';
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
   const { user } = useAuth();
   const { t } = useTranslation();
   const isMobile = useIsMobile();
@@ -122,16 +119,6 @@ export function AppLayout({ children }: { children: ReactNode }) {
 
   }, [user]);
 
-  const handleLogout = async () => {
-    if (!auth) return;
-    try {
-      await signOut(auth);
-      router.push('/login');
-    } catch (error) {
-      console.error('Failed to log out:', error);
-    }
-  };
-
   if (isMobile) {
     return (
       <>
@@ -167,9 +154,9 @@ export function AppLayout({ children }: { children: ReactNode }) {
               <DropdownMenuItem asChild>
                 <Link href="/settings">{t('header.settings')}</Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>{t('header.support')}</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={handleLogout}>{t('header.logout')}</DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <a href="https://example.com/support" target="_blank" rel="noopener noreferrer">{t('header.support')}</a>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
@@ -267,9 +254,9 @@ export function AppLayout({ children }: { children: ReactNode }) {
               <DropdownMenuItem asChild>
                 <Link href="/settings">{t('header.settings')}</Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>{t('header.support')}</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={handleLogout}>{t('header.logout')}</DropdownMenuItem>
+               <DropdownMenuItem asChild>
+                <a href="https://example.com/support" target="_blank" rel="noopener noreferrer">{t('header.support')}</a>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
