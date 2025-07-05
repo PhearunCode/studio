@@ -1,7 +1,9 @@
 'use client';
 import { ReactNode, useState, useEffect } from 'react';
 import Link from "next/link";
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { getAuth, signOut } from 'firebase/auth';
+import { app } from '@/lib/firebase-client';
 import {
   SidebarProvider,
   Sidebar,
@@ -14,7 +16,7 @@ import {
   SidebarSeparator,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Landmark, LayoutDashboard, Users, UserCircle, Banknote, CreditCard, Settings } from 'lucide-react';
+import { Landmark, LayoutDashboard, Users, UserCircle, Banknote, CreditCard, Settings, LogOut } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -79,13 +81,13 @@ const STORAGE_KEY = 'user-profile';
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { user } = useAuth();
   const { t } = useTranslation();
   const isMobile = useIsMobile();
 
   const isActive = (path: string) => pathname === path;
   
-  // The profile from localStorage is now just a fallback for display purposes.
   const [displayProfile, setDisplayProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
@@ -119,47 +121,104 @@ export function AppLayout({ children }: { children: ReactNode }) {
 
   }, [user]);
 
+  const handleLogout = async () => {
+    if (app) {
+        const auth = getAuth(app);
+        await signOut(auth);
+    }
+    router.push('/login');
+  };
+
+  const MobileHeader = () => (
+    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4">
+        <div className="flex items-center gap-2">
+            <div className="bg-primary text-primary-foreground p-2 rounded-lg">
+                <Landmark className="h-6 w-6" />
+            </div>
+            <h1 className="text-xl font-semibold font-headline">LendEasy PH</h1>
+        </div>
+
+        <div className="flex-1" />
+        <LanguageSwitcher />
+        <ThemeToggle />
+        <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="outline"
+            size="icon"
+            className="overflow-hidden rounded-full"
+          >
+            <Avatar className="h-9 w-9">
+              <AvatarImage src={displayProfile?.avatar || `https://avatar.vercel.sh/${displayProfile?.name}.png`} alt={displayProfile?.name ?? 'User'} />
+              <AvatarFallback>
+                {displayProfile ? getInitials(displayProfile.name) : <UserCircle className="h-6 w-6" />}
+              </AvatarFallback>
+            </Avatar>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuLabel>{displayProfile?.name ?? t('header.myAccount')}</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
+            <Link href="/settings">{t('header.settings')}</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <a href="https://example.com/support" target="_blank" rel="noopener noreferrer">{t('header.support')}</a>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onSelect={handleLogout}>
+            <LogOut className="mr-2 h-4 w-4" />
+            <span>{t('header.logout')}</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </header>
+  );
+
+  const DesktopHeader = () => (
+    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-md sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+      <div className="flex-1" />
+      <CambodiaClock />
+      <LanguageSwitcher />
+      <ThemeToggle />
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="outline"
+            size="icon"
+            className="overflow-hidden rounded-full"
+          >
+            <Avatar className="h-9 w-9">
+              <AvatarImage src={displayProfile?.avatar || `https://avatar.vercel.sh/${displayProfile?.name}.png`} alt={displayProfile?.name ?? 'User'} />
+              <AvatarFallback>
+                {displayProfile ? getInitials(displayProfile.name) : <UserCircle className="h-6 w-6" />}
+              </AvatarFallback>
+            </Avatar>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuLabel>{displayProfile?.name ?? t('header.myAccount')}</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
+            <Link href="/settings">{t('header.settings')}</Link>
+          </DropdownMenuItem>
+           <DropdownMenuItem asChild>
+            <a href="https://example.com/support" target="_blank" rel="noopener noreferrer">{t('header.support')}</a>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onSelect={handleLogout}>
+            <LogOut className="mr-2 h-4 w-4" />
+            <span>{t('header.logout')}</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </header>
+  );
+
   if (isMobile) {
     return (
       <>
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4">
-            <div className="flex items-center gap-2">
-                <div className="bg-primary text-primary-foreground p-2 rounded-lg">
-                    <Landmark className="h-6 w-6" />
-                </div>
-                <h1 className="text-xl font-semibold font-headline">LendEasy PH</h1>
-            </div>
-
-            <div className="flex-1" />
-            <LanguageSwitcher />
-            <ThemeToggle />
-            <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                className="overflow-hidden rounded-full"
-              >
-                <Avatar className="h-9 w-9">
-                  <AvatarImage src={displayProfile?.avatar || `https://avatar.vercel.sh/${displayProfile?.name}.png`} alt={displayProfile?.name ?? 'User'} />
-                  <AvatarFallback>
-                    {displayProfile ? getInitials(displayProfile.name) : <UserCircle className="h-6 w-6" />}
-                  </AvatarFallback>
-                </Avatar>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>{displayProfile?.name ?? t('header.myAccount')}</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/settings">{t('header.settings')}</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <a href="https://example.com/support" target="_blank" rel="noopener noreferrer">{t('header.support')}</a>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </header>
+        <MobileHeader />
         <main className="flex-1 pb-20">
           {children}
         </main>
@@ -228,38 +287,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
         </SidebarContent>
       </Sidebar>
       <SidebarInset>
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-md sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-          <div className="flex-1" />
-          <CambodiaClock />
-          <LanguageSwitcher />
-          <ThemeToggle />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                className="overflow-hidden rounded-full"
-              >
-                <Avatar className="h-9 w-9">
-                  <AvatarImage src={displayProfile?.avatar || `https://avatar.vercel.sh/${displayProfile?.name}.png`} alt={displayProfile?.name ?? 'User'} />
-                  <AvatarFallback>
-                    {displayProfile ? getInitials(displayProfile.name) : <UserCircle className="h-6 w-6" />}
-                  </AvatarFallback>
-                </Avatar>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>{displayProfile?.name ?? t('header.myAccount')}</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/settings">{t('header.settings')}</Link>
-              </DropdownMenuItem>
-               <DropdownMenuItem asChild>
-                <a href="https://example.com/support" target="_blank" rel="noopener noreferrer">{t('header.support')}</a>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </header>
+        <DesktopHeader />
         <main>
           {children}
         </main>
